@@ -1,3 +1,7 @@
+.idea/*
+private_session.cookie 
+tulafest/*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
