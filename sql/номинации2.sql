@@ -9,6 +9,6 @@ WHERE
 requests.id = request_id AND
 list.id = topic_id AND
 status = 'approved' AND
-[values].title = 'Номинация'
+card_code in ("VC", "V", "T", "S", "DA")
 
 ORDER BY card_code, value, voting_number
