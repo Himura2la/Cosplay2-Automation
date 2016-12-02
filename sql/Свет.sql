@@ -1,6 +1,7 @@
 SELECT 
-card_code, voting_number, value,
-voting_title
+card_code||' '||voting_number,
+voting_title,
+value
 
 FROM
 list, requests, [values]
@@ -8,7 +9,5 @@ list, requests, [values]
 WHERE
 requests.id = request_id AND
 list.id = topic_id AND
-status = 'approved' AND
-[values].title = 'Номинация'
-
-ORDER BY card_code, value, voting_number
+status = 'review' AND
+[values].title = 'Пожелания по сценическому свету (необязательно)'
