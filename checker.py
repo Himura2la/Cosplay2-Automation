@@ -24,24 +24,35 @@ c.execute("SELECT value FROM settings WHERE key='id'")
 event_id = int(c.fetchone()[0])
 
 c.execute("""
-SELECT  card_code, voting_number, number, voting_title, requests.id
-FROM    requests, list
-WHERE   list.id = topic_id AND
-        status = 'approved' AND
-        card_code NOT IN ("FG", "A", "F")
+SELECT card_code, voting_number, number, value, voting_title, requests.id
+FROM   requests, list
+LEFT JOIN (SELECT request_id, value FROM [values] WHERE title IN ('Номинация', 'Тип номера'))
+          ON request_id = requests.id
+WHERE list.id = topic_id AND
+      status = 'approved' AND
+      card_code NOT IN ("FG", "A", "F")
 """)
 
-items = c.fetchall()
-files = list(map(lambda f: re.search(id_regex, f).groups(), os.listdir(files_folder)))
 
-nums_all = {int(number) for _, _, number, _, _ in items}
-nums_exist = {int(number) for number, _ in files}
+def split_name(name):
+    res = re.search(id_regex, name)
+    if res is not None:
+        return res.groups()
+    else:
+        print("[WARNING] Unknown file '%s'" % name)
+        return None, None
+
+items = c.fetchall()
+files = list(map(split_name, os.listdir(files_folder)))
+
+nums_all = {int(number) for _, _, number, _, _, _ in items}
+nums_exist = {int(number) for number, _ in files if number is not None}
 
 nums_absent = nums_all - nums_exist
 
-items_absent = ["%s %d № %d. %s [http://tulafest.cosplay2.ru/orgs/requests/request/%d]" %
-                   (card_code, voting_number, number, voting_title, req_id)
-                for card_code, voting_number, number, voting_title, req_id in items
+items_absent = ["[ABSENT] %s %d № %d. (%s) %s [http://tulafest.cosplay2.ru/orgs/requests/request/%d]" %
+                (card_code, voting_number, number, nom, voting_title, req_id)
+                for card_code, voting_number, number, nom, voting_title, req_id in items
                 if number in nums_absent]
 
 [print(i) for i in items_absent]
