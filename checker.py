@@ -48,7 +48,7 @@ files = list(map(split_name, os.listdir(files_folder)))
 nums_all = {int(number) for _, _, number, _, _, _ in items}
 nums_exist = {int(number) for number, _ in files if number is not None}
 
-nums_absent = nums_all - nums_exist
+nums_absent = nums_all - nums_exist  # The whole program in a single line
 
 items_absent = ["[ABSENT] %s %d № %d. (%s) %s [http://tulafest.cosplay2.ru/orgs/requests/request/%d]" %
                 (card_code, voting_number, number, nom, voting_title, req_id)
