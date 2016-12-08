@@ -2,7 +2,7 @@ import os
 import sqlite3
 import re
 
-files_folder = 'img'
+files_folder = 'mp3'
 id_regex = re.compile(r"^№ (\d{1,3})\. (.*)\.\w{2,4}$")
 
 db_name = 'sqlite3_data.db'
