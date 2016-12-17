@@ -56,14 +56,14 @@ class Downloader:
         SELECT request_id,
                 '№ '||number || '. ' || voting_title AS name,
                 value
-        FROM 'values', requests, list
+        FROM [values], requests, list
         WHERE   list.id = topic_id AND
                 request_id = requests.id AND
                 type = 'file' AND (
-                'values'.title = 'Минус в формате mp3' OR
-                'values'.title = 'Аудио-трек в формате mp3' OR
-                'values'.title = 'Видеофайл' OR
-                'values'.title = 'Аудио-трек в формате mp3 или видео') AND
+                [values].title = 'Минус в формате mp3' OR
+                [values].title = 'Аудио-трек в формате mp3' OR
+                [values].title = 'Видеофайл' OR
+                [values].title = 'Аудио-трек в формате mp3 или видео') AND
                 status = 'approved'
         ORDER BY name
         """)
@@ -74,7 +74,7 @@ class Downloader:
         SELECT request_id,
                card_code||' '||voting_number || ' №'||number || '. ' || voting_title AS name,
                value
-        FROM 'values', requests, list
+        FROM [values], requests, list
         WHERE   list.id = topic_id AND
                 request_id = requests.id AND
                 type = 'file' AND

@@ -156,7 +156,7 @@ class MakeDB(object):
         user_title TEXT, voting_number INTEGER)""")
 
         c.execute("DROP TABLE IF EXISTS [values]")
-        c.execute("""CREATE TABLE 'values' (
+        c.execute("""CREATE TABLE [values] (
         id INTEGER PRIMARY KEY AUTOINCREMENT, request_id INT, request_section_id INT, section_title TEXT, title TEXT,
         value TEXT, type TEXT, public INTEGER, max_repeat INTEGER)""")
 
