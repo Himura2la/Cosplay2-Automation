@@ -19,9 +19,11 @@ class Downloader:
         self.event_name = None
         self.event_id = None
 
-        pass
-
     def get_lists(self, db_path):
+        if not os.path.exists(db_path):
+            print('Database ' + db_path + ' not exists...')
+            return False
+
         print('Connecting to ' + db_path + '...')
 
         db = sqlite3.connect(db_path, isolation_level=None)
@@ -83,7 +85,8 @@ class Downloader:
         self.art = c.fetchall()
 
         db.close()
-        print(db_path + ' was safely closed...')
+        print('Database', db_path, 'safely closed...')
+        return True
 
     def download_images(self, actual_download=True):
         if not os.path.exists(self.__img_folder) and actual_download:
@@ -99,9 +102,9 @@ class Downloader:
 
                 if prev_name == name:
                     counter += 1
-                    filename = self.__to_filename("%s [%d]" % (name, counter))
+                    filename = self.__to_filename("%s [%d].jpg" % (name, counter))
                 else:
-                    filename = self.__to_filename(name)
+                    filename = self.__to_filename(name + '.jpg')
                     counter = 1
                 file_url = 'http://%s.cosplay2.ru/uploads/%d/%d/%d.jpg' % (self.event_name, self.event_id,
                                                                            request_id, image_id)
@@ -111,13 +114,13 @@ class Downloader:
             except TypeError as e:
                 print("[FAIL]", name + ":", e)
 
-    def download_files(self, check_hash_if_exists=True, actual_download=True):
-        self.__download_files(self.files, self.__files_folder, check_hash_if_exists, actual_download)
+    def download_files(self, actual_download=True, check_hash_if_exists=True):
+        self.__download_files(self.files, self.__files_folder, actual_download, check_hash_if_exists)
 
-    def download_art(self, check_hash_if_exists=True, actual_download=True):
-        self.__download_files(self.art, self.__art_folder, check_hash_if_exists, actual_download)
+    def download_art(self, actual_download=True, check_hash_if_exists=True):
+        self.__download_files(self.art, self.__art_folder, actual_download, check_hash_if_exists)
 
-    def __download_files(self, file_list, folder, check_hash_if_exists=True, actual_download=True):
+    def __download_files(self, file_list, folder, actual_download=True, check_hash_if_exists=True):
         links_file = 'links.txt'
         links = []
         name = ""
@@ -214,5 +217,14 @@ if __name__ == "__main__":
     print()
     d = Downloader(*folders)
     d.get_lists(db_path)
-    d.download_art(actual_download=False)
+
+    print('\nDownloading images...')
+    d.download_images(False)
+
+    print('\nDownloading files...')
+    d.download_files(False)
+
+    print('\nDownloading art and fotocosplay...')
+    d.download_art(False)
+
 
