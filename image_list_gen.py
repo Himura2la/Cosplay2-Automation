@@ -6,8 +6,7 @@ files_folder = 'img_numbered'
 id_regex = re.compile(r"^(\d{3}) (\w{1,2})")
 
 db_name = 'sqlite3_data.db'
-with open('config.txt', 'r') as f:
-    event_name = f.read()
+event_name = 'tulafest'
 
 files_folder = os.path.join(event_name, files_folder)
 

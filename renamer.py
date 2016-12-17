@@ -5,8 +5,7 @@ import shutil
 
 db_name = 'sqlite3_data.db'
 input_dir = 'img'
-with open('config.txt', 'r') as f:
-    event_name = f.read()
+event_name = 'tulafest'
 
 output_dir = os.path.join(event_name, input_dir + '_numbered')
 input_dir = os.path.join(event_name, input_dir)
