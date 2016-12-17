@@ -9,7 +9,7 @@ check_hash_if_exists = False
 
 db_name = 'sqlite3_data.db'
 art_folder = 'art'
-with open('event_name.txt', 'r') as f:
+with open('config.txt', 'r') as f:
     event_name = f.read()
 
 art_folder = os.path.join(event_name, art_folder)

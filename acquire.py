@@ -6,10 +6,15 @@ import json
 import pickle
 import os
 
-with open('event_name.txt', 'r') as f:
-    event_name = f.read()
-    pass
+with open('config.txt', 'r') as f:
+    try:
+        event_name = f.readline().split('Event name:')[1].strip()
+        login = f.readline().split('User email:')[1].strip()
+    except IndexError as e:
+        print('Invalid format of config.txt')
+        exit()
 
+# Cosplay2 API
 api = 'http://' + event_name + '.cosplay2.ru/api/'
 login_POST = api + 'users/login'
 settings_GET = api + 'events/get_settings'

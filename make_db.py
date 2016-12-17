@@ -4,7 +4,7 @@ import sqlite3
 
 db_name = 'sqlite3_data.db'
 
-with open('event_name.txt', 'r') as f:
+with open('config.txt', 'r') as f:
     event_name = f.read()
 
 data = dict()

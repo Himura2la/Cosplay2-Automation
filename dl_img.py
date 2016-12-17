@@ -5,7 +5,7 @@ import urllib.request
 
 db_name = 'sqlite3_data.db'
 img_folder = 'img'
-with open('event_name.txt', 'r') as f:
+with open('config.txt', 'r') as f:
     event_name = f.read()
 
 img_folder = os.path.join(event_name, img_folder)

@@ -6,7 +6,7 @@ files_folder = 'mp3'
 id_regex = re.compile(r"^№ (\d{1,3})\. (.*)\.\w{2,4}$")
 
 db_name = 'sqlite3_data.db'
-with open('event_name.txt', 'r') as f:
+with open('config.txt', 'r') as f:
     event_name = f.read()
 
 files_folder = os.path.join(event_name, files_folder)
