@@ -42,7 +42,10 @@ This repository contains a bunch of scripts for interacting with the [Cosplay2](
 * GUI
 * Интерфейс для SQL запросов. А то я [DB Browser for SQLite](http://sqlitebrowser.org/) юзаю для всяких списков.
 
-# ВНИМЕНИЕ!!!
+## Эта тулзня пока не user-friendly
+
+Для работы с инструментом, необходимы базовые знания Python и SQL.
+
 На данный момент без редактирования SQL запросов ничего не взлетит... Сейчас скрипты заточены под формы фестиваля
 Yuki no Odori, нужно заменять условия, в которые входит проверка **[values].title** и **card_code** на данные из
 форм Вашего феста.

@@ -1,3 +1,7 @@
+#!/usr/bin/python3
+# Author: Himura Kazuto <himura@tulafest.ru>
+# Date: December 2016
+
 import json
 import os
 import sqlite3
