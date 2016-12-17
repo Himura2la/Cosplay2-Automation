@@ -44,12 +44,13 @@ class Authenticator(object):
                 print("Login successful!")
                 return True
             else:
-                print("Login failed!")
-            self.__attempts -= 1
+                print("Trying again...")
+                self.__attempts -= 1
+        print("Login failed!")
         return False
 
     def __sign_in(self):
-        try:
+        if os.path.isfile(self.__cookie_name):
             with open(self.__cookie_name, 'r') as f:
                 self.cookie = f.read()
                 print('Checking the cookie from ' + self.__cookie_name + ' file.')
@@ -61,13 +62,13 @@ class Authenticator(object):
                         print('The cookie works great! Proof: ' + response[:70] + '...')
                     return True
                 except HTTPError as e:
-                    print("Request failed:", e)
-                    print("Deleting the cookie and restarting...")
+                    print(e)
+                    print("Seems like the cookie is out of date, deleting it...")
                     os.remove(self.__cookie_name)
                     self.__attempts += 1
                     return False
 
-        except FileNotFoundError:  # No cookie saved
+        else:  # No cookie saved
             login_info = urlencode({'name':     self.login,
                                     'password': getpass('Password for ' + self.login + ': ')}).encode('ascii')
             try:
@@ -75,11 +76,11 @@ class Authenticator(object):
                     cookie = r.getheader('Set-Cookie')
                     with open(self.__cookie_name, 'w') as f:
                         f.write(cookie)
-                        print('Logged in and saved cookie to the ' + self.__cookie_name +
-                              ' file. Remember that this file is strictly private!')
-                        return True
+                        self.cookie = cookie
+                    print("Saved cookie to the '%s' file. Keep this file as your password !!!" % self.__cookie_name)
+                    return True
             except HTTPError as e:
-                print("Login failed:", e)
+                print(e)
                 return False
 
 
@@ -113,7 +114,6 @@ class Fetcher(object):
 
 
 class MakeDB(object):
-
     def __init__(self, db_path, data):
         self.__db_path = db_path
         self.data = data
@@ -136,7 +136,7 @@ class MakeDB(object):
         db.commit()
         db.close()
 
-        print("All done! Happy SQL\'ing!")
+        print("All done! Happy SQL'ing!")
 
     @staticmethod
     def __make_schemas(c):

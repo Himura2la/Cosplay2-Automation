@@ -24,7 +24,7 @@ class Downloader:
         self.event_id = None
 
     def get_lists(self, db_path):
-        if not os.path.exists(db_path):
+        if not os.path.isfile(db_path):
             print('Database ' + db_path + ' not exists...')
             return False
 
