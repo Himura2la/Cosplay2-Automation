@@ -10,8 +10,9 @@ with open('event_name.txt', 'r') as f:
 data = dict()
 
 for file in os.listdir(event_name):
-    if file.split('.')[1] == 'pickle':
-        with open(os.path.join(event_name, file), 'rb') as f:
+    path = os.path.join(event_name, file)
+    if os.path.isfile(path) and file.split('.')[1] == 'pickle':
+        with open(path, 'rb') as f:
             data[file.split('.')[0]] = pickle.load(f)
 
 print('Connecting to ' + db_name + '...')
