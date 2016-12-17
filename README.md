@@ -52,3 +52,5 @@ This repository contains a bunch of scripts for interacting with the [Cosplay2](
 На данный момент без редактирования SQL запросов ничего не взлетит... Сейчас скрипты заточены под формы фестиваля
 Yuki no Odori, нужно заменять условия, в которые входит проверка **[values].title** и **card_code** на данные из
 форм Вашего феста.
+
+P.S.: Огромная благодарность [Евгению](https://vk.com/snark13) за создание [Cosplay2](http://cosplay2.ru)
