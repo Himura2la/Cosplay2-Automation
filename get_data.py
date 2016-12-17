@@ -24,7 +24,7 @@ class Cosplay2API(object):
 class Authenticator(object):
     __cookie_name = 'private_session.cookie'
 
-    def __init__(self, event_name, login):
+    def __init__(self, event_name='tulafest', login='himura@tulafest.ru'):
         self.event_name = event_name
         self.login = login
         self.cookie = None
@@ -179,7 +179,7 @@ class MakeDB(object):
 
 if __name__ == "__main__":
     print()
-    a = Authenticator('tulafest', 'himura@tulafest.ru')
+    a = Authenticator()
     a.sign_in()
 
     print()
