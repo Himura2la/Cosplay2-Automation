@@ -183,8 +183,8 @@ if __name__ == "__main__":
     a.sign_in()
 
     print()
-    fetcher = Fetcher(a.event_name, a.cookie)
-    fetcher.fetch()
+    f = Fetcher(a.event_name, a.cookie)
+    f.fetch()
 
     print()
-    MakeDB(os.path.join(a.event_name, 'sqlite3_data.db'), fetcher.data)
+    MakeDB(os.path.join(a.event_name, 'sqlite3_data.db'), f.data)
