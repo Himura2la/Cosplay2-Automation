@@ -2,8 +2,9 @@ import os
 import sqlite3
 import re
 
-files_folder = 'mp3'
+files_folder = 'H:\ownCloud\DATA\Yuki no Odori 2016\Fest\mp3_numbered'
 id_regex = re.compile(r"^№ (\d{1,3})\. (.*)\.\w{2,4}$")
+code_regex = re.compile(r"(\d{3}) (\w{1,2})\. (.*?)\(№(\d{1,3})\)")
 
 db_name = 'sqlite3_data.db'
 with open('event_name.txt', 'r') as f:
@@ -35,18 +36,18 @@ WHERE list.id = topic_id AND
 
 
 def split_name(name):
-    res = re.search(id_regex, name)
+    res = re.search(code_regex, name)
     if res is not None:
         return res.groups()
     else:
         print("[WARNING] Unknown file '%s'" % name)
-        return None, None
+        return None, None, None, None
 
 items = c.fetchall()
 files = list(map(split_name, os.listdir(files_folder)))
 
 nums_all = {int(number) for _, _, number, _, _, _ in items}
-nums_exist = {int(number) for number, _ in files if number is not None}
+nums_exist = {int(number) for _, _, _, number in files if number is not None}
 
 nums_absent = nums_all - nums_exist  # The whole program in a single line
 
