@@ -7,8 +7,7 @@ id_regex = re.compile(r"^№ (\d{1,3})\. (.*)\.\w{2,4}$")
 code_regex = re.compile(r"(\d{3}) (\w{1,2})\. (.*?)\(№(\d{1,3})\)")
 
 db_name = 'sqlite3_data.db'
-with open('event_name.txt', 'r') as f:
-    event_name = f.read()
+event_name = 'tulafest'
 
 files_folder = os.path.join(event_name, files_folder)
 
