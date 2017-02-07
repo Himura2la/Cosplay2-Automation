@@ -42,8 +42,8 @@ This repository contains a bunch of scripts for interacting with the [Cosplay2](
 
 # Что было бы неплохо поднаписать
 
-* GUI. Наверно, надо все-таки как-нибудь поставить Qt и посмотреть что же это за зверь...
-* Интерфейс для SQL запросов. А то я [DB Browser for SQLite](http://sqlitebrowser.org/) юзаю для всяких списков.
+* #2: GUI. Наверно, надо все-таки как-нибудь поставить Qt и посмотреть что же это за зверь...
+* #3: Интерфейс для SQL запросов. А то я [DB Browser for SQLite](http://sqlitebrowser.org/) юзаю для всяких списков.
 
 ## Эта тулзня пока не для всех !!!
 
