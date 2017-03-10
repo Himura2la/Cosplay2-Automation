@@ -42,7 +42,7 @@ This repository contains a bunch of scripts for interacting with the [Cosplay2](
 
 # Что было бы неплохо поднаписать
 
-* [#2](/../../issues/2): GUI. Недавно потыкал Tcl/Tk -- это ваще тема, он реально крут. Как-то не лежит у меня к миру Qt, они там всё переписали по-своему...
+* [#2](/../../issues/2): GUI. На Tcl/Tk (tkinter.ttk) или wxPython. Желательно не QT, он слишком кастомный.
 * [#3](/../../issues/3): Интерфейс для SQL запросов. А то я [DB Browser for SQLite](http://sqlitebrowser.org/) юзаю для всяких списков.
 
 ## Эта тулзня пока не для всех !!!
