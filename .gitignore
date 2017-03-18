@@ -141,3 +141,5 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+c2_info\.txt
