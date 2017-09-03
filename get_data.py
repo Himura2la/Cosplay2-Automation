@@ -118,6 +118,11 @@ class MakeDB(object):
         self.__db_path = db_path
         self.data = data
 
+        fest_dir = os.path.split(self.__db_path)[0]
+        if not os.path.isdir(fest_dir):
+            print('Making fest dir...')
+            os.makedirs(fest_dir)
+        
         if os.path.isfile(self.__db_path):
             print('Deleting old database...')
             os.remove(self.__db_path)
