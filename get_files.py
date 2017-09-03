@@ -84,23 +84,20 @@ class Downloader:
         all_files = ""
         counter = 1
 
-        if actual_download:
-            if not os.path.exists(folder):
-                os.makedirs(folder)
-            all_files = "\n".join(os.listdir(folder))
-
         for row in self.data:
             prev_name = name
             request_id, nom, num, team, nicks, title, file_type, file = row
             name = "№%s. %s" % (num, team if nicks.count(',') > 2 else nicks)
             if title:
                 name += " - %s" % title
-            is_img = False
             try:
+                filename = os.path.join(self.__to_filename(name),
+                                        self.__to_filename(file_type))
+                is_img = False
                 file = json.loads(file)
                 if 'link' in file.keys():  # External site
                     if name in all_files:
-                        print('[WARNING]', name, "exists and was downloaded by link. Can't check.")
+                        print('[INFO]', name, "was manually created.")
                     else:
                         link = "[LINK] %s -> %s" % (file['link'], filename)
                         print(link)
@@ -108,11 +105,12 @@ class Downloader:
                     continue
                 else:
                     src_filename = file['filename']
-                    file_ext = file['fileext'] if 'fileext' in file else '.jpg'
-                    is_img = True
+                    if 'fileext' in file:
+                        file_ext = file['fileext']
+                    else:
+                        file_ext = '.jpg'
+                        is_img = True
 
-                filename = os.path.join(self.__to_filename(name),
-                                        self.__to_filename(file_type))
                 if prev_name == name:
                     counter += 1
                     filename += str(counter)
@@ -122,21 +120,23 @@ class Downloader:
                                                                                         request_id, src_filename))
                 if is_img:
                     file_url += '.jpg'  # Yes, it works
-                dl = True
+                do_download = True
                 if os.path.isfile(path):
                     print('[WARNING]', filename, 'exists. ', end='')
                     if check_hash_if_exists:
                         if self.__md5(file_url) == self.__md5(path):
                             print('The same as remote. Skipping...')
-                            dl = False
+                            do_download = False
                         else:
                             print('And differs from the remote one. Updating...')
                     else:
                         print('Configured not to check. Skipping...')
-                        dl = False
-                if dl:
+                        do_download = False
+                if do_download:
                     print("[OK]", file_url, "->", filename)
                     if actual_download:
+                        if not os.path.isdir(os.path.split(path)[0]):
+                            os.makedirs(os.path.split(path)[0])
                         request.urlretrieve(file_url, path)
             except (TypeError, AttributeError) as e:
                 print("[FAIL]", name + ":", e)
@@ -182,4 +182,4 @@ if __name__ == "__main__":
     d.get_lists(db_path)
 
     print('\nDownloading files...')
-    d.download_files(a.event_name, False)
+    d.download_files(a.event_name, True)
