@@ -95,6 +95,7 @@ class Downloader:
             name = "№%s. %s" % (num, team if nicks.count(',') > 2 else nicks)
             if title:
                 name += " - %s" % title
+            is_img = False
             try:
                 file = json.loads(file)
                 if 'link' in file.keys():  # External site
@@ -108,6 +109,7 @@ class Downloader:
                 else:
                     src_filename = file['filename']
                     file_ext = file['fileext'] if 'fileext' in file else '.jpg'
+                    is_img = True
 
                 filename = os.path.join(self.__to_filename(name),
                                         self.__to_filename(file_type))
@@ -118,6 +120,8 @@ class Downloader:
                 path = os.path.join(folder, filename)
                 file_url = 'http://' + parse.quote('%s.cosplay2.ru/uploads/%d/%d/%s' % (self.event_name, self.event_id,
                                                                                         request_id, src_filename))
+                if is_img:
+                    file_url += '.jpg'  # Yes, it works
                 dl = True
                 if os.path.isfile(path):
                     print('[WARNING]', filename, 'exists. ', end='')
