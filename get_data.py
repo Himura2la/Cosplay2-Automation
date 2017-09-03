@@ -28,7 +28,7 @@ class Cosplay2API(object):
 class Authenticator(object):
     __cookie_name = 'private_session.cookie'
 
-    def __init__(self, event_name='tulafest', login='himura@tulafest.ru'):
+    def __init__(self, event_name='tulafest16', login='himura@tulafest.ru'):
         self.event_name = event_name
         self.login = login
         self.cookie = None
@@ -136,7 +136,9 @@ class MakeDB(object):
         self.__make_schemas(cursor)
 
         for key in data.keys():
-            self.__populate(key, cursor)
+            if not self.__populate(key, cursor):
+                print("ERROR in '%s'" % key)
+                print(data)
 
         db.commit()
         db.close()
@@ -172,8 +174,12 @@ class MakeDB(object):
     def __populate(self, key, c):
         print("Populating %s..." % key)
 
-        if type(self.data[key]) is dict:
+        if not self.data[key]:
+            print("'%s' is empty!" % key)
+            return False
+        elif type(self.data[key]) is dict:
             c.executemany("INSERT INTO %s (key, value) VALUES(?,?)" % key, self.data['settings']['event'].items())
+            return True
         elif type(self.data[key]) is list:
             keys = sorted(self.data[key][0].keys())
 
@@ -183,8 +189,10 @@ class MakeDB(object):
             c.execute("BEGIN TRANSACTION")
             c.executemany("INSERT INTO [%s] (%s) VALUES(%s)" % (key, rows, values), self.data[key])
             c.execute("COMMIT")
+            return True
         else:
             print("WTF is this ???")
+            return False
 
 if __name__ == "__main__":
     print()
