@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+# -*- coding: utf-8 -*-
 # Author: Himura Kazuto <himura@tulafest.ru>
 # Date: December 2016
 
@@ -13,13 +14,8 @@ from get_data import Authenticator
 
 
 class Downloader:
-    def __init__(self, img_folder, files_folder, art_folder):
-        self.__img_folder = img_folder
-        self.__files_folder = files_folder
-        self.__art_folder = art_folder
-        self.images = None
-        self.files = None
-        self.art = None
+    def __init__(self):
+        self.data = None
         self.event_name = None
         self.event_id = None
 
@@ -40,91 +36,48 @@ class Downloader:
         c.execute("SELECT value FROM settings WHERE key='subdomain'")
         self.event_name = c.fetchone()[0]
 
-        print('Collecting images...')
+        print('Querying...')
         c.execute("""
-        SELECT request_id,
-               '№ '||number || '. ' || voting_title AS name,
-               value
-        FROM   [values], requests, list
-        WHERE  list.id = topic_id AND
-               request_id = requests.id AND
-               type = 'image' AND
-               [values].title LIKE 'Изображени%' AND
-               status = 'approved'
-        ORDER BY name
-        """)
-        self.images = c.fetchall()
-
-        print('Collecting files...')
-        c.execute("""
-        SELECT request_id,
-                '№ '||number || '. ' || voting_title AS name,
-                value
-        FROM [values], requests, list
-        WHERE   list.id = topic_id AND
-                request_id = requests.id AND
-                type = 'file' AND (
-                [values].title = 'Минус в формате mp3' OR
-                [values].title = 'Аудио-трек в формате mp3' OR
-                [values].title = 'Видеофайл' OR
-                [values].title = 'Аудио-трек в формате mp3 или видео') AND
-                status = 'approved'
-        ORDER BY name
-        """)
-        self.files = c.fetchall()
-
-        print('Collecting art...')
-        c.execute("""
-        SELECT request_id,
-               card_code||' '||voting_number || ' №'||number || '. ' || voting_title AS name,
+               SELECT request_id,
+               list.title,
+               requests.number,
+               team,
+               nicks,
+               name,
+               [values].title,
                value
         FROM [values], requests, list
+
+        LEFT JOIN (SELECT request_id as nc_rid, REPLACE(GROUP_CONCAT(DISTINCT value), ',', ', ') as nicks FROM [values] 
+                 WHERE title LIKE 'Отображаемое всем имя%'
+                 GROUP BY request_id)
+                 ON nc_rid = requests.id
+
+        LEFT JOIN (SELECT request_id as tm_rid, value as team FROM [values] 
+                 WHERE title = 'Название команды (как пишется)' OR 
+                       title = 'Название команды')
+                 ON tm_rid = requests.id
+                
+        LEFT JOIN (SELECT request_id as f_rid, value as name FROM [values] 
+                 WHERE title LIKE 'Название%' AND
+                       title NOT LIKE '%команды%' AND
+                       title NOT LIKE '%источника танца%' AND
+                       title NOT LIKE '%русскими буквами')
+                 ON f_rid = requests.id
+
         WHERE   list.id = topic_id AND
                 request_id = requests.id AND
-                type = 'file' AND
-                card_code IN ("A", "F") AND
+                (type = 'file' OR type = 'image') AND
                 status = 'approved'
-        ORDER BY name
+        ORDER BY [values].title
         """)
-        self.art = c.fetchall()
+        self.data = c.fetchall()
 
         db.close()
         print('Database', db_path, 'safely closed...')
         return True
 
-    def download_images(self, actual_download=True):
-        if not os.path.exists(self.__img_folder) and actual_download:
-            os.makedirs(self.__img_folder)
-        name = ""
-        counter = 1
-        for row in self.images:
-            prev_name = name
-            request_id, name, data = row
-            try:
-                file = json.loads(data)
-                image_id = file['filename']
-
-                if prev_name == name:
-                    counter += 1
-                    filename = self.__to_filename("%s [%d].jpg" % (name, counter))
-                else:
-                    filename = self.__to_filename(name + '.jpg')
-                    counter = 1
-                file_url = 'http://%s.cosplay2.ru/uploads/%d/%d/%d.jpg' % (self.event_name, self.event_id,
-                                                                           request_id, image_id)
-                print("[OK]", file_url + " -> " + filename)
-                if actual_download:
-                    request.urlretrieve(file_url, os.path.join(self.__img_folder, filename))
-            except TypeError as e:
-                print("[FAIL]", name + ":", e)
-
-    def download_files(self, actual_download=True, check_hash_if_exists=True):
-        self.__download_files(self.files, self.__files_folder, actual_download, check_hash_if_exists)
-
-    def download_art(self, actual_download=True, check_hash_if_exists=True):
-        self.__download_files(self.art, self.__art_folder, actual_download, check_hash_if_exists)
-
-    def __download_files(self, file_list, folder, actual_download=True, check_hash_if_exists=True):
+    def download_files(self, folder, actual_download=True, check_hash_if_exists=True):
         links_file = 'links.txt'
         links = []
         name = ""
@@ -136,29 +89,31 @@ class Downloader:
                 os.makedirs(folder)
             all_files = "\n".join(os.listdir(folder))
 
-        for row in file_list:
+        for row in self.data:
             prev_name = name
-            request_id, name, data = row
+            request_id, nom, num, team, nicks, title, file_type, file = row
+            name = "№%s. %s" % (num, team if nicks.count(',') > 2 else nicks)
+            if title:
+                name += " - %s" % title
             try:
-                name = self.__to_filename(name)
-                file = json.loads(data)
+                file = json.loads(file)
                 if 'link' in file.keys():  # External site
                     if name in all_files:
                         print('[WARNING]', name, "exists and was downloaded by link. Can't check.")
                     else:
-                        link = "[LINK] %s -> %s" % (file['link'], name)
+                        link = "[LINK] %s -> %s" % (file['link'], filename)
                         print(link)
                         links.append(link + os.linesep)
                     continue
                 else:
                     src_filename = file['filename']
-                    file_ext = file['fileext']
+                    file_ext = file['fileext'] if 'fileext' in file else '.jpg'
+
+                filename = os.path.join(self.__to_filename(name),
+                                        self.__to_filename(file_type))
                 if prev_name == name:
                     counter += 1
-                    filename = "%s [%d]" % (name, counter)
-                else:
-                    filename = name
-                    counter = 1
+                    filename += str(counter)
                 filename += file_ext
                 path = os.path.join(folder, filename)
                 file_url = 'http://' + parse.quote('%s.cosplay2.ru/uploads/%d/%d/%s' % (self.event_name, self.event_id,
@@ -210,25 +165,17 @@ class Downloader:
             file.close()
         return hash.hexdigest()
 
+
 if __name__ == "__main__":
     print()
     a = Authenticator()
     a.sign_in()
 
     db_path = os.path.join(a.event_name, 'sqlite3_data.db')
-    folders = map(lambda x: os.path.join(a.event_name, x), ['img', 'mp3', 'art'])
 
     print()
-    d = Downloader(*folders)
+    d = Downloader()
     d.get_lists(db_path)
 
-    print('\nDownloading images...')
-    d.download_images(False)
-
     print('\nDownloading files...')
-    d.download_files(False)
-
-    print('\nDownloading art and fotocosplay...')
-    d.download_art(False)
-
-
+    d.download_files(a.event_name, False)
