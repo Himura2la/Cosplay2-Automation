@@ -91,7 +91,8 @@ class Downloader:
             if title:
                 name += " - %s" % title
             try:
-                filename = os.path.join(self.__to_filename(name),
+                filename = os.path.join(self.__to_filename(nom),
+                                        self.__to_filename(name),
                                         self.__to_filename(file_type))
                 is_img = False
                 file = json.loads(file)
@@ -182,4 +183,4 @@ if __name__ == "__main__":
     d.get_lists(db_path)
 
     print('\nDownloading files...')
-    d.download_files(a.event_name, True)
+    d.download_files(a.event_name, False)
