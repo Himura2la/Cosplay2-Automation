@@ -81,6 +81,7 @@ class Downloader:
     def download_files(self, folder, actual_download=True, check_hash_if_exists=True):
         links_file = 'links.txt'
         links = []
+        filenames = set()
         name = ""
         all_files = ""
         counter = 1
@@ -135,7 +136,12 @@ class Downloader:
                         print('Configured not to check. Skipping...')
                         do_download = False
                 if do_download:
-                    print("[OK]", file_url, "->", filename)
+                    if filename not in filenames:
+                        filenames.add(filename)
+                        print("[OK]", file_url, "->", filename)
+                    else:
+                        print("[CRYTICAL]", filename, "was about to overwrite. Check your SQL query!!!")
+                        break
                     if actual_download:
                         if not os.path.isdir(os.path.split(path)[0]):
                             os.makedirs(os.path.split(path)[0])
