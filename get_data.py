@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+# -*- coding: utf-8 -*-
 # Author: Himura Kazuto <himura@tulafest.ru>
 # Date: December 2016
 
@@ -53,20 +54,20 @@ class Authenticator(object):
         if os.path.isfile(self.__cookie_name):
             with open(self.__cookie_name, 'r') as f:
                 self.cookie = f.read()
-                print('Checking the cookie from ' + self.__cookie_name + ' file.')
+            print('Checking the cookie from ' + self.__cookie_name + ' file.')
 
-                req = Request(self.__api.settings_GET, None, {'Cookie': self.cookie})
-                try:
-                    with urlopen(req) as r:
-                        response = r.read().decode('utf-8-sig')
-                        print('The cookie works great! Proof: ' + response[:70] + '...')
-                    return True
-                except HTTPError as e:
-                    print(e)
-                    print("Seems like the cookie is out of date, deleting it...")
-                    os.remove(self.__cookie_name)
-                    self.__attempts += 1
-                    return False
+            req = Request(self.__api.settings_GET, None, {'Cookie': self.cookie})
+            try:
+                with urlopen(req) as r:
+                    response = r.read().decode('utf-8-sig')
+                    print('The cookie works great! Proof: ' + response[:70] + '...')
+                return True
+            except HTTPError as e:
+                print(e)
+                print("Seems like the cookie is out of date, deleting it...")
+                os.remove(self.__cookie_name)
+                self.__attempts += 1
+                return False
 
         else:  # No cookie saved
             login_info = urlencode({'name':     self.login,
