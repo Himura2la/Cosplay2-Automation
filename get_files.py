@@ -13,6 +13,23 @@ from urllib import parse
 from get_data import Authenticator
 
 
+sql_query = """
+SELECT request_id,
+       list.title as nom,
+       requests.number,
+       voting_title,
+       [values].title as file_type,
+       value as file
+FROM [values], requests, list
+
+WHERE   list.id = topic_id AND
+        request_id = requests.id AND
+        (type = 'file' OR type = 'image') AND
+        status = 'approved'
+ORDER BY [values].title
+"""
+
+
 class Downloader:
     def __init__(self):
         self.data = None
@@ -37,41 +54,7 @@ class Downloader:
         self.event_name = c.fetchone()[0]
 
         print('Querying...')
-        c.execute("""
-               SELECT request_id,
-               list.title,
-               requests.number,
-               team,
-               nicks,
-               name,
-               [values].title,
-               value
-        FROM [values], requests, list
-
-        LEFT JOIN (SELECT request_id as nc_rid, REPLACE(GROUP_CONCAT(DISTINCT value), ',', ', ') as nicks FROM [values] 
-                 WHERE title LIKE 'Отображаемое всем имя%'
-                 GROUP BY request_id)
-                 ON nc_rid = requests.id
-
-        LEFT JOIN (SELECT request_id as tm_rid, value as team FROM [values] 
-                 WHERE title = 'Название команды (как пишется)' OR 
-                       title = 'Название команды')
-                 ON tm_rid = requests.id
-                
-        LEFT JOIN (SELECT request_id as f_rid, value as name FROM [values] 
-                 WHERE title LIKE 'Название%' AND
-                       title NOT LIKE '%команды%' AND
-                       title NOT LIKE '%источника танца%' AND
-                       title NOT LIKE '%русскими буквами' AND
-                       NOT (section_title = 'Работа' AND title NOT LIKE '%источника%'))
-                 ON f_rid = requests.id
-
-        WHERE   list.id = topic_id AND
-                request_id = requests.id AND
-                (type = 'file' OR type = 'image') AND
-                status = 'approved'
-        ORDER BY [values].title
-        """)
+        c.execute(sql_query)
         self.data = c.fetchall()
 
         db.close()
@@ -88,10 +71,8 @@ class Downloader:
 
         for row in self.data:
             prev_name = name
-            request_id, nom, num, team, nicks, title, file_type, file = row
-            name = "№%s. %s" % (num, team if nicks.count(',') > 2 else nicks)
-            if title:
-                name += " - %s" % title
+            request_id, nom, num, title, file_type, file = row
+            name = "№%0.3d. %s" % (int(num), title)
             try:
                 filename = os.path.join(self.__to_filename(nom),
                                         self.__to_filename(name),
