@@ -62,7 +62,8 @@ class Downloader:
                  WHERE title LIKE 'Название%' AND
                        title NOT LIKE '%команды%' AND
                        title NOT LIKE '%источника танца%' AND
-                       title NOT LIKE '%русскими буквами')
+                       title NOT LIKE '%русскими буквами' AND
+                       NOT (section_title = 'Работа' AND title NOT LIKE '%источника%'))
                  ON f_rid = requests.id
 
         WHERE   list.id = topic_id AND
