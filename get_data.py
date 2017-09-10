@@ -29,7 +29,7 @@ class Cosplay2API(object):
 class Authenticator(object):
     __cookie_name = 'private_session.cookie'
 
-    def __init__(self, event_name='cr17', login='keloero@oreolek.ru'):
+    def __init__(self, event_name='tulafest16', login='himura@tulafest.ru'):
         self.event_name = event_name
         self.login = login
         self.cookie = None
