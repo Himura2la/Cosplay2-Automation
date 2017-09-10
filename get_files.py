@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 # Author: Himura Kazuto <himura@tulafest.ru>
-# Date: December 2016
 
+import argparse
 import hashlib
 import json
 import os
@@ -160,11 +160,19 @@ class Downloader:
 
 
 if __name__ == "__main__":
-    print()
-    a = Authenticator()
-    a.sign_in()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--event_name", dest="event_name", help='Your event URL is EVENT_NAME.cosplay2.ru', required=True)
+    parser.add_argument("--c2_login", dest="c2_login", help='Your e-mail on Cosplay2', required=True)
+    parser.add_argument("--db_path", dest="db_path", help='Path to the database (default: EVENT_NAME/sqlite3_data.db)')
 
-    db_path = os.path.join(a.event_name, 'sqlite3_data.db')
+    args = parser.parse_args()
+
+    event_name = args.event_name
+    c2_login = args.c2_login
+    db_path = args.db_path if args.db_path else os.path.join(event_name, 'sqlite3_data.db')
+
+    a = Authenticator(event_name, c2_login)
+    a.sign_in()
 
     print()
     d = Downloader()
