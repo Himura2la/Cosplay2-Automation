@@ -23,6 +23,11 @@ This repository contains a bunch of scripts for interacting with the [Cosplay2](
 * Для каждой номинации своя папка
 * Имена файлов составляются из номера заявки и названия карточки. Если у вас нет названий карточек, сгенерируйте их или нагородите LEFT JOIN'ов в SQL (не рекомендуется, но вот [пример](https://github.com/Himura2la/Cosplay2-Downloader/blob/cr17/get_files.py#L51)).
 
+## [testcafe-broadcaster.js](testcafe-broadcaster.js)
+
+* Позволяет сделать рассылку всем участникам одной командой.
+* Использует [TestCafe](https://github.com/DevExpress/testcafe).
+
 ## Мелкие ad-hoc скрипты, родившиеся в процессе подготовки материалов
 
 > Когда-нибудь, они тоже войдут в состав классов... А классы в состав большого и красивого приложения с GUI. ~~Или&nbsp;нет.~~
