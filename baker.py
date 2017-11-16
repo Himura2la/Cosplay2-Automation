@@ -17,4 +17,4 @@ try:
     with urlopen('http://' + event_name + '.cosplay2.ru/api/' + 'users/login', login_info) as r:
         print("Your cookie: '%s'\nStill hot!" % r.getheader('Set-Cookie'))
 except HTTPError as e:
-    print('Failed T_T Check your password...\n', e)
+    print('Failed T_T Check your password...\n' + str(e))
