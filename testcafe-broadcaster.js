@@ -6,7 +6,7 @@ const token = '___Bake_a_Cookie___'
 
 const message = 'Новый TestCafe -- Aгонь!!'
 
-const start_i = 0  // If it fails in te middle, you can continue
+const start_i = 0  // If it fails in da middle, you can continue
 const start_j = 0
 
 fixture `Broadcaster`.page `http://${event_name}.cosplay2.ru/orgs`;
