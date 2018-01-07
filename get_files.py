@@ -24,8 +24,7 @@ FROM [values], requests, list
 
 WHERE   list.id = topic_id AND
         request_id = requests.id AND
-        (type = 'file' OR type = 'image') AND
-        status = 'approved'
+        (type = 'file' OR type = 'image')
 ORDER BY [values].title
 """
 
@@ -72,12 +71,15 @@ class Downloader:
         for row in self.data:
             prev_name = name
             request_id, nom, num, title, file_type, file = row
-            name = "№%0.3d. %s" % (int(num), title)
+            name = "№%0.3d. %s" % (int(num), title if title else "No title")
             try:
                 filename = os.path.join(self.__to_filename(nom),
                                         self.__to_filename(name),
                                         self.__to_filename(file_type))
                 is_img = False
+                if not file:
+                    print('[WARNING] No file for', filename, '.')
+                    continue
                 file = json.loads(file)
                 if 'link' in file.keys():  # External site
                     if name in all_files:
@@ -130,7 +132,7 @@ class Downloader:
             except (TypeError, AttributeError) as e:
                 print("[FAIL]", name + ":", e)
         if actual_download:
-            with open(os.path.join(folder, links_file), 'w') as f:
+            with open(os.path.join(folder, links_file), 'w', encoding='utf-8') as f:
                 f.writelines(links)
         else:
             print("\n--- LINKS ---")
@@ -162,21 +164,15 @@ class Downloader:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--event_name", dest="event_name", help='Your event URL is EVENT_NAME.cosplay2.ru', required=True)
-    parser.add_argument("--c2_login", dest="c2_login", help='Your e-mail on Cosplay2', required=True)
     parser.add_argument("--db_path", dest="db_path", help='Path to the database (default: EVENT_NAME/sqlite3_data.db)')
 
     args = parser.parse_args()
 
     event_name = args.event_name
-    c2_login = args.c2_login
     db_path = args.db_path if args.db_path else os.path.join(event_name, 'sqlite3_data.db')
 
-    a = Authenticator(event_name, c2_login)
-    a.sign_in()
-
-    print()
     d = Downloader()
     d.get_lists(db_path)
 
     print('\nDownloading files...')
-    d.download_files(a.event_name, False)
+    d.download_files(event_name, True)
