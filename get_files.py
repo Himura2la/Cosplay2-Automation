@@ -13,29 +13,17 @@ from urllib import parse
 from get_data import Authenticator
 
 
-sql_query = """
-SELECT request_id,
-       list.title as nom,
-       requests.number,
-       voting_title,
-       [values].title as file_type,
-       value as file
-FROM [values], requests, list
-
-WHERE   list.id = topic_id AND
-        request_id = requests.id AND
-        (type = 'file' OR type = 'image')
-ORDER BY [values].title
-"""
-
-
 class Downloader:
-    def __init__(self):
+    def __init__(self, preprocess_func=None):
+        def preprocess_sample(num, dir_name, file_name):
+            """ :returns (skip, dir_name, file_name) """
+            return False, dir_name, file_name
+        self.preprocess = preprocess_func if preprocess_func else preprocess_sample
         self.data = None
         self.event_name = None
         self.event_id = None
 
-    def get_lists(self, db_path):
+    def get_lists(self, db_path, query):
         if not os.path.isfile(db_path):
             print('Database ' + db_path + ' not exists...')
             return False
@@ -53,14 +41,14 @@ class Downloader:
         self.event_name = c.fetchone()[0]
 
         print('Querying...')
-        c.execute(sql_query)
+        c.execute(query)
         self.data = c.fetchall()
 
         db.close()
         print('Database', db_path, 'safely closed...')
         return True
 
-    def download_files(self, folder, actual_download=True, check_hash_if_exists=True):
+    def download_files(self, folder, download_allowed_by_arg=True, check_hash_if_exists=True):
         links_file = 'links.txt'
         links = []
         filenames = set()
@@ -106,32 +94,35 @@ class Downloader:
                                                                                         request_id, src_filename))
                 if is_img:
                     file_url += '.jpg'  # Yes, it works
-                do_download = True
+                download_required = True
                 if os.path.isfile(path):
                     print('[WARNING]', filename, 'exists. ', end='')
                     if check_hash_if_exists:
                         if self.__md5(file_url) == self.__md5(path):
                             print('The same as remote. Skipping...')
-                            do_download = False
+                            download_required = False
                         else:
                             print('And differs from the remote one. Updating...')
                     else:
                         print('Configured not to check. Skipping...')
-                        do_download = False
-                if do_download:
+                        download_required = False
+                if download_required:
                     if filename not in filenames:
                         filenames.add(filename)
-                        print("[OK]", file_url, "->", filename)
                     else:
                         print("[CRYTICAL]", filename, "was about to overwrite. Check your SQL query!!!")
                         break
-                    if actual_download:
-                        if not os.path.isdir(os.path.split(path)[0]):
-                            os.makedirs(os.path.split(path)[0])
-                        request.urlretrieve(file_url, path)
+                    download_skipped_by_preprocessor, dir_name, file_name = \
+                        self.preprocess(int(num), os.path.split(path)[0], os.path.basename(path))
+                    print("[SKIP]" if download_skipped_by_preprocessor else "[OK]", file_url, "->", filename)
+                    if download_allowed_by_arg and not download_skipped_by_preprocessor:
+                        if not os.path.isdir(dir_name):
+                            os.makedirs(dir_name)
+                        request.urlretrieve(file_url, os.path.join(dir_name, file_name))
+
             except (TypeError, AttributeError) as e:
                 print("[FAIL]", name + ":", e)
-        if actual_download:
+        if download_allowed_by_arg:
             with open(os.path.join(folder, links_file), 'w', encoding='utf-8') as f:
                 f.writelines(links)
         else:
@@ -169,10 +160,30 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     event_name = args.event_name
-    db_path = args.db_path if args.db_path else os.path.join(event_name, 'sqlite3_data.db')
+    db_path = args.db_path if args.db_path else os.path.join('.', event_name, 'sqlite3_data.db')
 
-    d = Downloader()
-    d.get_lists(db_path)
+    sql_query = """
+        SELECT request_id,
+               list.title as nom,
+               requests.number,
+               voting_title,
+               [values].title as file_type,
+               value as file
+        FROM [values], requests, list
+    
+        WHERE   list.id = topic_id AND
+                request_id = requests.id AND
+                (type = 'file' OR type = 'image')
+        ORDER BY [values].title
+    """
 
-    print('\nDownloading files...')
-    d.download_files(event_name, True)
+    def preprocess(num, dir_name, file_name):
+        skip_files_with = ['Видеозапись репетиции', 'Фотография участник', 'Демо-запись', 'Оригинальная композиция']
+        skip_by_field = any([s in file_name for s in skip_files_with])
+
+        return skip_by_field, dir_name, file_name
+
+    d = Downloader(preprocess)
+    if d.get_lists(db_path, sql_query):
+        print('\nDownloading files...')
+        d.download_files(event_name, False)
