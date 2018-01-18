@@ -2,7 +2,6 @@
 # coding:utf-8
 
 import os
-import re
 import sqlite3
 from PIL import Image
 
@@ -18,6 +17,7 @@ c.execute("SELECT value FROM settings WHERE key='id'")
 
 texcode = ''
 
+
 def opt(a, k, pre=''):
     return pre + a[k] if k in a else ''
 
@@ -27,30 +27,33 @@ for target_dir in target_dirs:
     for art_dir in os.listdir(os.path.join(fest_path, target_dir)):
         art_path = os.path.join(base_dir, art_dir)
         files = os.listdir(art_path)
-        # if len(files) != 1:
-        #     texcode += "%% [!!!! ERROR !!!!] Not 1 file in %s\n" % art_dir
-        #     continue
+        if len(files) != 1:
+            texcode += "%% [!!!! ERROR !!!!] Not 1 file in %s\n" % art_dir
+            continue
         path = os.path.join(art_path, files[0])
 
         with Image.open(path) as img:
             w, h = img.size
             portrait = w < h
 
-        m = re.search(r"№(?P<num>\d{3})\.", art_dir)
+        num = art_dir
 
         c.execute("""
             SELECT section_title || '.' || title as key, 
-                REPLACE(GROUP_CONCAT(DISTINCT value), ',', ', ') as value
+                   REPLACE(GROUP_CONCAT(DISTINCT value), ',', ', ') as value,
+                   status
             FROM requests, [values]
             WHERE requests.id = request_id
             AND requests.number = ?
             GROUP BY key
-        """, (m.group('num'),))
-        
+        """, (num,))
+        fields = c.fetchall()
+        status = fields[0][2]
+        fields = {key: val for key, val, _ in fields}
+
         authors_cat = 'Авторы' if target_dir == 'Арт' else 'Косплееры'
-        fields = {key:val for key, val in c.fetchall()}
         try:
-            num, nom = m.group('num'), fields['Информация о работе.Номинация']
+            nom = fields['Информация о работе.Номинация']
             contest = fields['Информация о работе.Участие в конкурсе']
             nicks = fields[authors_cat + '.Ник']
             city = fields[authors_cat + '.Город']
@@ -60,7 +63,7 @@ for target_dir in target_dirs:
             photographer_name = opt(fields, 'Фотографы (необязательно).Имя') + opt(fields, 'Фотографы (необязательно).Фамилия', ' ')
             photographer_team = opt(fields, 'Фотографы (необязательно).Команда/сообщество фотографов (необязательно)')
         except KeyError as e:
-            texcode += "%% [!!!! ERROR !!!!] No value for '%s' in '%s'\n" % (e.args[0], art_dir)
+            texcode += "%% [!!!! ERROR !!!!] No value for '%s' in '%s' (status: %s)\n" % (e.args[0], art_dir, status)
             continue
         
         title = "%s (%s)" % (title, fandom) if title and fandom else title if title \
@@ -81,4 +84,4 @@ for target_dir in target_dirs:
         texcode += '{%s}{%s, г.%s}{%s}{%s}{%s}{%s}\n' % (num, nicks, city, title, nom, extra, path)
 
 print(texcode)
-open('images.tex', 'w').write(texcode)
+open('images.tex', 'w', encoding='utf-8').write(texcode)

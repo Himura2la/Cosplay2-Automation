@@ -115,11 +115,12 @@ class Downloader:
                         break
                     download_skipped_by_preprocessor, dir_name, file_name = \
                         self.preprocess(int(num), os.path.split(path)[0], os.path.basename(path))
+                    filename = os.path.join(dir_name, file_name)
                     print("[SKIP]" if download_skipped_by_preprocessor else "[OK]", file_url, "->", filename)
                     if download_allowed_by_arg and not download_skipped_by_preprocessor:
                         if not os.path.isdir(dir_name):
                             os.makedirs(dir_name)
-                        request.urlretrieve(file_url, os.path.join(dir_name, file_name))
+                        request.urlretrieve(file_url, filename)
 
             except (TypeError, AttributeError) as e:
                 print("[FAIL]", name + ":", e)
@@ -182,34 +183,39 @@ if __name__ == "__main__":
     art_foto_query = """
         SELECT request_id,
                list.title as nom,
-               voting_number,
+               requests.number,
                voting_title,
                [values].title || IFNULL(main_foto, '') as file_type,
                value as file
         FROM [values], requests, list
-                LEFT JOIN (SELECT request_id as f_rid, value as main_foto FROM [values] 
-                           WHERE title = 'Какую фотографию печатать?')
-                           ON f_rid = requests.id
+            LEFT JOIN (SELECT request_section_id as m_rsid, value as main_foto FROM [values] 
+                       WHERE title = 'Какую фотографию печатать?')
+                       ON m_rsid = request_section_id
         WHERE   list.id = topic_id AND
                 request_id = requests.id AND
                 (type = 'file' OR type = 'image') AND
                 nom IN ('Арт', 'Фотокосплей')
-        ORDER BY [values].title
+        ORDER BY request_id
     """
 
 
-    def preprocess(num, dir_name, file_name):
+    def preprocess_scene(num, dir_name, file_name):
         skip_files_with = ['Видеозапись репетиции', 'Фотография участник', 'Демо-запись', 'Оригинальная композиция']
         skip_by_field = any([s in file_name for s in skip_files_with])
 
         return skip_by_field, dir_name, file_name
 
+    def preprocess_for_pdf(num, dir_name, file_name):
+        skip_by_field = "Не эту" in file_name or "персонажа" in file_name
+        new_dir_name = dir_name.split('. ', 1)[0]
+        new_file_name = file_name.replace(' ', '-')
+        return skip_by_field, new_dir_name, new_file_name
 
-    d = Downloader(preprocess)
+    d = Downloader(preprocess_for_pdf)
     if d.get_lists(db_path, art_foto_query):
         db = sqlite3.connect(db_path, isolation_level=None)
         c = db.cursor()
         c.execute('PRAGMA encoding = "UTF-8"')
 
         print('\nDownloading files...')
-        d.download_files(event_name, False)
+        d.download_files(event_name, True)
