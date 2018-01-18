@@ -18,6 +18,7 @@ class Downloader:
         def preprocess_sample(num, dir_name, file_name):
             """ :returns (skip, dir_name, file_name) """
             return False, dir_name, file_name
+
         self.preprocess = preprocess_func if preprocess_func else preprocess_sample
         self.data = None
         self.event_name = None
@@ -154,7 +155,8 @@ class Downloader:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--event_name", dest="event_name", help='Your event URL is EVENT_NAME.cosplay2.ru', required=True)
+    parser.add_argument("--event_name", dest="event_name", help='Your event URL is EVENT_NAME.cosplay2.ru',
+                        required=True)
     parser.add_argument("--db_path", dest="db_path", help='Path to the database (default: EVENT_NAME/sqlite3_data.db)')
 
     args = parser.parse_args()
@@ -176,6 +178,7 @@ if __name__ == "__main__":
                 nom NOT IN ('Аккредитация фотографов', 'Арт', 'Фотокосплей')
         ORDER BY [values].title
     """
+
     art_foto_query = """
         SELECT request_id,
                list.title as nom,
@@ -184,9 +187,9 @@ if __name__ == "__main__":
                [values].title || IFNULL(main_foto, '') as file_type,
                value as file
         FROM [values], requests, list
-		LEFT JOIN (SELECT request_id as f_rid, value as main_foto FROM [values] 
-				 WHERE title = 'Какую фотографию печатать?')
-				 ON f_rid = requests.id
+                LEFT JOIN (SELECT request_id as f_rid, value as main_foto FROM [values] 
+                           WHERE title = 'Какую фотографию печатать?')
+                           ON f_rid = requests.id
         WHERE   list.id = topic_id AND
                 request_id = requests.id AND
                 (type = 'file' OR type = 'image') AND
@@ -194,15 +197,16 @@ if __name__ == "__main__":
         ORDER BY [values].title
     """
 
+
     def preprocess(num, dir_name, file_name):
         skip_files_with = ['Видеозапись репетиции', 'Фотография участник', 'Демо-запись', 'Оригинальная композиция']
         skip_by_field = any([s in file_name for s in skip_files_with])
 
         return skip_by_field, dir_name, file_name
 
+
     d = Downloader(preprocess)
     if d.get_lists(db_path, art_foto_query):
-
         db = sqlite3.connect(db_path, isolation_level=None)
         c = db.cursor()
         c.execute('PRAGMA encoding = "UTF-8"')
