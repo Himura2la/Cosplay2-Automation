@@ -59,7 +59,7 @@ class Downloader:
         for row in self.data:
             prev_name = name
             request_id, nom, num, title, file_type, file = row
-            name = "№%0.3d. %s" % (int(num), title if title else "No title")
+            name = "%0.3d. %s" % (int(num), title if title else "No title")
             try:
                 filename = os.path.join(self.__to_filename(nom),
                                         self.__to_filename(name),
@@ -162,7 +162,7 @@ if __name__ == "__main__":
     event_name = args.event_name
     db_path = args.db_path if args.db_path else os.path.join('.', event_name, 'sqlite3_data.db')
 
-    sql_query = """
+    scene_query = """
         SELECT request_id,
                list.title as nom,
                requests.number,
@@ -170,10 +170,27 @@ if __name__ == "__main__":
                [values].title as file_type,
                value as file
         FROM [values], requests, list
-    
         WHERE   list.id = topic_id AND
                 request_id = requests.id AND
-                (type = 'file' OR type = 'image')
+                (type = 'file' OR type = 'image') AND
+                nom NOT IN ('Аккредитация фотографов', 'Арт', 'Фотокосплей')
+        ORDER BY [values].title
+    """
+    art_foto_query = """
+        SELECT request_id,
+               list.title as nom,
+               voting_number,
+               voting_title,
+               [values].title || IFNULL(main_foto, '') as file_type,
+               value as file
+        FROM [values], requests, list
+		LEFT JOIN (SELECT request_id as f_rid, value as main_foto FROM [values] 
+				 WHERE title = 'Какую фотографию печатать?')
+				 ON f_rid = requests.id
+        WHERE   list.id = topic_id AND
+                request_id = requests.id AND
+                (type = 'file' OR type = 'image') AND
+                nom IN ('Арт', 'Фотокосплей')
         ORDER BY [values].title
     """
 
@@ -184,6 +201,11 @@ if __name__ == "__main__":
         return skip_by_field, dir_name, file_name
 
     d = Downloader(preprocess)
-    if d.get_lists(db_path, sql_query):
+    if d.get_lists(db_path, art_foto_query):
+
+        db = sqlite3.connect(db_path, isolation_level=None)
+        c = db.cursor()
+        c.execute('PRAGMA encoding = "UTF-8"')
+
         print('\nDownloading files...')
         d.download_files(event_name, False)
