@@ -43,18 +43,26 @@ for target_dir in target_dirs:
             SELECT section_title || '.' || title as key, 
                    REPLACE(GROUP_CONCAT(DISTINCT value), ',', ', ') as value,
                    status,
-                   requests.id
+                   requests.id as url_id,
+				   voting_number
             FROM requests, [values]
             WHERE requests.id = request_id
             AND requests.number = ?
             GROUP BY key
         """, (num,))
         fields = c.fetchall()
-        url_id = fields[0][3]
         status = fields[0][2]
-        fields = {key: val for key, val, _, _ in fields}
+        url_id = fields[0][3]
+        voting_number = fields[0][4]
+        fields = {key: val for key, val, _, _, _ in fields}
 
-        authors_cat = 'Авторы' if target_dir == 'Арт' else 'Косплееры'
+        if target_dir == 'Арт':
+            num = 'ART~%d' % voting_number
+            authors_cat = 'Авторы'
+        else:
+            num = 'FC~%d' % voting_number
+            authors_cat = 'Косплееры'
+
         try:
             nom = fields['Информация о работе.Номинация']
             contest = fields['Информация о работе.Участие в конкурсе']
