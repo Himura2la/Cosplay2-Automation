@@ -5,8 +5,9 @@ import os
 import sqlite3
 from PIL import Image
 
+tex_path = "/media/himura/Data/Fests Local/Yuki no Odori 7/art_foto_to_pdf/images.tex"
 db_path = "/media/himura/Data/Git/Cosplay2-Downloader/tulafest/sqlite3_data.db"
-fest_path = "/media/himura/Data/Fests Local/Yuki no Odori 7/Files/tulafest"
+fest_path = "/media/himura/Data/tulafest7-temp"
 target_dirs = ['Арт', 'Фотокосплей']
 
 print('Connecting to %s...' % os.path.basename(db_path))
@@ -41,21 +42,24 @@ for target_dir in target_dirs:
         c.execute("""
             SELECT section_title || '.' || title as key, 
                    REPLACE(GROUP_CONCAT(DISTINCT value), ',', ', ') as value,
-                   status
+                   status,
+                   requests.id
             FROM requests, [values]
             WHERE requests.id = request_id
             AND requests.number = ?
             GROUP BY key
         """, (num,))
         fields = c.fetchall()
+        url_id = fields[0][3]
         status = fields[0][2]
-        fields = {key: val for key, val, _ in fields}
+        fields = {key: val for key, val, _, _ in fields}
 
         authors_cat = 'Авторы' if target_dir == 'Арт' else 'Косплееры'
         try:
             nom = fields['Информация о работе.Номинация']
             contest = fields['Информация о работе.Участие в конкурсе']
             nicks = fields[authors_cat + '.Ник']
+            nicks = "%s: %s" % (authors_cat if ',' in nicks else authors_cat[:-1], nicks)
             city = fields[authors_cat + '.Город']
             title = opt(fields, 'Информация о работе.Название работы')
             fandom = opt(fields, 'Информация о работе.Фэндом(ы)')
@@ -66,8 +70,9 @@ for target_dir in target_dirs:
             texcode += "%% [!!!! ERROR !!!!] No value for '%s' in '%s' (status: %s)\n" % (e.args[0], art_dir, status)
             continue
         
-        title = "%s (%s)" % (title, fandom) if title and fandom else title if title \
-                                            else fandom if fandom else "Без названия"
+        if fandom not in title:
+            title = "%s (%s)" % (title, fandom) if title and fandom else title if title \
+                                                else fandom if fandom else "Без названия"
 
         nom = nom if contest == 'В конкурсе' else contest
         extra = ''
@@ -78,10 +83,13 @@ for target_dir in target_dirs:
                     photographer = "%s (%s)" % (photographer, photographer_team)
             else:
                 photographer = photographer_team
-            extra += 'Фотограф(ы): %s' % photographer
+            photographer = "%s: %s" % ('Фотографы' if ',' in photographer else 'Фотограф', photographer)
+            extra += photographer
 
         texcode += '\\imgportrait' if portrait else '\\imglandscape'
-        texcode += '{%s}{%s, г.%s}{%s}{%s}{%s}{%s}\n' % (num, nicks, city, title, nom, extra, path)
+        texcode += '{%s}{%s, г.%s}{%s}{%s}{%s}{%s}{%s}\n' % (num, nicks, city, title, nom, extra, path, url_id)
+
+texcode.replace('&', '\&')
 
 print(texcode)
-open('images.tex', 'w', encoding='utf-8').write(texcode)
+open(tex_path, 'w', encoding='utf-8').write(texcode)
