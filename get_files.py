@@ -6,11 +6,10 @@ import argparse
 import hashlib
 import json
 import os
+import time
 import sqlite3
 from urllib import request
 from urllib import parse
-
-from get_data import Authenticator
 
 
 class Downloader:
@@ -23,6 +22,7 @@ class Downloader:
         self.data = None
         self.event_name = None
         self.event_id = None
+        self.log_infos, self.log_errors = "", ""
 
     def get_lists(self, db_path, query):
         if not os.path.isfile(db_path):
@@ -49,34 +49,48 @@ class Downloader:
         print('Database', db_path, 'safely closed...')
         return True
 
+    def log_info(self, msg, inline=False, head=True):
+        msg = '[INFO] ' + msg if head else msg
+        if inline:
+            print(msg, end='')
+            self.log_infos += msg
+        else:
+            print(msg)
+            self.log_infos += msg + os.linesep
+
+    def log_error(self, msg):
+        print('[ERROR] ' + msg)
+        self.log_errors += msg + os.linesep
+
+    def log_link(self, msg):
+        print('[LINK] ' + msg)
+        self.log_links += msg + os.linesep
+
     def download_files(self, folder, download_allowed_by_arg=True, check_hash_if_exists=True):
-        links_file = 'links.txt'
-        links = []
-        filenames = set()
+        log_file = os.path.join(folder, time.strftime("log-%d%m%y%H%M%S.txt", time.localtime()))
+        self.log_infos, self.log_errors, self.log_links = '', '', ''
+        paths = set()
         name = ""
         all_files = ""
-        counter = 1
+        counter = 0
 
         for row in self.data:
             prev_name = name
             request_id, nom, num, title, file_type, file = row
-            name = "%0.3d. %s" % (int(num), title if title else "No title")
+            name = self.__to_filename("%0.3d. %s" % (int(num), title if title else "No title"))
+            nom, file_type = self.__to_filename(nom), self.__to_filename(file_type)
+            display_path = os.path.join(nom, name, file_type)
             try:
-                filename = os.path.join(self.__to_filename(nom),
-                                        self.__to_filename(name),
-                                        self.__to_filename(file_type))
                 is_img = False
                 if not file:
-                    print('[WARNING] No file for', filename, '.')
+                    self.log_error('No file for %s.' % display_path)
                     continue
                 file = json.loads(file)
                 if 'link' in file.keys():  # External site
                     if name in all_files:
-                        print('[INFO]', name, "was manually created.")
+                        self.log_info(name + " was manually created.")
                     else:
-                        link = "[LINK] %s -> %s" % (file['link'], filename)
-                        print(link)
-                        links.append(link + os.linesep)
+                        self.log_link("%s -> %s" % (file['link'], display_path))
                     continue
                 else:
                     src_filename = file['filename']
@@ -86,50 +100,54 @@ class Downloader:
                         file_ext = '.jpg'
                         is_img = True
 
+                download_skipped_by_preprocessor, dir_name, file_name = self.preprocess(int(num), name, file_type)
+
                 if prev_name == name:
                     counter += 1
-                    filename += str(counter)
-                filename += file_ext
-                path = os.path.join(folder, filename)
+                    file_name += '-' + str(counter)
+                file_name += file_ext
                 file_url = 'http://' + parse.quote('%s.cosplay2.ru/uploads/%d/%d/%s' % (self.event_name, self.event_id,
                                                                                         request_id, src_filename))
+                dir_name = os.path.join(folder, nom, dir_name)
+                path = os.path.join(dir_name, file_name)
                 if is_img:
-                    file_url += '.jpg'  # Yes, it works
+                    file_url += '.jpg'  # Yes, it works this way
                 download_required = True
                 if os.path.isfile(path):
-                    print('[WARNING]', filename, 'exists. ', end='')
+                    self.log_info(path + ' exists. ', inline=True)
                     if check_hash_if_exists:
                         if self.__md5(file_url) == self.__md5(path):
-                            print('The same as remote. Skipping...')
+                            self.log_info('The same as remote. Skipping...', head=False)
                             download_required = False
                         else:
-                            print('And differs from the remote one. Updating...')
+                            self.log_info('And differs from the remote one. Updating...', head=False)
                     else:
-                        print('Configured not to check. Skipping...')
+                        self.log_info('Configured not to check. Skipping...', head=False)
                         download_required = False
                 if download_required:
-                    if filename not in filenames:
-                        filenames.add(filename)
+                    if path not in paths:
+                        paths.add(path)
                     else:
-                        print("[CRYTICAL]", filename, "was about to overwrite. Check your SQL query!!!")
+                        self.log_error("!!!! %s was about to overwrite. Check your SQL query!!!" % path)
                         break
-                    download_skipped_by_preprocessor, dir_name, file_name = \
-                        self.preprocess(int(num), os.path.split(path)[0], os.path.basename(path))
-                    filename = os.path.join(dir_name, file_name)
-                    print("[SKIP]" if download_skipped_by_preprocessor else "[OK]", file_url, "->", filename)
+                    if download_skipped_by_preprocessor:
+                        self.log_info(("SKIP: " + file_url + " -> " + path))
+                    else:
+                        self.log_info(("DL: " + file_url + " -> " + path), inline=True)
                     if download_allowed_by_arg and not download_skipped_by_preprocessor:
                         if not os.path.isdir(dir_name):
                             os.makedirs(dir_name)
-                        request.urlretrieve(file_url, filename)
-
-            except (TypeError, AttributeError) as e:
+                        request.urlretrieve(file_url, path)
+                        self.log_info(' [OK]', head=False)
+            except (TypeError, AttributeError, request.HTTPError) as e:
                 print("[FAIL]", name + ":", e)
         if download_allowed_by_arg:
-            with open(os.path.join(folder, links_file), 'w', encoding='utf-8') as f:
-                f.writelines(links)
-        else:
-            print("\n--- LINKS ---")
-            print(''.join(links))
+            with open(log_file, 'w', encoding='utf-8') as f:
+                f.write(self.log_errors + os.linesep)
+                f.write(self.log_links + os.linesep)
+                f.write(self.log_infos + os.linesep)
+        print("\n--- LINKS ---")
+        print(self.log_links)
 
     @staticmethod
     def __to_filename(string):
@@ -218,4 +236,4 @@ if __name__ == "__main__":
         c.execute('PRAGMA encoding = "UTF-8"')
 
         print('\nDownloading files...')
-        d.download_files(event_name, True)
+        d.download_files("D:\Fests Local\Yuki no Odori 7\Files\\tulafest", True)
