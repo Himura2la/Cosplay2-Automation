@@ -192,14 +192,16 @@ class MakeDB(object):
             c.execute("COMMIT")
             return True
         else:
-            print("WTF is this ???")
+            print("WTF just happened ???")
             return False
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--event_name", dest="event_name", help='Your event URL is EVENT_NAME.cosplay2.ru', required=True)
-    parser.add_argument("--c2_login", dest="c2_login", help='Your e-mail on Cosplay2', required=True)
-    parser.add_argument("--db_path", dest="db_path", help='Path to the database (default: EVENT_NAME/sqlite3_data.db)')
+    parser.add_argument("--event_name", help='Your event URL is EVENT_NAME.cosplay2.ru', required=True)
+    parser.add_argument("--c2_login", help='Your e-mail on Cosplay2', required=True)
+    parser.add_argument("--db_path", help='Path to the database (default: EVENT_NAME/sqlite3_data.db)')
+    parser.add_argument("--sql", help='Path to an SQL request to run after the script is finished')
 
     args = parser.parse_args()
 
@@ -216,3 +218,15 @@ if __name__ == "__main__":
 
     print()
     MakeDB(db_path, f.data)
+
+    if not args.sql:
+        exit()
+
+    from tabulate import tabulate
+
+    print('\nConnecting to ' + db_path + ' again...')
+    with sqlite3.connect(db_path, isolation_level=None) as db:
+        c = db.cursor()
+        c.execute('PRAGMA encoding = "UTF-8"')
+        c.execute(open(args.sql, encoding='utf-8').read())
+        print(tabulate(c.fetchall(), headers=[description[0] for description in c.description], tablefmt='grid'))
