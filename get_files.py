@@ -71,7 +71,6 @@ class Downloader:
         self.log_infos, self.log_errors, self.log_links = '', '', ''
         paths = set()
         name = ""
-        all_files = ""
         counter = 0
 
         for row in self.data:
@@ -79,7 +78,12 @@ class Downloader:
             request_id, nom, num, title, file_type, file = row
             name = self.__to_filename("%0.3d. %s" % (int(num), title if title else "No title"))
             nom, file_type = self.__to_filename(nom), self.__to_filename(file_type)
-            display_path = os.path.join(nom, name, file_type)
+            download_skipped_by_preprocessor, dir_name, file_name = self.preprocess(int(num), name, file_type)
+            display_path = ' | '.join([dir_name, file_name])
+            if download_skipped_by_preprocessor:
+                self.log_info("SKIP: " + display_path)
+                continue
+            dir_path = os.path.join(folder, nom, dir_name)
             try:
                 is_img = False
                 if not file:
@@ -87,10 +91,10 @@ class Downloader:
                     continue
                 file = json.loads(file)
                 if 'link' in file.keys():  # External site
-                    if name in all_files:
-                        self.log_info(name + " was manually created.")
-                    else:
-                        self.log_link("%s -> %s" % (file['link'], display_path))
+                    self.log_link("%s -> %s" % (file['link'], display_path))
+                    link_dir_path = os.path.join(folder, nom, '[LINK]' + dir_name)
+                    if not os.path.exists(dir_path) and not os.path.exists(link_dir_path):
+                        os.makedirs(link_dir_path)
                     continue
                 else:
                     src_filename = file['filename']
@@ -100,16 +104,14 @@ class Downloader:
                         file_ext = '.jpg'
                         is_img = True
 
-                download_skipped_by_preprocessor, dir_name, file_name = self.preprocess(int(num), name, file_type)
-
                 if prev_name == name:
                     counter += 1
                     file_name += '-' + str(counter)
                 file_name += file_ext
+                path = os.path.join(dir_path, file_name)
                 file_url = 'http://' + parse.quote('%s.cosplay2.ru/uploads/%d/%d/%s' % (self.event_name, self.event_id,
                                                                                         request_id, src_filename))
-                dir_name = os.path.join(folder, nom, dir_name)
-                path = os.path.join(dir_name, file_name)
+
                 if is_img:
                     file_url += '.jpg'  # Yes, it works this way
                 download_required = True
@@ -130,13 +132,10 @@ class Downloader:
                     else:
                         self.log_error("!!!! %s was about to overwrite. Check your SQL query!!!" % path)
                         break
-                    if download_skipped_by_preprocessor:
-                        self.log_info(("SKIP: " + file_url + " -> " + path))
-                    else:
-                        self.log_info(("DL: " + file_url + " -> " + path), inline=True)
-                    if download_allowed_by_arg and not download_skipped_by_preprocessor:
-                        if not os.path.isdir(dir_name):
-                            os.makedirs(dir_name)
+                    self.log_info(("DL: " + file_url + " -> " + path), inline=True)
+                    if download_allowed_by_arg:
+                        if not os.path.isdir(dir_path):
+                            os.makedirs(dir_path)
                         request.urlretrieve(file_url, path)
                         self.log_info(' [OK]', head=False)
             except (TypeError, AttributeError, request.HTTPError) as e:
@@ -194,7 +193,7 @@ if __name__ == "__main__":
         WHERE   list.id = topic_id AND
                 request_id = requests.id AND
                 (type = 'file' OR type = 'image') AND
-                nom NOT IN ('Аккредитация фотографов', 'Арт', 'Фотокосплей')
+                nom NOT IN ('Аккредитация фотографов')
         ORDER BY [values].title
     """
 
@@ -229,11 +228,11 @@ if __name__ == "__main__":
         new_file_name = file_name.replace(' ', '-')
         return skip_by_field, new_dir_name, new_file_name
 
-    d = Downloader(preprocess_for_pdf)
-    if d.get_lists(db_path, art_foto_query):
+    d = Downloader(preprocess_scene)
+    if d.get_lists(db_path, scene_query):
         db = sqlite3.connect(db_path, isolation_level=None)
         c = db.cursor()
         c.execute('PRAGMA encoding = "UTF-8"')
 
         print('\nDownloading files...')
-        d.download_files("D:\Fests Local\Yuki no Odori 7\Files\\tulafest", True)
+        d.download_files("D:\Fests Local\Yuki no Odori 7\Files\\tulafest", True, check_hash_if_exists=False)
