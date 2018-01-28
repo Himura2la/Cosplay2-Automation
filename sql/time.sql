@@ -7,7 +7,7 @@ FROM list, requests, [values]
 
 WHERE	list.id = topic_id AND
 		requests.id = request_id AND
-		[values].title LIKE 'Продолжительность%'
+		[values].title LIKE 'Продолжительность%' AND
+		status != 'disapproved'
 
-GROUP BY topic_id
-ORDER BY status, topic_id
+GROUP BY status, topic_id
