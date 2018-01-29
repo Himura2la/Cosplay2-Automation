@@ -52,7 +52,7 @@ class Downloader:
     def log_info(self, msg, inline=False, head=True):
         msg = '[INFO] ' + msg if head else msg
         if inline:
-            print(msg, end='')
+            print(msg, end='', flush=True)
             self.log_infos += msg
         else:
             print(msg)
@@ -79,7 +79,7 @@ class Downloader:
             name = self.__to_filename("%0.3d. %s" % (int(num), title if title else "No title"))
             nom, file_type = self.__to_filename(nom), self.__to_filename(file_type)
             download_skipped_by_preprocessor, dir_name, file_name = self.preprocess(int(num), name, file_type)
-            display_path = ' | '.join([dir_name, file_name])
+            display_path = ' | '.join([nom, dir_name, file_name])
             if download_skipped_by_preprocessor:
                 self.log_info("SKIP: " + display_path)
                 continue
@@ -93,7 +93,7 @@ class Downloader:
                 if 'link' in file.keys():  # External site
                     self.log_link("%s -> %s" % (file['link'], display_path))
                     link_dir_path = os.path.join(folder, nom, '[LINK]' + dir_name)
-                    if not os.path.exists(dir_path) and not os.path.exists(link_dir_path):
+                    if not os.path.exists(dir_path) and not os.path.exists(link_dir_path) and download_allowed_by_arg:
                         os.makedirs(link_dir_path)
                     continue
                 else:
@@ -138,15 +138,20 @@ class Downloader:
                             os.makedirs(dir_path)
                         request.urlretrieve(file_url, path)
                         self.log_info(' [OK]', head=False)
+                    else:
+                        self.log_info(' [READY]', head=False)
             except (TypeError, AttributeError, request.HTTPError) as e:
                 print("[FAIL]", name + ":", e)
-        if download_allowed_by_arg:
-            with open(log_file, 'w', encoding='utf-8') as f:
-                f.write(self.log_errors + os.linesep)
-                f.write(self.log_links + os.linesep)
-                f.write(self.log_infos + os.linesep)
-        print("\n--- LINKS ---")
-        print(self.log_links)
+
+        if not os.path.isdir(folder):
+            os.makedirs(folder)
+        with open(log_file, 'w', encoding='utf-8') as f:
+            f.write("ERRORS:" + os.linesep + self.log_errors + os.linesep)
+            f.write("LINKS:" + os.linesep + self.log_links + os.linesep)
+            f.write("INFO:" + os.linesep + self.log_infos + os.linesep)
+        if self.log_links:
+            print("\n--- LINKS ---")
+            print(self.log_links)
 
     @staticmethod
     def __to_filename(string):
@@ -173,14 +178,11 @@ class Downloader:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--event_name", dest="event_name", help='Your event URL is EVENT_NAME.cosplay2.ru',
-                        required=True)
-    parser.add_argument("--db_path", dest="db_path", help='Path to the database (default: EVENT_NAME/sqlite3_data.db)')
+    parser.add_argument("db_path", help='Path to the database', nargs=1)
+    parser.add_argument("-o", help='Target directory (default: Fest)', default='Fest')
+    
 
     args = parser.parse_args()
-
-    event_name = args.event_name
-    db_path = args.db_path if args.db_path else os.path.join('.', event_name, 'sqlite3_data.db')
 
     scene_query = """
         SELECT request_id,
@@ -193,7 +195,8 @@ if __name__ == "__main__":
         WHERE   list.id = topic_id AND
                 request_id = requests.id AND
                 (type = 'file' OR type = 'image') AND
-                nom NOT IN ('Аккредитация фотографов')
+                nom NOT IN ('Аккредитация фотографов', 'Арт', 'Фотокосплей') AND
+                status != 'disapproved'
         ORDER BY [values].title
     """
 
@@ -217,7 +220,7 @@ if __name__ == "__main__":
 
 
     def preprocess_scene(num, dir_name, file_name):
-        skip_files_with = ['Видеозапись репетиции', 'Фотография участник', 'Демо-запись', 'Оригинальная композиция']
+        skip_files_with = ['Демо-запись']
         skip_by_field = any([s in file_name for s in skip_files_with])
 
         return skip_by_field, dir_name, file_name
@@ -229,10 +232,10 @@ if __name__ == "__main__":
         return skip_by_field, new_dir_name, new_file_name
 
     d = Downloader(preprocess_scene)
-    if d.get_lists(db_path, scene_query):
-        db = sqlite3.connect(db_path, isolation_level=None)
+    if d.get_lists(args.db_path[0], scene_query):
+        db = sqlite3.connect(args.db_path[0], isolation_level=None)
         c = db.cursor()
         c.execute('PRAGMA encoding = "UTF-8"')
 
         print('\nDownloading files...')
-        d.download_files("D:\Fests Local\Yuki no Odori 7\Files\\tulafest", True, check_hash_if_exists=False)
+        d.download_files(args.o, True, check_hash_if_exists=False)
