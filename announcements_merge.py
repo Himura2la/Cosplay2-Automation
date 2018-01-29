@@ -32,4 +32,3 @@ voting_titles = {int(num): val for num, val in c.fetchall()}
 for num, announcement in rows:
     num = int(num)
     print("№%d%s%s%s%s%s" % (num, os.linesep, voting_titles[num], os.linesep, announcement, os.linesep))
-
