@@ -10,7 +10,7 @@ SELECT
 
 FROM list, requests
 
-LEFT JOIN (	SELECT request_id as nc_rid,  REPLACE(GROUP_CONCAT(DISTINCT value), ',', ', ') as nicks
+LEFT JOIN (	SELECT request_id as nc_rid, REPLACE(GROUP_CONCAT(DISTINCT value), ',', ', ') as nicks
 			FROM [values]
 				LEFT JOIN (SELECT request_section_id as r_rsid, value as [role] FROM [values] WHERE title = 'Роль') 
 				ON r_rsid = request_section_id
@@ -18,7 +18,7 @@ LEFT JOIN (	SELECT request_id as nc_rid,  REPLACE(GROUP_CONCAT(DISTINCT value), 
 			GROUP BY request_id)
 	ON nc_rid = requests.id
 
-LEFT JOIN (	SELECT request_id as ct_rid,  REPLACE(GROUP_CONCAT(DISTINCT value), ',', ', ') as cities
+LEFT JOIN (	SELECT request_id as ct_rid, REPLACE(GROUP_CONCAT(DISTINCT value), ',', ', ') as cities
 			FROM [values]
 				LEFT JOIN (SELECT request_section_id as r_rsid, value as [role] FROM [values] WHERE title = 'Роль') 
 				ON r_rsid = request_section_id
