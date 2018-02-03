@@ -35,7 +35,7 @@ LEFT JOIN (	SELECT request_id as f_rid, value as fandom FROM [values]
 	ON f_rid = requests.id
 
 LEFT JOIN (	SELECT request_id as ch_rid, REPLACE(GROUP_CONCAT(DISTINCT value), ',', ', ') as cahrs FROM [values] 
-			WHERE title = 'Имя персонажа' OR title = 'Персонаж'
+			WHERE (title = 'Имя персонажа' OR title = 'Персонаж') AND section_title NOT LIKE 'Изображени%'
 			GROUP BY request_id)
 	ON ch_rid = requests.id
 
@@ -59,6 +59,7 @@ LEFT JOIN (	SELECT request_id as tm_rid, value as team FROM [values]
 
 LEFT JOIN (	SELECT request_id as it_rid, value as item_title FROM [values] 
 			WHERE	title = 'Название номера (необязательно)' OR
+					title = 'Название работы' OR
 					title = 'Название сценки')
 	ON it_rid = requests.id
 
