@@ -180,7 +180,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("db_path", help='Path to the database', nargs=1)
     parser.add_argument("-o", help='Target directory (default: Fest)', default='Fest')
-    
 
     args = parser.parse_args()
 
@@ -219,8 +218,14 @@ if __name__ == "__main__":
     """
 
 
-    def preprocess_scene(num, dir_name, file_name):
+    def preprocess_scene_all_data(num, dir_name, file_name):
         skip_files_with = ['Демо-запись']
+        skip_by_field = any([s in file_name for s in skip_files_with])
+
+        return skip_by_field, dir_name, file_name
+
+    def preprocess_scene_tracks_only(num, dir_name, file_name):
+        skip_files_with = ['Видеозапись репетиции', 'Фотография', 'Демо-запись', 'Оригинальная композиция']
         skip_by_field = any([s in file_name for s in skip_files_with])
 
         return skip_by_field, dir_name, file_name
@@ -231,7 +236,7 @@ if __name__ == "__main__":
         new_file_name = file_name.replace(' ', '-')
         return skip_by_field, new_dir_name, new_file_name
 
-    d = Downloader(preprocess_scene)
+    d = Downloader(preprocess_scene_tracks_only)
     if d.get_lists(args.db_path[0], scene_query):
         db = sqlite3.connect(args.db_path[0], isolation_level=None)
         c = db.cursor()
