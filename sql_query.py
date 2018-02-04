@@ -10,7 +10,7 @@ parser.add_argument("--db_path", help='Path to the database', required=True)
 parser.add_argument("--sql", help='Path to an SQL request to run', required=True)
 parser.add_argument("-o", help='File to save the result into')
 parser.add_argument("--format", help='Output format. Possible values: "raw" (default), "long"', default='raw')
-parser.add_argument("--long_col", help='In "raw" format specifies the column with long data. Default: "value"', default='value')
+parser.add_argument("--long_col", help='In "long" format specifies the column with long data. Default: "value"', default='value')
 args = parser.parse_args()
 
 # For header formatting in long_col 

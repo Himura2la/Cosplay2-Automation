@@ -1,6 +1,6 @@
 SELECT 
 list.title,
-requests.number, --card_code||' '||voting_number,
+card_code||' '||voting_number,
 voting_title,
 replace(group_concat('##'||[values].title||':\n'||value||'\n'), '\n,', '\n') as value
 
@@ -16,4 +16,4 @@ status != 'disapproved' AND
  
 group by requests.id
 
-order by list.title
+order by voting_number
