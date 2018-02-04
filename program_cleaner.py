@@ -5,10 +5,10 @@ import os
 import re
 
 output = r"C:\Users\glago\Desktop\2.csv"
-regex_all = re.compile(r",(\w{1,3} \d{1,3}|Перерыв|\d блок|Внеконкурс)")
+regex_for_human = re.compile(r',("\w{1,3} \d{1,3}|Перерыв|\d блок|Внеконкурс)')
 regex_nums_only = re.compile(r',"\w{1,3} \d{1,3}')
 
-regex = regex_nums_only
+regex = regex_for_human
 
 def proc(text):
     ret = ''

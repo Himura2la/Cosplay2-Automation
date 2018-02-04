@@ -2,13 +2,13 @@ import { Selector } from 'testcafe';
 
 
 const event_name = 'tulafest'
-const token = ''
+const token = '__BAKE_A_COOKIE___'
 
-const message1 = "Приглашаем Вас проверить расположение своего номера в черновом вариане программы фестиваля: https://docs.google.com/spreadsheets/d/1HkcKL72kTZPipqMU9M-CbKMP2b8p7uH46rtIRIhh42w/edit?usp=sharing Разумеется, время указано приблизительное и на него ни в коем случае на стоит ориентироваться. Номера также будут меняться, чтобы соответствовать порядку выступлений. Если Вас что-то не устраивает в программе, напишите пожалуйста комментарий к Вашей ячейке в таблице. Также, для надёжности, можно написать сюда, Дере VK или мне VK."
+const message1 = "Вашей заявке на YnO присвоен номер {num}. Запомните его, плиз."
 
 
 var start_i = 0  // If it fails in da middle, you can continue
-var start_j = 0
+var start_j = 8
 
 fixture `Broadcaster`.page `http://${event_name}.cosplay2.ru/orgs`;
 
@@ -24,31 +24,46 @@ test('Write to All', async t => {
     for (var i = start_i; i < noms_count; i++){
         var side_topics = Selector('div[ng-controller="fest.orgs.requests.side_topics.Ctrl"]')
         var noms = side_topics.find('a[ng-bind="topic.title"]')
-
-        console.log(`(i->${i}) `, await noms.nth(i).innerText)
+        var nom = await noms.nth(i).innerText
+        console.log(`(i->${i}) `, nom)
+        if (nom == "Фотокосплей") // nom protection
+            break
         if (i != start_i)
             await t.click(await noms.nth(i))  // Open the next nom
         
-        var nums = side_topics.find('a').withText('№')
+        var nums = side_topics.find('div.request')
         var nums_count = await nums.count
         for (var j = start_j; j < nums_count; j++){
-            console.log(`(${i}, ${j}) `, await nums.nth(j).innerText)
-            await t.click(nums.nth(j))
+            var req_item = nums.nth(j)
+            var voting_number = await req_item.find('span[ng-show="request.voting_number"]').find('b').innerText
+            var num = await req_item.find('a').innerText
+            var status = await req_item.find('img').getAttribute('status')
+            console.log(`(${i}, ${j}) `, num)
+
+            if (status != 'approved'){
+                console.log('Status:', status + '. Skipping.')
+                continue
+            }
+
+            await t.click(req_item.find('a'))
             // In a request
-            var status = await Selector('a[editable-select="$ctrl.request.status"]').innerText
-            console.log(status)
-            if (status.indexOf("ЗАЯВКА ПРИНЯТА") > 0){
-                await t
-                    .click(Selector('a[ng-click="$ctrl.newCommentFormVisible = true"]'))
-                    .typeText(Selector('textarea[ng-model="$ctrl.newCommentForm.comtext"]'), message1)
-                    .click(Selector('input[ng-model="$ctrl.newCommentForm.email"]'))
-                    //.click(Selector('input[ng-model="$ctrl.newCommentForm.sms"]'))
-                    .click(Selector('button[type=submit]'))  // Жмем кнопку "Отправить"
-                
-                var last_comment = Selector('tr[ng-repeat="comment in $ctrl.comments track by comment.id"]')
-                                    .find('span[ng-bind-html="comment.content | htmltext"]').nth(-1)
-                await t.expect(last_comment.innerText).eql(message1)  // Проверяем, что отправилось
-            
+
+            voting_number = (await Selector('span[ng-show="$ctrl.request.voting_number"]').innerText).replace(", ", "")
+            const message = message1.replace('{num}', voting_number)
+
+            //await t.debug()
+
+            await t
+                .click(Selector('a[ng-click="$ctrl.newCommentFormVisible = true"]'))
+                .typeText(Selector('textarea[ng-model="$ctrl.newCommentForm.comtext"]'), message)
+                //.click(Selector('input[ng-model="$ctrl.newCommentForm.email"]'))
+                .click(Selector('input[ng-model="$ctrl.newCommentForm.sms"]'))
+                .click(Selector('button[type=submit]'))  // Жмем кнопку "Отправить"
+
+            var last_comment = Selector('tr[ng-repeat="comment in $ctrl.comments track by comment.id"]')
+                                .find('span[ng-bind-html="comment.content | htmltext"]').nth(-1)
+            await t.expect(last_comment.innerText).eql(message)  // Проверяем, что отправилось
+        
           //  await t
           //      .click(Selector('a[ng-click="$ctrl.newCommentFormVisible = true"]'))
           //          .typeText(Selector('textarea[ng-model="$ctrl.newCommentForm.comtext"]'), message2)
@@ -61,9 +76,8 @@ test('Write to All', async t => {
           //      await t.expect(last_comment.innerText).eql(message2)  // Проверяем, что отправилось
                 
             
-                console.log("Sent!")
-            await t.debug()
-            }
+            console.log("Sent!")
+
         }
         start_j = 0
     }
