@@ -1,10 +1,11 @@
 import { Selector } from 'testcafe';
 
+var nums_converter = require("C:\\Users\\glago\\Desktop\\nums_converter.json")
 
 const event_name = 'tulafest'
 const token = '__BAKE_A_COOKIE___'
 
-var start_i = 16  // If it fails in da middle, you can continue
+var start_i = 11  // If it fails in da middle, you can continue
 var start_j = 0
 
 fixture `Numberer`.page `http://${event_name}.cosplay2.ru/orgs`;
@@ -37,11 +38,20 @@ test('Give everyone a number', async t => {
             var num = await req_item.find('a').innerText
             var voting_number = num.match(/\d+/)[0]
             console.log(`(${i}, ${j}) `, num)
-            if (existing_voting_number == voting_number){
+
+            if (existing_voting_number != voting_number){
                 console.log("Skip")
                 j++  // Until we get here
                 continue
             }
+
+            const target_data = nums_converter.find((e) => e['s_num'] == existing_voting_number)
+            if (target_data == undefined){
+                console.log("Not found № " + existing_voting_number + " in converter")
+                j++
+                continue
+            }
+            voting_number = target_data['t_num']
 
             await t.click(req_item.find('a'))
 
@@ -54,6 +64,7 @@ test('Give everyone a number', async t => {
                     .click(Selector('form.form-inline.editable-number').find('button[type="submit"]'))
 
             console.log(`->`, await Selector('a[editable-number="$ctrl.request.voting_number"]').innerText)
+            //await t.debug()
         }
         start_j = 0
     }

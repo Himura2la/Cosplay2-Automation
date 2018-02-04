@@ -54,5 +54,5 @@ elif args.format == 'long':
 print(result_txt)
 
 if args.o:
-    open(args.o, 'w', encoding='utf-8').write(result_txt)
+    open(args.o, 'w', encoding='utf-8').write(result_txt.replace('\\n', os.linesep))
     print("Saved to %s" % os.path.abspath(args.o))
