@@ -27,6 +27,15 @@ WHERE list.id = topic_id AND
       default_duration > 0
 """
 
+
+# https://github.com/Himura2la/FestEngine/blob/36ca9fd60fa3139f342f7b479406211980ce22b8/src/constants.py#L49
+vid_exts = {'avi', 'mp4', 'mov', 'wmv', 'mkv'}
+aud_exts = {'mp3', 'wav', 'flac', 'ogg', 'm4a', 'aac'}
+img_exts = {'jpeg', 'png', 'jpg'}
+
+# target_exts = img_exts
+target_exts = vid_exts | aud_exts
+
 processed_log = ""
 title_differences = ""
 skipped_files = ""
@@ -58,13 +67,6 @@ def make_filename(data, num, title=None):
 
     return code, title
 
-# https://github.com/Himura2la/FestEngine/blob/36ca9fd60fa3139f342f7b479406211980ce22b8/src/constants.py#L49
-vid_exts = {'avi', 'mp4', 'mov', 'wmv', 'mkv'}
-aud_exts = {'mp3', 'wav', 'flac', 'ogg', 'm4a', 'aac'}
-img_exts = {'jpeg', 'png', 'jpg'}
-
-# target_exts = img_exts
-target_exts = vid_exts | aud_exts
 
 print('Connecting to %s...' % os.path.abspath(db_path))
 data, headers = [], []
