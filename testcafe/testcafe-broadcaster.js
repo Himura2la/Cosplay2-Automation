@@ -4,11 +4,15 @@ import { Selector } from 'testcafe';
 const event_name = 'tulafest'
 const token = '__BAKE_A_COOKIE___'
 
-const message1 = "Вашей заявке на YnO присвоен номер {num}. Запомните его, плиз."
+const message1 = `Репетиции:
+- Пятница, 16 февраля — с 16:00 до 19:30
+- Суббота, 17 февраля — с 9:00 до 11:30
+
+Если у Вас есть хоть малейшая возможность придти в пятницу, вы скорее всего порепетируете. В день феста такая возможность совершенно не гарантирована, ибо желающих будет очень много, а времени очень мало.`
 
 
 var start_i = 0  // If it fails in da middle, you can continue
-var start_j = 8
+var start_j = 0
 
 fixture `Broadcaster`.page `http://${event_name}.cosplay2.ru/orgs`;
 
@@ -26,7 +30,7 @@ test('Write to All', async t => {
         var noms = side_topics.find('a[ng-bind="topic.title"]')
         var nom = await noms.nth(i).innerText
         console.log(`(i->${i}) `, nom)
-        if (nom == "Фотокосплей") // nom protection
+        if (nom == "AMV") // nom protection
             break
         if (i != start_i)
             await t.click(await noms.nth(i))  // Open the next nom
@@ -56,8 +60,8 @@ test('Write to All', async t => {
             await t
                 .click(Selector('a[ng-click="$ctrl.newCommentFormVisible = true"]'))
                 .typeText(Selector('textarea[ng-model="$ctrl.newCommentForm.comtext"]'), message)
-                //.click(Selector('input[ng-model="$ctrl.newCommentForm.email"]'))
-                .click(Selector('input[ng-model="$ctrl.newCommentForm.sms"]'))
+                .click(Selector('input[ng-model="$ctrl.newCommentForm.email"]'))
+                //.click(Selector('input[ng-model="$ctrl.newCommentForm.sms"]'))
                 .click(Selector('button[type=submit]'))  // Жмем кнопку "Отправить"
 
             var last_comment = Selector('tr[ng-repeat="comment in $ctrl.comments track by comment.id"]')

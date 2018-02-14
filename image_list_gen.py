@@ -1,58 +1,54 @@
 import os
-import sqlite3
+import csv
 import re
 
-files_folder = 'img_numbered'
-id_regex = re.compile(r"^(\d{3}) (\w{1,2})")
+img_dir = r'D:\Fests Local\Yuki no Odori 7\Images'
+csv_path = r'D:\Clouds\YandexDisk\Fests\Yuki no Odori 7\zad\zad_data.csv'
+id_regex = re.compile(r'^(\d{3}) (\w{1,3})\.')
 
-db_name = 'sqlite3_data.db'
-event_name = 'tulafest'
+empty_img_path = r'C:\Users\glago\Desktop\null.png'  # http://www.1x1px.me/
 
-files_folder = os.path.join(event_name, files_folder)
-
-data = dict()
-
-print('Connecting to ' + db_name + '...')
-
-db = sqlite3.connect(os.path.join(event_name, db_name), isolation_level=None)
-c = db.cursor()
-
-c.execute('PRAGMA encoding = "UTF-8"')
-
-c.execute("SELECT value FROM settings WHERE key='id'")
-event_id = int(c.fetchone()[0])
-
-c.execute("""
-SELECT card_code, voting_number
-FROM   requests, list
-WHERE list.id = topic_id AND
-      status = 'approved' AND
-      card_code NOT IN ("FG", "A", "F")
-ORDER BY voting_number
-""")
+target_csv_path = r'D:\Clouds\YandexDisk\Fests\Yuki no Odori 7\zad\zad_data_img.csv'
 
 
-def split_name(name):
-    res = re.search(id_regex, name)
-    if res is not None:
-        return res.group(1), name
-    else:
-        print("[WARNING] Unknown file '%s'" % name)
-        return None, None
+with open(csv_path, 'r', encoding='utf-8') as f:
+    data = csv.reader(f)
+    rows = [[cell for cell in row] for row in data]
+head, rows = rows[0], rows[1:]
 
-items = c.fetchall()
-files = list(map(split_name, os.listdir(files_folder)))
+data = {r[0].split(' ', 1)[1]: r for r in rows}
 
-nums_all = {int(number) for _, number in items}
-nums_exist = {int(number): filename for number, filename in files if number is not None}
+rows_source = len(head)
+rows_target = 0
 
-for item in sorted(list(nums_all)):
-    if item in nums_exist:
-        filename = nums_exist[item]
-    else:
-        filename = "Yuno.png"
+for file_name in os.listdir(img_dir):
+    res = re.search(id_regex, file_name)
 
-    abs_path = os.path.join(os.getcwd(), files_folder, filename)
-    print(abs_path)
-    if not os.path.exists(abs_path):
-        print("[WARNING] No such path!!!")
+    if res is None:
+        print("[WARNING] Unknown file: '%s'" % file_name)
+        continue
+
+    num, name = res.group(1), file_name
+
+    if num not in data:
+        print("[WARNING] No row for: '%s'" % file_name)
+        continue
+
+    data[num].append(os.path.join(img_dir, file_name))
+    if len(data[num]) > rows_target:
+        rows_target = len(data[num])
+
+rows_added = rows_target - rows_source
+data = data.values()
+
+for row in data:
+    if len(row) < rows_target:
+        row += [empty_img_path] * (rows_target - len(row))
+
+from tabulate import tabulate
+print(tabulate(data))
+
+with open(target_csv_path, 'w', encoding='utf-8', newline='') as f:
+    w = csv.writer(f, delimiter=',', quotechar='"',)
+    w.writerow(head + ["img%d_path" % (i+1) for i in range(rows_added)])
+    w.writerows(data)

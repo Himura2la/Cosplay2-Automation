@@ -15,8 +15,13 @@ def proc(text):
     for string in text.split('\n'):
         if re.search(regex, string):
             ret += string + '\n'
-    open(output, 'w', encoding='utf-8').write(ret)
-    os.startfile(output, 'open')
+    #open(output, 'w', encoding='utf-8').write(ret)
+    #os.startfile(output, 'open')
+    print(ret)
     
 
 proc(open(r"C:\Users\glago\Desktop\festival_plan.csv", encoding='utf-8').read())
+
+
+# r"(^\d{2}:\d{2}\t.*?), интермедия.*?$" -> r"\n\1"
+# ( \d{3}), -> \1.
