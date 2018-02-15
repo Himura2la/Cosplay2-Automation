@@ -42,13 +42,19 @@ rows_added = rows_target - rows_source
 data = data.values()
 
 for row in data:
+    no_img = len(row) == rows_source
     if len(row) < rows_target:
         row += [empty_img_path] * (rows_target - len(row))
+    if no_img:
+        print("[WARNING] No images for: '%s'" % str(row))
+        row += ["FALSE"]
+    else:
+        row += ["TRUE"]
 
-from tabulate import tabulate
-print(tabulate(data))
+# from tabulate import tabulate
+# print(tabulate(data))
 
 with open(target_csv_path, 'w', encoding='utf-8', newline='') as f:
     w = csv.writer(f, delimiter=',', quotechar='"',)
-    w.writerow(head + ["img%d_path" % (i+1) for i in range(rows_added)])
+    w.writerow(head + ["img%d_path" % (i+1) for i in range(rows_added)] + ["fade_on"])
     w.writerows(data)

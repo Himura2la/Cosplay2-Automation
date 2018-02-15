@@ -8,12 +8,13 @@ import sqlite3
 
 db_path = r"D:\Clouds\YandexDisk\Fests\Yuki no Odori 7\db\tulafest\sqlite3_data.db"
 
-input_dir = r"D:\Clouds\YandexDisk\Fests\Yuki no Odori 7\files_by_folder"
-output_dir = r"D:\Fests Local\Yuki no Odori 7\Tracks"
+input_dir = r"D:\Clouds\YandexDisk\Fests\Yuki no Odori 7\zad\jpg"
+output_dir = r"D:\Clouds\YandexDisk\Fests\Yuki no Odori 7\zad\ready"
 
 sql_queery = """
 SELECT 
     requests.number as '№',
+    card_code || ' ' || voting_number as id,
     card_code,
     voting_number,
     voting_title,
@@ -26,12 +27,28 @@ WHERE list.id = topic_id AND
       status = 'approved' AND
       default_duration > 0
 """
+num_field = 'id'
 
 processed_log = ""
 title_differences = ""
 skipped_files = ""
 
+num_title_splitter = None
+nums_in_filenames = True
+
+
+def __to_filename(string):  # from get_files.py
+    fn = string.encode('cp1251', 'replace').decode('cp1251')
+    fn = ''.join(i if i not in "\/*?<>|" else "#" for i in fn)
+    fn = fn.replace(':', " -")
+    fn = fn.replace('"', "'")
+    return fn
+
+
 def make_filename(data, num, title=None):
+    if num not in data:
+        return False, num, None
+
     req_data = data[num]
     code = "%d %s" % (req_data['voting_number'], req_data['card_code'])
 
@@ -40,7 +57,7 @@ def make_filename(data, num, title=None):
         if req_data['voting_title'] != title:
             title_differences += "%s\nReal: %s\nFile: %s\n" % (code, req_data['voting_title'], title)
     else:
-        title = req_data['voting_title']
+        title = __to_filename(req_data['voting_title'])
 
     sound_start = 'Неизвестно'
     if req_data['sound_start']:
@@ -54,17 +71,17 @@ def make_filename(data, num, title=None):
     elif req_data['card_code'][0] == 'T':  # Dances
             sound_start = 'С точки~'
 
-    title = "[%s] %s №%d" % (sound_start, title, num)
+    title = "[%s] %s №%d" % (sound_start, title, req_data['№'])
 
-    return code, title
+    return True, code, title
 
 # https://github.com/Himura2la/FestEngine/blob/36ca9fd60fa3139f342f7b479406211980ce22b8/src/constants.py#L49
 vid_exts = {'avi', 'mp4', 'mov', 'wmv', 'mkv'}
 aud_exts = {'mp3', 'wav', 'flac', 'ogg', 'm4a', 'aac'}
 img_exts = {'jpeg', 'png', 'jpg'}
 
-# target_exts = img_exts
-target_exts = vid_exts | aud_exts
+target_exts = img_exts
+# target_exts = vid_exts | aud_exts
 
 print('Connecting to %s...' % os.path.abspath(db_path))
 data, headers = [], []
@@ -78,7 +95,7 @@ with sqlite3.connect(db_path, isolation_level=None) as db:
     print('Closing the database...')
 
 data_dicts = [{headers[i]: val for i, val in enumerate(row)} for row in data]
-data_by_num = {req['№']: req for req in data_dicts}
+data_by_num = {req[num_field]: req for req in data_dicts}
 
 missing_files = {k for k, v in data_by_num.items()}
 
@@ -92,17 +109,25 @@ for dirpath, dirnames, filenames in os.walk(input_dir):
             rep = 1
         root, dir_name = os.path.split(dirpath)
         if any([filename.endswith(ext) for ext in target_exts]):
+            name = filename.rsplit('.', 1)[0] if nums_in_filenames else dir_name
             ext = filename.rsplit('.', 1)[1]
-            num, title = dir_name.split(". ", 1)
-            num = int(num)
+            if num_title_splitter:
+                num, title = name.split(num_title_splitter, 1)
+            else:
+                num, title = name, None
+            success, code, name = make_filename(data_by_num, num, title)
+            if not success:
+                msg = "|>>> ERROR <<<| Failed to make title for %s | %s. Check the number." % (name, filename)
+                processed_log += msg + '\n'
+                print(msg)
+                continue
             missing_files -= {num}
-            code, name = make_filename(data_by_num, num, title)
             new_filename = "%s. %s.%s" % (code, name, ext)
             if os.path.exists(os.path.join(output_dir, new_filename)):
                 rep += 1
                 new_filename = "%s. %s (%d).%s" % (code, name, rep, ext)
 
-            msg = "%s | %s -> %s" % (dir_name, filename, new_filename)
+            msg = "%s | %s -> %s" % (name, filename, new_filename)
             processed_log += msg + '\n'
             print(msg)
             old_path = os.path.join(root, dir_name, filename)
@@ -110,10 +135,10 @@ for dirpath, dirnames, filenames in os.walk(input_dir):
 
             shutil.copy(old_path, new_path)
         else:
-            skipped_files += "%s | %s\n" % (dir_name, filename)
+            skipped_files += "%s | %s\n" % (name, filename)
 
 
-missing_files_msg = "\n".join([". ".join(make_filename(data_by_num, num)) for num in missing_files])
+missing_files_msg = "\n".join([". ".join(make_filename(data_by_num, num)[1:]) for num in missing_files])
 info_log = "\n--- Skipped by extension ---\n" + skipped_files + \
            "\n--- Title differences ---\n" + title_differences + \
            "\n--- Missing files ---\n" + missing_files_msg
