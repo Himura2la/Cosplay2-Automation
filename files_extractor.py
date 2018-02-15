@@ -135,7 +135,7 @@ for dirpath, dirnames, filenames in os.walk(input_dir):
 
             shutil.copy(old_path, new_path)
         else:
-            skipped_files += "%s | %s\n" % (name, filename)
+            skipped_files += "%s | %s\n" % (dir_name, filename)
 
 
 missing_files_msg = "\n".join([". ".join(make_filename(data_by_num, num)[1:]) for num in missing_files])
