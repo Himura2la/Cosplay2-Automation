@@ -8,8 +8,11 @@ import sqlite3
 
 db_path = r"D:\Clouds\YandexDisk\Fests\Yuki no Odori 7\db\tulafest\sqlite3_data.db"
 
-input_dir = r"D:\Clouds\YandexDisk\Fests\Yuki no Odori 7\zad\jpg"
-output_dir = r"D:\Clouds\YandexDisk\Fests\Yuki no Odori 7\zad\ready"
+input_dir = r"D:\Clouds\YandexDisk\Fests\Yuki no Odori 7\files_by_folder"
+output_dir = r"H:\Fest"
+
+num_title_splitter = '. '
+nums_in_filenames = False
 
 sql_queery = """
 SELECT 
@@ -27,7 +30,7 @@ WHERE list.id = topic_id AND
       status = 'approved' AND
       default_duration > 0
 """
-num_field = 'id'
+num_field = '№'
 
 
 # https://github.com/Himura2la/FestEngine/blob/36ca9fd60fa3139f342f7b479406211980ce22b8/src/constants.py#L49
@@ -41,9 +44,6 @@ target_exts = vid_exts | aud_exts
 processed_log = ""
 title_differences = ""
 skipped_files = ""
-
-num_title_splitter = None
-nums_in_filenames = True
 
 
 def __to_filename(string):  # from get_files.py
@@ -97,7 +97,7 @@ with sqlite3.connect(db_path, isolation_level=None) as db:
     print('Closing the database...')
 
 data_dicts = [{headers[i]: val for i, val in enumerate(row)} for row in data]
-data_by_num = {req[num_field]: req for req in data_dicts}
+data_by_num = {str(req[num_field]): req for req in data_dicts}
 
 missing_files = {k for k, v in data_by_num.items()}
 
@@ -117,6 +117,7 @@ for dirpath, dirnames, filenames in os.walk(input_dir):
                 num, title = name.split(num_title_splitter, 1)
             else:
                 num, title = name, None
+            num = num.lstrip('0')
             success, code, name = make_filename(data_by_num, num, title)
             if not success:
                 msg = "|>>> ERROR <<<| Failed to make title for %s | %s. Check the number." % (name, filename)

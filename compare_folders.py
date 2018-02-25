@@ -1,8 +1,8 @@
 import os
 from zlib import crc32
 
-orig_dir = r"D:\Fests Local\Yuki no Odori 7\Tracks0"
-new_dir = r"D:\Fests Local\Yuki no Odori 7\Tracks"
+orig_dir = r"D:\Clouds\YandexDisk\Fests\Yuki no Odori 7\Intermedia"
+new_dir = r"H:\Intermedia"
 
 
 orig_tree, new_tree = ({os.path.join(dirpath, filename).replace(root + os.sep, '') for dirpath, dirnames, filenames in os.walk(root) 
