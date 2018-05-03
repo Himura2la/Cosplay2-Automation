@@ -11,6 +11,8 @@ import sqlite3
 from urllib import request
 from urllib import parse
 
+import unicodedata
+
 
 class Downloader:
     def __init__(self, preprocess_func=None):
@@ -155,10 +157,11 @@ class Downloader:
 
     @staticmethod
     def __to_filename(string):
-        filename = string.encode('cp1251', 'replace').decode('cp1251')
-        filename = ''.join(i if i not in "\/*?<>|" else "#" for i in filename)
-        filename = filename.replace(':', " -")
-        filename = filename.replace('"', "'")
+        filename = unicodedata.normalize('NFD', string).encode('cp1251', 'replace').decode('cp1251')
+        filename = filename.replace(':', " -") \
+            .replace('|', ";").replace('/', ";").replace('\\', ";") \
+            .replace('"', "'")
+        filename = ''.join(i if i not in "*?<>" else '' for i in filename)
         return filename
 
     @staticmethod
