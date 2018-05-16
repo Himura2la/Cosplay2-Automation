@@ -1,21 +1,22 @@
 import os
 import sqlite3
 import re
+from yaml import load
 
-files_folder = 'H:\ownCloud\DATA\Yuki no Odori 2016\Fest\mp3_numbered'
-id_regex = re.compile(r"^№ (\d{1,3})\. (.*)\.\w{2,4}$")
-code_regex = re.compile(r"(\d{3}) (\w{1,2})\. (.*?)\(№(\d{1,3})\)")
-
-db_name = 'sqlite3_data.db'
-event_name = 'tulafest'
-
-files_folder = os.path.join(event_name, files_folder)
+configfile = open("config.yml", "r")
+config = load(configfile.read())
+configfile.close()
+db_name = config['db_path']
+event_name = config['event_name']
+id_regex = re.compile(re.escape(config['id_regex']))
+code_regex = re.compile(re.escape(config['code_regex']))
+files_folder = os.path.join(config['festengine_path'],'mp3')
 
 data = dict()
 
 print('Connecting to ' + db_name + '...')
 
-db = sqlite3.connect(os.path.join(event_name, db_name), isolation_level=None)
+db = sqlite3.connect(db_name, isolation_level=None)
 c = db.cursor()
 
 c.execute('PRAGMA encoding = "UTF-8"')
@@ -23,16 +24,7 @@ c.execute('PRAGMA encoding = "UTF-8"')
 c.execute("SELECT value FROM settings WHERE key='id'")
 event_id = int(c.fetchone()[0])
 
-c.execute("""
-SELECT card_code, voting_number, number, value, voting_title, requests.id
-FROM   requests, list
-LEFT JOIN (SELECT request_id, value FROM [values] WHERE title IN ('Номинация', 'Тип номера'))
-          ON request_id = requests.id
-WHERE list.id = topic_id AND
-      status = 'approved' AND
-      card_code NOT IN ("FG", "A", "F")
-""")
-
+c.execute(config['checker_sql'])
 
 def split_name(name):
     res = re.search(code_regex, name)
@@ -50,10 +42,7 @@ nums_exist = {int(number) for _, _, _, number in files if number is not None}
 
 nums_absent = nums_all - nums_exist  # The whole program in a single line
 
-items_absent = ["[ABSENT] %s %d № %d. (%s) %s [http://tulafest.cosplay2.ru/orgs/requests/request/%d]" %
-                (card_code, voting_number, number, nom, voting_title, req_id)
-                for card_code, voting_number, number, nom, voting_title, req_id in items
-                if number in nums_absent]
-
-[print(i) for i in items_absent]
+for card_code, voting_number, number, nom, voting_title, req_id in items:
+    if number in nums_absent:
+        print ('[ABSENT] {0} {1} №{2}. ({3}) {4} [http://{5}.cosplay2.ru/orgs/requests/request/{6}]'.format(card_code, voting_number, number, nom, voting_title, event_name, req_id))
 
