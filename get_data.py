@@ -10,6 +10,7 @@ from getpass import getpass
 from urllib.error import HTTPError
 from urllib.parse import urlencode
 from urllib.request import urlopen, Request
+from yaml import load
 
 
 class Cosplay2API(object):
@@ -198,16 +199,15 @@ class MakeDB(object):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--event_name", help='Your event URL is EVENT_NAME.cosplay2.ru', required=True)
-    parser.add_argument("--c2_login", help='Your e-mail on Cosplay2', required=True)
-    parser.add_argument("--db_path", help='Path to the database (default: EVENT_NAME/sqlite3_data.db)')
     parser.add_argument("--sql", help='Path to an SQL request to run after the script is finished')
-
     args = parser.parse_args()
 
-    event_name = args.event_name
-    c2_login = args.c2_login
-    db_path = args.db_path if args.db_path else os.path.join(event_name, 'sqlite3_data.db')
+    configfile = open("config.yml", "r")
+    config = load(configfile.read())
+    configfile.close()
+    event_name = config['event_name']
+    c2_login = config['admin_cs2_name']
+    db_path = config['db_path']
 
     a = Authenticator(event_name, c2_login)
     a.sign_in()
