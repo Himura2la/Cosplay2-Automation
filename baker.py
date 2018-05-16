@@ -13,9 +13,9 @@ config = load(configfile.read())
 configfile.close()
 event_name = config['event_name']
 login = config['admin_cs2_name']
+password = config['admin_cs2_password']
 
-login_info = urlencode({'name':     login,
-                        'password': getpass('Password for ' + login + ': ')}).encode('ascii')
+login_info = urlencode({'name': login, 'password': password}).encode('ascii')
 try:
     with urlopen('http://' + event_name + '.cosplay2.ru/api/' + 'users/login', login_info) as r:
         print("Your cookie: '%s'\nStill hot!" % r.getheader('Set-Cookie'))
