@@ -2,14 +2,17 @@
 # -*- coding: utf-8 -*-
 # Author: Himura Kazuto <himura@tulafest.ru>
 
-event_name = 'tulafest'
-login = 'himura@tulafest.ru'
-
-
 from getpass import getpass
 from urllib.error import HTTPError
 from urllib.parse import urlencode
 from urllib.request import urlopen
+from yaml import load
+
+configfile = open("config.yml", "r")
+config = load(configfile.read())
+configfile.close()
+event_name = config['event_name']
+login = config['admin_cs2_name']
 
 login_info = urlencode({'name':     login,
                         'password': getpass('Password for ' + login + ': ')}).encode('ascii')

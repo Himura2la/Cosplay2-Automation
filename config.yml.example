@@ -1,0 +1,9 @@
+# Название события на Cosplay2
+event_name: "cr2018"
+# Путь к папке с файлами
+folder_path: "cr2018"
+# Путь к файлу базы SQLite
+db_path: "cr2018/sqlite3_data.db"
+# Логин и пароль админа cosplay2
+admin_cs2_name: "login"
+admin_cs2_password: "password"

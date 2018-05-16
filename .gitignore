@@ -1,5 +1,6 @@
 .idea/*
 private_session.cookie 
+config.yml
 tulafest/*
 
 # Byte-compiled / optimized / DLL files
