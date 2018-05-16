@@ -143,3 +143,6 @@ $RECYCLE.BIN/
 *.lnk
 
 c2_info\.txt
+.vscode/settings.json
+
+*.cookie

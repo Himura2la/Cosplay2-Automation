@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 # Author: Himura Kazuto <himura@tulafest.ru>
-# Date: December 2016
 
+import argparse
 import json
 import os
 import sqlite3
@@ -29,7 +29,7 @@ class Cosplay2API(object):
 class Authenticator(object):
     __cookie_name = 'private_session.cookie'
 
-    def __init__(self, event_name='cr17', login='keloero@oreolek.ru'):
+    def __init__(self, event_name, login):
         self.event_name = event_name
         self.login = login
         self.cookie = None
@@ -192,12 +192,24 @@ class MakeDB(object):
             c.execute("COMMIT")
             return True
         else:
-            print("WTF is this ???")
+            print("WTF just happened ???")
             return False
 
+
 if __name__ == "__main__":
-    print()
-    a = Authenticator()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--event_name", help='Your event URL is EVENT_NAME.cosplay2.ru', required=True)
+    parser.add_argument("--c2_login", help='Your e-mail on Cosplay2', required=True)
+    parser.add_argument("--db_path", help='Path to the database (default: EVENT_NAME/sqlite3_data.db)')
+    parser.add_argument("--sql", help='Path to an SQL request to run after the script is finished')
+
+    args = parser.parse_args()
+
+    event_name = args.event_name
+    c2_login = args.c2_login
+    db_path = args.db_path if args.db_path else os.path.join(event_name, 'sqlite3_data.db')
+
+    a = Authenticator(event_name, c2_login)
     a.sign_in()
 
     print()
@@ -205,4 +217,16 @@ if __name__ == "__main__":
     f.fetch()
 
     print()
-    MakeDB(os.path.join(a.event_name, 'sqlite3_data.db'), f.data)
+    MakeDB(db_path, f.data)
+
+    if not args.sql:
+        exit()
+
+    from tabulate import tabulate
+
+    print('\nConnecting to ' + db_path + ' again...')
+    with sqlite3.connect(db_path, isolation_level=None) as db:
+        c = db.cursor()
+        c.execute('PRAGMA encoding = "UTF-8"')
+        c.execute(open(args.sql, encoding='utf-8').read())
+        print(tabulate(c.fetchall(), headers=[description[0] for description in c.description], tablefmt='grid'))

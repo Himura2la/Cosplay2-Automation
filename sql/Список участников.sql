@@ -1,10 +1,9 @@
 SELECT 
 	REPLACE(group_concat(distinct card_code || ' ' || voting_number), ',', ', ') as nums,
-	nick, last_name,
+	last_name, first_name, mid_name, nick,
 	city,
 	IFNULL([role], 'Участник') as role
 
-	
 FROM list, requests, [values]
 
 LEFT JOIN ( SELECT request_section_id as сt_rsid, value as city
@@ -16,11 +15,22 @@ LEFT JOIN ( SELECT request_section_id as n_rsid, value as nick
 			FROM [values] 
 			WHERE title LIKE 'Ник%')
 	ON n_rsid = request_section_id
+
+LEFT JOIN ( SELECT request_section_id as fn_rsid, value as first_name
+			FROM [values] 
+			WHERE title = 'Имя')
+	ON fn_rsid = request_section_id
+
+LEFT JOIN ( SELECT request_section_id as mn_rsid, value as mid_name
+			FROM [values] 
+			WHERE title = 'Отчество')
+	ON mn_rsid = request_section_id
 	
 LEFT JOIN ( SELECT request_section_id as ln_rsid, value as last_name
 			FROM [values] 
 			WHERE title = 'Фамилия')
 	ON ln_rsid = request_section_id
+
 
 LEFT JOIN ( SELECT request_section_id as r_rsid, value as [role]
 			FROM [values] 
@@ -36,8 +46,8 @@ WHERE
 	list.id = topic_id AND requests.id = request_id
 	AND	status != 'disapproved'
 	AND	section_title in ("Авторы", "Участники", "Косплееры", "Персональные данные фотографов")
-	--AND	NOT (list.card_code in ('ART', 'FC', 'VC', 'V') and (will_be IS NULL or will_be = 'NO')) -- who did not told they won't come
+	AND	NOT (list.card_code in ('ART', 'FC', 'VC', 'V') and (will_be IS NULL or will_be = 'NO')) -- who did not told they won't come
 
-GROUP BY last_name, nick, city
+GROUP BY last_name, first_name, mid_name
 
-order by last_name
+order by voting_number
