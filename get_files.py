@@ -10,6 +10,7 @@ import time
 import sqlite3
 from urllib import request
 from urllib import parse
+from yaml import load
 
 import unicodedata
 
@@ -180,13 +181,14 @@ class Downloader:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("db_path", help='Path to the database', nargs=1)
-    parser.add_argument("-o", help='Target directory (default: Fest)', default='Fest')
+    configfile = open("config.yml", "r")
+    config = load(configfile.read())
+    configfile.close()
+    db_path = config['db_path']
+    folder_path = config['folder_path']
 
-    args = parser.parse_args()
-
-    scene_query = """
+    notscene = '"'+'","'.join(config['not_scene'])+'"'
+    scene_query = f"""
         SELECT request_id,
                list.title as nom,
                requests.number,
@@ -197,12 +199,14 @@ if __name__ == "__main__":
         WHERE   list.id = topic_id AND
                 request_id = requests.id AND
                 (type = 'file' OR type = 'image') AND
-                nom NOT IN ('Аккредитация фотографов', 'Арт', 'Фотокосплей') AND
+                nom NOT IN ({notscene}) AND
                 status != 'disapproved'
         ORDER BY [values].title
     """
 
-    art_foto_query = """
+    printnoms = ','.join(config['print_noms'])
+    printtitle = config['print_title']
+    art_foto_query = f"""
         SELECT request_id,
                list.title as nom,
                requests.number,
@@ -211,24 +215,17 @@ if __name__ == "__main__":
                value as file
         FROM [values], requests, list
             LEFT JOIN (SELECT request_section_id as m_rsid, value as main_foto FROM [values] 
-                       WHERE title = 'Какую фотографию печатать?')
+                       WHERE title = '{printtitle}')
                        ON m_rsid = request_section_id
         WHERE   list.id = topic_id AND
                 request_id = requests.id AND
                 (type = 'file' OR type = 'image') AND
-                nom IN ('Арт', 'Фотокосплей')
+                nom IN ({printnoms})
         ORDER BY request_id
     """
 
-
-    def preprocess_scene_all_data(num, dir_name, file_name):
-        skip_files_with = ['Демо-запись']
-        skip_by_field = any([s in file_name for s in skip_files_with])
-
-        return skip_by_field, dir_name, file_name
-
     def preprocess_scene_tracks_only(num, dir_name, file_name):
-        skip_files_with = ['Видеозапись репетиции', 'Фотография', 'Демо-запись', 'Оригинальная композиция']
+        skip_files_with = config['not_scene_files']
         skip_by_field = any([s in file_name for s in skip_files_with])
 
         return skip_by_field, dir_name, file_name
@@ -240,10 +237,10 @@ if __name__ == "__main__":
         return skip_by_field, new_dir_name, new_file_name
 
     d = Downloader(preprocess_scene_tracks_only)
-    if d.get_lists(args.db_path[0], scene_query):
-        db = sqlite3.connect(args.db_path[0], isolation_level=None)
+    if d.get_lists(db_path, scene_query):
+        db = sqlite3.connect(db_path, isolation_level=None)
         c = db.cursor()
         c.execute('PRAGMA encoding = "UTF-8"')
 
         print('\nDownloading files...')
-        d.download_files(args.o, True, check_hash_if_exists=False)
+        d.download_files(folder_path, True, check_hash_if_exists=False)
