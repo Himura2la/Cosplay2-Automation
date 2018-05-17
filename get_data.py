@@ -30,9 +30,10 @@ class Cosplay2API(object):
 class Authenticator(object):
     __cookie_name = 'private_session.cookie'
 
-    def __init__(self, event_name, login):
+    def __init__(self, event_name, login, password):
         self.event_name = event_name
         self.login = login
+        self.password = password
         self.cookie = None
         self.__attempts = None
         self.__api = None
@@ -72,7 +73,7 @@ class Authenticator(object):
 
         else:  # No cookie saved
             login_info = urlencode({'name':     self.login,
-                                    'password': getpass('Password for ' + self.login + ': ')}).encode('ascii')
+                                    'password': self.password}).encode('ascii')
             try:
                 with urlopen(self.__api.login_POST, login_info) as r:
                     cookie = r.getheader('Set-Cookie')
@@ -207,9 +208,10 @@ if __name__ == "__main__":
     configfile.close()
     event_name = config['event_name']
     c2_login = config['admin_cs2_name']
+    c2_password = config['admin_cs2_password']
     db_path = config['db_path']
 
-    a = Authenticator(event_name, c2_login)
+    a = Authenticator(event_name, c2_login, c2_password)
     a.sign_in()
 
     print()

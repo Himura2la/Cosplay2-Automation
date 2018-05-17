@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 # Author: Himura Kazuto <himura@tulafest.ru>
 
-from getpass import getpass
 from urllib.error import HTTPError
 from urllib.parse import urlencode
 from urllib.request import urlopen
