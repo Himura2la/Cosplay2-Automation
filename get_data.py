@@ -72,6 +72,8 @@ class Authenticator(object):
                 return False
 
         else:  # No cookie saved
+            if (self.password == ''):
+                self.password = getpass('Password for ' + self.login + ': ')
             login_info = urlencode({'name':     self.login,
                                     'password': self.password}).encode('ascii')
             try:
