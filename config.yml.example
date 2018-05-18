@@ -6,6 +6,8 @@ folder_path: 'cr2018'
 festengine_path: 'festengine'
 # Путь к файлу базы SQLite
 db_path: 'cr2018/sqlite3_data.db'
+# Путь к images.tex
+tex_path: 'cr2018/images.tex'
 # Логин и пароль админа cosplay2
 admin_cs2_name: 'login'
 admin_cs2_password: 'password'

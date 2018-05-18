@@ -3,12 +3,17 @@
 
 import os
 import sqlite3
+from yaml import load
 from PIL import Image
 
-tex_path = "/media/himura/Data/Fests Local/Yuki no Odori 7/art_foto_to_pdf/images.tex"
-db_path = "/media/himura/Data/Git/Cosplay2-Downloader/tulafest/sqlite3_data.db"
-fest_path = "/media/himura/Data/tulafest7-temp"
-target_dirs = ['Арт', 'Фотокосплей']
+configfile = open("config.yml", "r")
+config = load(configfile.read())
+configfile.close()
+db_path = config['db_path']
+tex_path = config['tex_path']
+fest_path = config['folder_path']
+
+target_dirs = config['print_noms']
 
 print('Connecting to %s...' % os.path.basename(db_path))
 db = sqlite3.connect(db_path, isolation_level=None)
