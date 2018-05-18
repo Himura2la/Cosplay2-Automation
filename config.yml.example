@@ -14,6 +14,10 @@ admin_cs2_password: 'password'
 # Регэкспы
 id_regex: '^№ (\d{1,3})\. (.*)\.\w{2,4}$'
 code_regex: '(\d{3}) (\w{1,2})\. (.*?)\(№(\d{1,3})\)'
+# Печатать только одну фото или все
+use_main_foto: false
+# Какие файлы скачивать, варианты: "all", "scene", "pdf"
+get_files: 'all'
 
 ### Поля ###
 

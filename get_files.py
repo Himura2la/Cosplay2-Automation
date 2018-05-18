@@ -205,24 +205,38 @@ if __name__ == "__main__":
     """
 
     printnoms = ','.join(config['print_noms'])
-    printtitle = config['print_title']
+    mainfotojoin = ''
+    if config['use_main_foto']:
+        printtitle = config['print_title']
+        mainfotojoin = f"""
+            LEFT JOIN (SELECT request_section_id as m_rsid, value as main_foto FROM [values] 
+            WHERE title = '{printtitle}')
+            ON m_rsid = request_section_id
+        """
+        mainfotoif = " || IFNULL(main_foto, '') as file_type,"
+    else:
+        mainfotoif = ','
     art_foto_query = f"""
         SELECT request_id,
                list.title as nom,
                requests.number,
                voting_title,
-               [values].title || IFNULL(main_foto, '') as file_type,
+               [values].title{mainfotoif}
                value as file
         FROM [values], requests, list
-            LEFT JOIN (SELECT request_section_id as m_rsid, value as main_foto FROM [values] 
-                       WHERE title = '{printtitle}')
-                       ON m_rsid = request_section_id
+        {mainfotojoin}
         WHERE   list.id = topic_id AND
                 request_id = requests.id AND
                 (type = 'file' OR type = 'image') AND
                 nom IN ({printnoms})
         ORDER BY request_id
     """
+
+    def preprocess_scene_all_data(num, dir_name, file_name):
+        skip_files_with = ['Демо-запись']
+        skip_by_field = any([s in file_name for s in skip_files_with])
+
+        return skip_by_field, dir_name, file_name
 
     def preprocess_scene_tracks_only(num, dir_name, file_name):
         skip_files_with = config['not_scene_files']
@@ -236,7 +250,13 @@ if __name__ == "__main__":
         new_file_name = file_name.replace(' ', '-')
         return skip_by_field, new_dir_name, new_file_name
 
-    d = Downloader(preprocess_scene_tracks_only)
+    if config['get_files'] == 'pdf':
+        d = Downloader(preprocess_for_pdf)
+    elif config['get_files'] == 'scene':
+        d = Downloader(preprocess_scene_tracks_only)
+    else:
+        d = Downloader(preprocess_scene_all_data)
+
     if d.get_lists(db_path, scene_query):
         db = sqlite3.connect(db_path, isolation_level=None)
         c = db.cursor()
