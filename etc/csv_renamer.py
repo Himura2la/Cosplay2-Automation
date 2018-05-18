@@ -4,11 +4,11 @@ import os
 import csv
 import unicodedata
 
-csv_path = r"D:\Clouds\YandexDisk\Fests\АтомКосКон2018\data.csv"
+csv_path = r"D:\Clouds\YandexDisk\Fests\AtomCosCon2018\data.csv"
 num_row = '№'
 
-folder_paths = [r"D:\Clouds\YandexDisk\Fests\АтомКосКон2018\src"]
-num_sep = '. '
+folder_paths = [r"D:\Clouds\YandexDisk\Fests\AtomCosCon2018\\" + v for v in ['zad_JPEG']]
+num_sep = '.'
 subnum_sep = '-'
 
 
@@ -38,7 +38,9 @@ with open(csv_path, 'r', encoding='utf-8') as f:
 
 
 def to_filename(string):
-    filename = unicodedata.normalize('NFD', string).encode('cp1251', 'replace').decode('cp1251')
+    filename = string.replace('й', "<икраткое>")
+    filename = unicodedata.normalize('NFD', filename).encode('cp1251', 'replace').decode('cp1251')
+    filename = filename.replace("<икраткое>", 'й')
     filename = filename.replace(':', " -")\
                        .replace('|', ";").replace('/', ";").replace('\\', ";")\
                        .replace('"', "'")
@@ -47,7 +49,12 @@ def to_filename(string):
 
 
 for folder_path in folder_paths:
+    processed_nums = set()
+    print("\n" + folder_path + ":")
     for file_name in os.listdir(folder_path):
+        if os.path.isdir(file_name):
+            continue
+
         ext = '.' + file_name.rsplit('.', 1)[-1]
         num = file_name.split(num_sep, 1)[0]
         # name = file_name[:-len(ext)][len(num + num_sep):]
@@ -76,3 +83,8 @@ for folder_path in folder_paths:
         if src != dst:
             print(src + " -> \n" + dst + '\n')
             os.rename(src, dst)
+        processed_nums.add(num)
+
+    lost_files = set(data.keys()) - processed_nums
+    for num in lost_files:
+        print('[NO FILE]', num, data[num])
