@@ -1,8 +1,6 @@
 SELECT 
-	REPLACE(group_concat(distinct card_code || ' ' || voting_number), ',', ', ') as nums,
 	last_name, first_name, mid_name, nick,
-	city,
-	IFNULL([role], 'Участник') as role
+	city, tsu_num, vk
 
 FROM list, requests, [values]
 
@@ -32,21 +30,20 @@ LEFT JOIN ( SELECT request_section_id as ln_rsid, value as last_name
 	ON ln_rsid = request_section_id
 
 
-LEFT JOIN ( SELECT request_section_id as r_rsid, value as [role]
+LEFT JOIN ( SELECT request_section_id as r_rsid, value as vk
 			FROM [values] 
-			WHERE title = 'Роль')
+			WHERE title = 'Страничка ВКонтакте')
 	ON r_rsid = request_section_id
 
-LEFT JOIN ( SELECT request_section_id as w_rsid, value as will_be
+ JOIN ( SELECT request_section_id as w_rsid, value as tsu_num
 			FROM [values]
-			WHERE title = 'Приедет ли этот человек на фестиваль?')
+			WHERE title = 'Номер группы ТулГУ (необязательно)')
 	ON w_rsid = request_section_id
 
 WHERE
 	list.id = topic_id AND requests.id = request_id
 	AND	status != 'disapproved'
-	AND	section_title in ("Авторы", "Участники", "Косплееры", "Персональные данные фотографов")
-	AND	NOT (list.card_code in ('ART', 'FC', 'VC', 'V') and (will_be IS NULL or will_be = 'NO')) -- who did not told they won't come
+	AND	section_title in ("Участники", "Косплееры")
 
 GROUP BY last_name, first_name, mid_name
 

@@ -157,7 +157,9 @@ class Downloader:
 
     @staticmethod
     def __to_filename(string):
-        filename = unicodedata.normalize('NFD', string).encode('cp1251', 'replace').decode('cp1251')
+        filename = string.replace('й', "<икраткое>")
+        filename = unicodedata.normalize('NFD', filename).encode('cp1251', 'replace').decode('cp1251')
+        filename = filename.replace("<икраткое>", 'й')
         filename = filename.replace(':', " -") \
             .replace('|', ";").replace('/', ";").replace('\\', ";") \
             .replace('"', "'")
