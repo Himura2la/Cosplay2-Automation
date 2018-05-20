@@ -189,7 +189,7 @@ if __name__ == "__main__":
     db_path = config['db_path']
     folder_path = config['folder_path']
 
-    notscene = '"'+'","'.join(config['not_scene'])+'"'
+    notscene = '"{noms}"'.format(noms='","'.join(config['not_scene']))
     scene_query = f"""
         SELECT request_id,
                list.title as nom,
@@ -206,7 +206,7 @@ if __name__ == "__main__":
         ORDER BY [values].title
     """
 
-    printnoms = ','.join(config['print_noms'])
+    printnoms = '"{noms}"'.format(noms='","'.join(config['print_noms']))
     mainfotojoin = ''
     if config['use_main_foto']:
         printtitle = config['print_title']
@@ -254,12 +254,16 @@ if __name__ == "__main__":
 
     if config['get_files'] == 'pdf':
         d = Downloader(preprocess_for_pdf)
+        query = art_foto_query
     elif config['get_files'] == 'scene':
         d = Downloader(preprocess_scene_tracks_only)
+        query = scene_query
     else:
         d = Downloader(preprocess_scene_all_data)
+        query = art_foto_query
 
-    if d.get_lists(db_path, scene_query):
+
+    if d.get_lists(db_path, query):
         db = sqlite3.connect(db_path, isolation_level=None)
         c = db.cursor()
         c.execute('PRAGMA encoding = "UTF-8"')
