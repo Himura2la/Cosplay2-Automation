@@ -33,7 +33,7 @@ for target_dir in target_dirs:
     for art_dir in os.listdir(os.path.join(fest_path, target_dir)):
         art_path = os.path.join(base_dir, art_dir)
         files = os.listdir(art_path)
-        if len(files) != 1:
+        if len(files) != 1 and config['use_main_foto']:
             texcode += "%% [!!!! ERROR !!!!] Not 1 file in %s\n" % art_dir
             continue
         path = os.path.join(art_path, files[0])
@@ -56,9 +56,21 @@ for target_dir in target_dirs:
             GROUP BY key
         """, (num,))
         fields = c.fetchall()
-        status = fields[0][2]
-        url_id = fields[0][3]
-        voting_number = fields[0][4]
+        try:
+            status = fields[0][2]
+        except IndexError:
+            print("Please set card names.")
+            status = ""
+        try:
+            url_id = fields[0][3]
+        except IndexError:
+            print("Please set request IDs.")
+            url_id = ""
+        try:
+            voting_number = fields[0][4]
+        except IndexError:
+            print("Please set voting numbers.")
+            voting_number = 00
         fields = {key: val for key, val, _, _, _ in fields}
 
         if target_dir == 'Арт':
