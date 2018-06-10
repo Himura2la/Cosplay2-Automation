@@ -57,6 +57,12 @@ for target_dir in target_dirs:
         """, (num,))
         fields = c.fetchall()
         try:
+            status = fields[0][0]
+        except IndexError:
+            print("SQL returned no section titles.")
+            status = ""
+            exit(-1)
+        try:
             status = fields[0][2]
         except IndexError:
             print("Please set card names.")
