@@ -3,6 +3,7 @@
 
 import os
 import sqlite3
+import re
 from yaml import load
 from PIL import Image
 
@@ -31,18 +32,20 @@ def opt(a, k, pre=''):
 for target_dir in target_dirs:
     base_dir = os.path.join(fest_path, target_dir)
     for art_dir in os.listdir(os.path.join(fest_path, target_dir)):
+        num = re.findall(r'\d+', art_dir.split('. ')[0])[0]
+        num = int(num)
         art_path = os.path.join(base_dir, art_dir)
         files = os.listdir(art_path)
         if len(files) != 1 and config['use_main_foto']:
             texcode += "%% [!!!! ERROR !!!!] Not 1 file in %s\n" % art_dir
+            continue
+        if len(files) == 0:
             continue
         path = os.path.join(art_path, files[0])
 
         with Image.open(path) as img:
             w, h = img.size
             portrait = w < h
-
-        num = art_dir
 
         c.execute("""
             SELECT section_title || '.' || title as key, 
@@ -80,10 +83,16 @@ for target_dir in target_dirs:
         fields = {key: val for key, val, _, _, _ in fields}
 
         if target_dir == 'Арт':
-            num = 'ART~%d' % voting_number
+            if voting_number != None:
+                num = 'ART~%d' % voting_number
+            else:
+                num = 'ART~%d' % num
             authors_cat = 'Авторы'
         else:
-            num = 'FC~%d' % voting_number
+            if voting_number != None:
+                num = 'FC~%d' % voting_number
+            else:
+                num = 'FC~%d' % num
             authors_cat = 'Косплееры'
 
         try:
