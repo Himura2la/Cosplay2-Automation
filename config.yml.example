@@ -95,4 +95,4 @@ checker_sql: >
     card_code NOT IN ("FG", "A", "F");
 
 # Изображения в формате JPG/PNG или PDF
-image_pdf: true
+image_pdf: false
