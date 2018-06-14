@@ -49,88 +49,91 @@ for target_dir in target_dirs:
             continue
         if len(files) == 0:
             continue
-        path = os.path.join(art_path, files[0])
+        for imagefile in files:
+            path = os.path.join(art_path, imagefile)
+            if os.path.splitext(path)[1] == '.pdf':
+                continue
 
-        with Image.open(path) as img:
-            w, h = img.size
-            portrait = w < h
-            square = False
+            with Image.open(path) as img:
+                w, h = img.size
+                portrait = w < h
+                square = False
+                if portrait:
+                    square = ( h / abs(w - h) ) <= 0.25
+
+            if config['image_pdf']:
+                path = os.path.splitext(path)[0]+'.pdf'
+
+            c.execute("""
+                SELECT section_title || '.' || title as key, 
+                       REPLACE(GROUP_CONCAT(DISTINCT value), ',', ', ') as value,
+                       status,
+                       requests.id as url_id,
+                       voting_number
+                FROM requests, [values]
+                WHERE requests.id = request_id
+                AND requests.number = ?
+                GROUP BY key
+            """, (num,))
+            fields = c.fetchall()
+            try:
+                status = fields[0][0]
+            except IndexError:
+                print("SQL returned no section titles for %s." % num)
+                status = ""
+                exit(-1)
+            try:
+                status = fields[0][2]
+            except IndexError:
+                print("Please set card names.")
+                status = ""
+            try:
+                url_id = fields[0][3]
+            except IndexError:
+                print("Please set request IDs.")
+                url_id = ""
+            try:
+                voting_number = fields[0][4]
+            except IndexError:
+                print("Please set voting numbers.")
+                voting_number = 00
+            fields = {key: val for key, val, _, _, _ in fields}
+
+            if target_dir == 'Арт':
+                if voting_number != None:
+                    nnum = 'ART~%d' % voting_number
+                else:
+                    if config['dry_run']:
+                        nnum = 'ART~%d' % num
+            else:
+                if voting_number != None:
+                    nnum = 'FC~%d' % voting_number
+                else:
+                    if config['dry_run']:
+                        nnum = 'FC~%d' % num
+
+            try:
+                nick = getfield(fields, config, 'name_fields')
+                city = fields[config['city_field']]
+                title = getfield(fields, config, 'name_fields')
+                fandom = getfield(fields, config, 'fandom_fields')
+                extra = getfield(fields, config, 'extra_fields')
+                other_authors = getfield(fields, config, 'other_authors_fields')
+            except KeyError as e:
+                texcode += "%% [!!!! ERROR !!!!] No value for '%s' in '%s' (status: %s)\n" % (e.args[0], art_dir, status)
+                continue
+
+            if other_authors != None:
+                extra += other_authors
+
             if portrait:
-                square = ( h / abs(w - h) ) <= 0.25
-
-        if config['image_pdf']:
-            path = os.path.splitext(path)[0]+'.pdf'
-
-        c.execute("""
-            SELECT section_title || '.' || title as key, 
-                   REPLACE(GROUP_CONCAT(DISTINCT value), ',', ', ') as value,
-                   status,
-                   requests.id as url_id,
-                   voting_number
-            FROM requests, [values]
-            WHERE requests.id = request_id
-            AND requests.number = ?
-            GROUP BY key
-        """, (num,))
-        fields = c.fetchall()
-        try:
-            status = fields[0][0]
-        except IndexError:
-            print("SQL returned no section titles.")
-            status = ""
-            exit(-1)
-        try:
-            status = fields[0][2]
-        except IndexError:
-            print("Please set card names.")
-            status = ""
-        try:
-            url_id = fields[0][3]
-        except IndexError:
-            print("Please set request IDs.")
-            url_id = ""
-        try:
-            voting_number = fields[0][4]
-        except IndexError:
-            print("Please set voting numbers.")
-            voting_number = 00
-        fields = {key: val for key, val, _, _, _ in fields}
-
-        if target_dir == 'Арт':
-            if voting_number != None:
-                num = 'ART~%d' % voting_number
+                if square:
+                    texcode += '\\imgsquare'
+                else:
+                    texcode += '\\imgportrait'
             else:
-                if config['dry_run']:
-                    num = 'ART~%d' % num
-        else:
-            if voting_number != None:
-                num = 'FC~%d' % voting_number
-            else:
-                if config['dry_run']:
-                    num = 'FC~%d' % num
-
-        try:
-            nick = getfield(fields, config, 'name_fields')
-            city = fields[config['city_field']]
-            title = getfield(fields, config, 'name_fields')
-            fandom = getfield(fields, config, 'fandom_fields')
-            extra = getfield(fields, config, 'extra_fields')
-            other_authors = getfield(fields, config, 'other_authors_fields')
-        except KeyError as e:
-            texcode += "%% [!!!! ERROR !!!!] No value for '%s' in '%s' (status: %s)\n" % (e.args[0], art_dir, status)
-            continue
-
-        if other_authors != None:
-            extra += other_authors
-
-        if portrait:
-            if square:
-                texcode += '\\imgsquare'
-            else:
-                texcode += '\\imgportrait'
-        else:
-            texcode += '\\imglandscape'
-        texcode += '{%s}{%s, г.%s}{%s}{%s}{%s}{%s}{%s}\n' % (num, nick, city, title, nom, extra, path, url_id)
+                texcode += '\\imglandscape'
+            texcode += '{%s}{%s, г.%s}{%s}{%s}{%s}{%s}{%s}\n' % (nnum, nick, city, title, nom, extra, path, url_id)
 
 texcode.replace('&', '\&')
 
