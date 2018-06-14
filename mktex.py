@@ -54,6 +54,12 @@ for target_dir in target_dirs:
         with Image.open(path) as img:
             w, h = img.size
             portrait = w < h
+            square = False
+            if portrait:
+                square = ( h / abs(w - h) ) <= 0.25
+
+        if config['image_pdf']:
+            path = os.path.splitext(path)[0]+'.pdf'
 
         c.execute("""
             SELECT section_title || '.' || title as key, 
@@ -117,7 +123,13 @@ for target_dir in target_dirs:
         if other_authors != None:
             extra += other_authors
 
-        texcode += '\\imgportrait' if portrait else '\\imglandscape'
+        if portrait:
+            if square:
+                texcode += '\\imgsquare'
+            else:
+                texcode += '\\imgportrait'
+        else:
+            texcode += '\\imglandscape'
         texcode += '{%s}{%s, г.%s}{%s}{%s}{%s}{%s}{%s}\n' % (num, nick, city, title, nom, extra, path, url_id)
 
 texcode.replace('&', '\&')

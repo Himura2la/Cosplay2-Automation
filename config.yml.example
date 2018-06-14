@@ -94,3 +94,5 @@ checker_sql: >
     status = 'approved' AND
     card_code NOT IN ("FG", "A", "F");
 
+# Изображения в формате JPG/PNG или PDF
+image_pdf: true
