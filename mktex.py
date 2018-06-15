@@ -57,9 +57,7 @@ for target_dir in target_dirs:
             with Image.open(path) as img:
                 w, h = img.size
                 portrait = w < h
-                square = False
-                if portrait:
-                    square = ( h / abs(w - h) ) <= 0.25
+                square = (( max(w, h) - min (w, h) ) / min (w, h)) <= 0.25
 
             if config['image_pdf'] == True:
                 path = os.path.splitext(path)[0]+'.pdf'
@@ -126,13 +124,13 @@ for target_dir in target_dirs:
             if other_authors != None:
                 extra += other_authors
 
-            if portrait:
-                if square:
-                    texcode += '\\imgsquare'
-                else:
-                    texcode += '\\imgportrait'
+            if square:
+                texcode += '\\imgsquare'
             else:
-                texcode += '\\imglandscape'
+                if portrait:
+                    texcode += '\\imgportrait'
+                else:
+                    texcode += '\\imglandscape'
             texcode += '{%s}{%s, г.%s}{%s}{%s}{%s}{%s}{%s}\n' % (nnum, nick, city, title, nom, extra, path, url_id)
 
 texcode.replace('&', '\&')
