@@ -61,7 +61,7 @@ for target_dir in target_dirs:
                 if portrait:
                     square = ( h / abs(w - h) ) <= 0.25
 
-            if config['image_pdf']:
+            if config['image_pdf'] == True:
                 path = os.path.splitext(path)[0]+'.pdf'
 
             c.execute("""
