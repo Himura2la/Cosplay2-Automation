@@ -53,6 +53,9 @@ for target_dir in target_dirs:
             path = os.path.join(art_path, imagefile)
             if os.path.splitext(path)[1] == '.pdf':
                 continue
+            # Пропускать референсы персонажей
+            if "Источник" in path:
+                continue
 
             with Image.open(path) as img:
                 w, h = img.size
