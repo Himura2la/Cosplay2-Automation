@@ -100,18 +100,16 @@ for target_dir in target_dirs:
                 voting_number = 00
             fields = {key: val for key, val, _, _, _ in fields}
 
-            if target_dir == 'Арт':
-                if voting_number != None:
-                    nnum = 'ART~%d' % voting_number
-                else:
-                    if config['dry_run']:
-                        nnum = 'ART~%d' % num
+            c.execute("""
+                SELECT card_code FROM list WHERE title = ?;
+            """, (target_dir,))
+            voting_nom = c.fetchall()
+            voting_nom = voting_nom[0][0]
+            if voting_number != None:
+                nnum = '%s~%d' % (voting_nom, voting_number)
             else:
-                if voting_number != None:
-                    nnum = 'FC~%d' % voting_number
-                else:
-                    if config['dry_run']:
-                        nnum = 'FC~%d' % num
+                if config['dry_run']:
+                    nnum = '%s~%d' % (voting_nom, num)
 
             try:
                 nick = getfield(fields, config, 'name_fields')
