@@ -124,14 +124,14 @@ for target_dir in target_dirs:
             if other_authors != None:
                 extra += other_authors
 
-            if square:
-                texcode += '\\imgsquare'
-            else:
-                if portrait:
-                    texcode += '\\imgportrait'
+            if portrait:
+                if square:
+                    texcode += '\\imgsquare'
                 else:
-                    texcode += '\\imglandscape'
-            texcode += '{%s}{%s, г.%s}{%s}{%s}{%s}{%s}{%s}\n' % (nnum, nick, city, title, nom, extra, path, url_id)
+                    texcode += '\\imgportrait'
+            else:
+                texcode += '\\imglandscape'
+            texcode += '{%s}{%s, г.%s}{%s}{%s}{%s}{%s}{%s}\n' % (nnum, nick, city, title, nom, extra, url_id, path)
 
 texcode.replace('&', '\&')
 
