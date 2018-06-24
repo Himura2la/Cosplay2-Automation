@@ -124,7 +124,7 @@ for target_dir in target_dirs:
                 nnum = '%s~%d' % (voting_nom, voting_number)
 
             try:
-                nick = getfield(fields, config, 'name_fields')
+                author = getfield(fields, config, 'author_fields')
                 city = fields[config['city_field']]
                 title = getfield(fields, config, 'name_fields')
                 fandom = getfield(fields, config, 'fandom_fields')
@@ -144,7 +144,7 @@ for target_dir in target_dirs:
                     texcode += '\\imgportrait'
             else:
                 texcode += '\\imglandscape'
-            texcode += '{%s}{%s, г.%s}{%s}{%s}{%s}{%s}{%s}\n' % (nnum, nick, city, title, nom, extra, url_id, path)
+            texcode += '{%s}{%s, г.%s}{%s}{%s}{%s}{%s}{%s}\n' % (nnum, author, city, title, fandom, extra, url_id, path)
 
 texcode.replace('&', '\&')
 
