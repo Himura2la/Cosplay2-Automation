@@ -65,7 +65,7 @@ for target_dir in target_dirs:
             if config['image_pdf'] == True:
                 path = os.path.splitext(path)[0]+'.pdf'
 
-            c.execute("""
+            query = """
                 SELECT section_title || '.' || title as key, 
                        REPLACE(GROUP_CONCAT(DISTINCT value), ',', ', ') as value,
                        status,
@@ -74,15 +74,25 @@ for target_dir in target_dirs:
                 FROM requests, [values]
                 WHERE requests.id = request_id
                 AND requests.number = ?
+                %s
                 GROUP BY key
-            """, (num,))
+            """
+            if config['dry_run']:
+                query = query % ''
+            else:
+                query = query % ' AND requests.status = "approved"'
+            c.execute(query, (num,))
             fields = c.fetchall()
             try:
                 status = fields[0][0]
             except IndexError:
-                print("SQL returned no section titles for %s." % num)
-                status = ""
-                exit(-1)
+                if config['dry_run']:
+                    print("SQL returned no section titles for %s." % num)
+                    status = ""
+                    exit(-1)
+                else:
+                    # файлы есть, заявка не одобрена
+                    continue
             try:
                 status = fields[0][2]
             except IndexError:
@@ -98,6 +108,9 @@ for target_dir in target_dirs:
             except IndexError:
                 print("Please set voting numbers.")
                 voting_number = 00
+            if voting_number == None and ~config['dry_run']:
+                print("Please set voting numbers for %s." % url_id)
+
             fields = {key: val for key, val, _, _, _ in fields}
 
             c.execute("""
@@ -105,11 +118,10 @@ for target_dir in target_dirs:
             """, (target_dir,))
             voting_nom = c.fetchall()
             voting_nom = voting_nom[0][0]
-            if voting_number != None:
-                nnum = '%s~%d' % (voting_nom, voting_number)
+            if config['dry_run']:
+                nnum = '%s~%d' % (voting_nom, num)
             else:
-                if config['dry_run']:
-                    nnum = '%s~%d' % (voting_nom, num)
+                nnum = '%s~%d' % (voting_nom, voting_number)
 
             try:
                 nick = getfield(fields, config, 'name_fields')
