@@ -147,7 +147,9 @@ for target_dir in target_dirs:
                 texcode += '\\imglandscape'
             texcode += '{%s}{%s, г.%s}{%s}{%s}{%s}{%s}{%s}\n' % (nnum, author, city, title, fandom, extra, url_id, path)
 
-texcode = texcode.replace(r'&', r'\&').replace(r'_', r'\_').replace(r'^', r'\^')
+texcode = texcode.replace(r'&', r'\&')
+texcode = texcode.replace(r'_', r'\_')
+texcode = texcode.replace(r'^', r'\^{}')
 texcode += r'\newcommand{\festurl}{%s}' % (config['fest_url'])
 
 print(texcode)
