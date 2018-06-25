@@ -4,6 +4,7 @@
 import os
 import sqlite3
 import re
+import string
 from yaml import load
 from PIL import Image
 
@@ -146,8 +147,8 @@ for target_dir in target_dirs:
                 texcode += '\\imglandscape'
             texcode += '{%s}{%s, г.%s}{%s}{%s}{%s}{%s}{%s}\n' % (nnum, author, city, title, fandom, extra, url_id, path)
 
-texcode.replace('&', '\&')
-texcode += '\\newcommand{\\festurl}{%s}' % (config['fest_url'])
+texcode = texcode.replace(r'&', r'\&').replace(r'_', r'\_').replace(r'^', r'\^')
+texcode += r'\newcommand{\festurl}{%s}' % (config['fest_url'])
 
 print(texcode)
 open(tex_path, 'w', encoding='utf-8').write(texcode)
