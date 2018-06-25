@@ -147,6 +147,7 @@ for target_dir in target_dirs:
             texcode += '{%s}{%s, г.%s}{%s}{%s}{%s}{%s}{%s}\n' % (nnum, author, city, title, fandom, extra, url_id, path)
 
 texcode.replace('&', '\&')
+texcode += '\\newcommand{\\festurl}{%s}' % (config['fest_url'])
 
 print(texcode)
 open(tex_path, 'w', encoding='utf-8').write(texcode)
