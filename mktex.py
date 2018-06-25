@@ -61,7 +61,7 @@ for target_dir in target_dirs:
             with Image.open(path) as img:
                 w, h = img.size
                 portrait = w < h
-                square = (( max(w, h) - min (w, h) ) / min (w, h)) <= 0.25
+                square = (( max(w, h) - min (w, h) ) / min (w, h)) <= 0.3
 
             if config['image_pdf'] == True:
                 path = os.path.splitext(path)[0]+'.pdf'
@@ -150,7 +150,7 @@ for target_dir in target_dirs:
 texcode = texcode.replace(r'&', r'\&')
 texcode = texcode.replace(r'_', r'\_')
 texcode = texcode.replace(r'^', r'\^{}')
-texcode += r'\newcommand{\festurl}{%s}' % (config['fest_url'])
+texcode += r'\renewcommand{\festurl}{%s}' % (config['fest_url'])
 
 print(texcode)
 open(tex_path, 'w', encoding='utf-8').write(texcode)
