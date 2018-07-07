@@ -3,12 +3,19 @@
 
 import os
 import sqlite3
+import re
+import string
+from yaml import load
 from PIL import Image
 
-tex_path = "/media/himura/Data/Fests Local/Yuki no Odori 7/art_foto_to_pdf/images.tex"
-db_path = "/media/himura/Data/Git/Cosplay2-Downloader/tulafest/sqlite3_data.db"
-fest_path = "/media/himura/Data/tulafest7-temp"
-target_dirs = ['Арт', 'Фотокосплей']
+configfile = open("config.yml", "r")
+config = load(configfile.read())
+configfile.close()
+db_path = config['db_path']
+tex_path = config['tex_path']
+fest_path = config['folder_path']
+
+target_dirs = config['print_noms']
 
 print('Connecting to %s...' % os.path.basename(db_path))
 db = sqlite3.connect(db_path, isolation_level=None)
@@ -22,82 +29,128 @@ texcode = ''
 def opt(a, k, pre=''):
     return pre + a[k] if k in a else ''
 
+def getfield(fields, config, options):
+    for field in config[options]:
+        try:
+            return fields[field]
+        except KeyError:
+            continue
+    return ''
 
 for target_dir in target_dirs:
+    nom = target_dir
     base_dir = os.path.join(fest_path, target_dir)
     for art_dir in os.listdir(os.path.join(fest_path, target_dir)):
+        num = re.findall(r'\d+', art_dir.split('. ')[0])[0]
+        num = int(num)
         art_path = os.path.join(base_dir, art_dir)
         files = os.listdir(art_path)
-        if len(files) != 1:
+        if len(files) != 1 and config['use_main_foto']:
             texcode += "%% [!!!! ERROR !!!!] Not 1 file in %s\n" % art_dir
             continue
-        path = os.path.join(art_path, files[0])
-
-        with Image.open(path) as img:
-            w, h = img.size
-            portrait = w < h
-
-        num = art_dir
-
-        c.execute("""
-            SELECT section_title || '.' || title as key, 
-                   REPLACE(GROUP_CONCAT(DISTINCT value), ',', ', ') as value,
-                   status,
-                   requests.id as url_id,
-				   voting_number
-            FROM requests, [values]
-            WHERE requests.id = request_id
-            AND requests.number = ?
-            GROUP BY key
-        """, (num,))
-        fields = c.fetchall()
-        status = fields[0][2]
-        url_id = fields[0][3]
-        voting_number = fields[0][4]
-        fields = {key: val for key, val, _, _, _ in fields}
-
-        if target_dir == 'Арт':
-            num = 'ART~%d' % voting_number
-            authors_cat = 'Авторы'
-        else:
-            num = 'FC~%d' % voting_number
-            authors_cat = 'Косплееры'
-
-        try:
-            nom = fields['Информация о работе.Номинация']
-            contest = fields['Информация о работе.Участие в конкурсе']
-            nicks = fields[authors_cat + '.Ник']
-            nicks = "%s: %s" % (authors_cat if ',' in nicks else authors_cat[:-1], nicks)
-            city = fields[authors_cat + '.Город']
-            title = opt(fields, 'Информация о работе.Название работы')
-            fandom = opt(fields, 'Информация о работе.Фэндом(ы)')
-            photographer_nick = opt(fields, 'Фотографы (необязательно).Ник')
-            photographer_name = opt(fields, 'Фотографы (необязательно).Имя') + opt(fields, 'Фотографы (необязательно).Фамилия', ' ')
-            photographer_team = opt(fields, 'Фотографы (необязательно).Команда/сообщество фотографов (необязательно)')
-        except KeyError as e:
-            texcode += "%% [!!!! ERROR !!!!] No value for '%s' in '%s' (status: %s)\n" % (e.args[0], art_dir, status)
+        if len(files) == 0:
             continue
-        
-        if fandom not in title:
-            title = "%s (%s)" % (title, fandom) if title and fandom else title if title \
-                                                else fandom if fandom else "Без названия"
+        for imagefile in files:
+            path = os.path.join(art_path, imagefile)
+            if os.path.splitext(path)[1] == '.pdf':
+                continue
+            # Пропускать референсы персонажей
+            if "Источник" in path:
+                continue
 
-        nom = nom if contest == 'В конкурсе' else contest
-        extra = ''
-        if photographer_nick or photographer_name or photographer_team:
-            if photographer_nick or photographer_name:
-                photographer = photographer_nick if photographer_nick else photographer_name
-                if photographer_team:
-                    photographer = "%s (%s)" % (photographer, photographer_team)
+            with Image.open(path) as img:
+                w, h = img.size
+                portrait = w < h
+                square = (( max(w, h) - min (w, h) ) / min (w, h)) <= 0.3
+
+            if config['image_pdf'] == True:
+                path = os.path.splitext(path)[0]+'.pdf'
+
+            query = """
+                SELECT section_title || '.' || title as key, 
+                       REPLACE(GROUP_CONCAT(DISTINCT value), ',', ', ') as value,
+                       status,
+                       requests.id as url_id,
+                       voting_number
+                FROM requests, [values]
+                WHERE requests.id = request_id
+                AND requests.number = ?
+                %s
+                GROUP BY key
+            """
+            if config['dry_run']:
+                query = query % ''
             else:
-                photographer = photographer_team
-            photographer = "%s: %s" % ('Фотографы' if ',' in photographer else 'Фотограф', photographer)
-            extra += photographer
+                query = query % ' AND requests.status = "approved"'
+            c.execute(query, (num,))
+            fields = c.fetchall()
+            try:
+                status = fields[0][0]
+            except IndexError:
+                if config['dry_run']:
+                    print("SQL returned no section titles for %s." % num)
+                    status = ""
+                    exit(-1)
+                else:
+                    # файлы есть, заявка не одобрена
+                    continue
+            try:
+                status = fields[0][2]
+            except IndexError:
+                print("Please set card names.")
+                status = ""
+            try:
+                url_id = fields[0][3]
+            except IndexError:
+                print("Please set request IDs.")
+                url_id = ""
+            try:
+                voting_number = fields[0][4]
+            except IndexError:
+                print("Please set voting numbers.")
+                voting_number = 00
+            if voting_number == None and ~config['dry_run']:
+                print("Please set voting numbers for %s." % url_id)
 
-        texcode += '\\imgportrait' if portrait else '\\imglandscape'
-        texcode += '{%s}{%s, г.%s}{%s}{%s}{%s}{%s}{%s}\n' % (num, nicks, city, title, nom, extra, path, url_id)
+            fields = {key: val for key, val, _, _, _ in fields}
 
-texcode.replace('&', '\&')
+            c.execute("""
+                SELECT card_code FROM list WHERE title = ?;
+            """, (target_dir,))
+            voting_nom = c.fetchall()
+            voting_nom = voting_nom[0][0]
+            if config['dry_run']:
+                nnum = '%s~%d' % (voting_nom, num)
+            else:
+                nnum = '%s~%d' % (voting_nom, voting_number)
+
+            try:
+                author = getfield(fields, config, 'author_fields')
+                city = fields[config['city_field']]
+                title = getfield(fields, config, 'name_fields')
+                fandom = getfield(fields, config, 'fandom_fields')
+                extra = getfield(fields, config, 'extra_fields')
+                other_authors = getfield(fields, config, 'other_authors_fields')
+            except KeyError as e:
+                texcode += "%% [!!!! ERROR !!!!] No value for '%s' in '%s' (status: %s)\n" % (e.args[0], art_dir, status)
+                continue
+
+            if other_authors != None:
+                extra += other_authors
+
+            if portrait:
+                if square:
+                    texcode += '\\imgsquare'
+                else:
+                    texcode += '\\imgportrait'
+            else:
+                texcode += '\\imglandscape'
+            texcode += '{%s}{%s, г.%s}{%s}{%s}{%s}{%s}{%s}\n' % (nnum, author, city, title, fandom, extra, url_id, path)
+
+texcode = texcode.replace(r'&', r'\&')
+texcode = texcode.replace(r'_', r'\_')
+texcode = texcode.replace(r'^', r'\^{}')
+texcode += r'\renewcommand{\festurl}{%s}' % (config['fest_url'])
 
 print(texcode)
 open(tex_path, 'w', encoding='utf-8').write(texcode)
