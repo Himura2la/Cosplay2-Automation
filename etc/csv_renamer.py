@@ -1,40 +1,28 @@
 # -*- coding: utf-8 -*-
 
 import os
+import re
 import csv
 import unicodedata
 
-csv_path = r"D:\Clouds\YandexDisk\Fests\AtomCosCon2018\data.csv"
-num_row = '№'
+csv_path = r"D:\Clouds\YandexDisk\Fests\Gakko X\prog.csv"
+id_row = 'id'
 
-folder_paths = [r"D:\Clouds\YandexDisk\Fests\AtomCosCon2018\\" + v for v in ['zad_JPEG']]
-num_sep = '.'
-subnum_sep = '-'
+folder_paths = [r"D:\Clouds\YandexDisk\Fests\Gakko X\Fest"]
+id_regex_filename = r"#(?P<id>[\w-]{3,4})"
+
+no_op = bool(1)
 
 
-def make_name(d, num, subnum):
-    if subnum:
-        return f"{num:#03d}. {d['Ник/Косбенд']} - {d['Фандом']} ({subnum})"
-    else:
-        return f"{num:#03d}. {d['Ник/Косбенд']} - {d['Фандом']}"
-
-# if update:
-#     for folder_path in folder_paths:
-#         for file_name in os.listdir(folder_path):
-#             num = file_name.split(num_sep)[0]
-#             name = file_name[len(num) + len(num_sep):]
-#             if len(name) > 2:
-#                 src = os.path.join(folder_path, num + name)
-#                 dst = os.path.join(folder_path, name)
-#                 # os.rename(src, dst)
-#                 print("[Num Removed]", name)
+def make_name(d, r_id):
+    return f"{d['num']}. #{r_id}" + (f" - {d['nom']}" if d['nom'] else '') + f" - {d['name']}"
 
 
 with open(csv_path, 'r', encoding='utf-8') as f:
     reader = csv.reader(f)
     head = reader.__next__()
-    data = {int(row[head.index(num_row)]):
-                {head[i]: row[i].strip() for i in range(len(head)) if i != head.index(num_row)} for row in reader}
+    data = {row[head.index(id_row)]:
+                {head[i]: row[i].strip() for i in range(len(head)) if i != head.index(id_row)} for row in reader}
 
 
 def to_filename(string):
@@ -42,7 +30,7 @@ def to_filename(string):
     filename = unicodedata.normalize('NFD', filename).encode('cp1251', 'replace').decode('cp1251')
     filename = filename.replace("<икраткое>", 'й')
     filename = filename.replace(':', " -")\
-                       .replace('|', ";").replace('/', ";").replace('\\', ";")\
+                       .replace('|', "-").replace('/', "-").replace('\\', "-")\
                        .replace('"', "'")
     filename = ''.join(i if i not in "*?<>" else '' for i in filename)
     return filename
@@ -52,39 +40,33 @@ for folder_path in folder_paths:
     processed_nums = set()
     print("\n" + folder_path + ":")
     for file_name in os.listdir(folder_path):
-        if os.path.isdir(file_name):
+        if not os.path.isfile(os.path.join(folder_path, file_name)):
             continue
-
-        ext = '.' + file_name.rsplit('.', 1)[-1]
-        num = file_name.split(num_sep, 1)[0]
-        # name = file_name[:-len(ext)][len(num + num_sep):]
-
-        if subnum_sep in num:
-            subnum = num.rsplit(subnum_sep, 1)[-1]
-            num = int(num[:-len(subnum) - 1])
-            subnum = int(subnum)
-        else:
-            try:
-                num, subnum = int(num), None
-            except ValueError:
-                print('[NUM NOT FOUND]', file_name)
-                continue
-
+        name, ext = file_name.rsplit('.', 1)
+        ext = '.' + ext
         try:
-            name_data = data[num]
+            r_id = re.search(id_regex_filename, name).group("id")
+            name_data = data[r_id]
         except KeyError:
             print('[NOT FOUND IN CSV]', file_name)
             continue
+        except AttributeError:
+            print('[DOES NOT MATCH]', file_name)
+            continue
 
-        name = to_filename(make_name(name_data, num, subnum))
+        name = to_filename(make_name(name_data, r_id))
 
         src = os.path.join(folder_path, file_name)
         dst = os.path.join(folder_path, name + ext)
         if src != dst:
             print(src + " -> \n" + dst + '\n')
-            os.rename(src, dst)
-        processed_nums.add(num)
+            if not no_op:
+                try:
+                    os.rename(src, dst)
+                except Exception as e:
+                    print("FAILED TO RENAME:", e)
+        processed_nums.add(r_id)
 
     lost_files = set(data.keys()) - processed_nums
-    for num in lost_files:
-        print('[NO FILE]', num, data[num])
+    for r_id in lost_files:
+        print('[NO FILE]', r_id, data[r_id])
