@@ -8,8 +8,8 @@ import unicodedata
 csv_path = r"D:\Clouds\YandexDisk\Fests\Gakko X\prog.csv"
 id_row = 'id'
 
-folder_paths = [r"D:\Clouds\YandexDisk\Fests\Gakko X\Fest"]
-id_regex_filename = r"#(?P<id>[\w-]{3,4})"
+folder_paths = [r"C:\Users\glago\Desktop\screens"]
+id_regex_filename = r"(?P<id>\d-\d{2})"
 
 no_op = bool(1)
 
@@ -69,4 +69,4 @@ for folder_path in folder_paths:
 
     lost_files = set(data.keys()) - processed_nums
     for r_id in lost_files:
-        print('[NO FILE]', r_id, data[r_id])
+        print('[NO FILE]%s: %s' % (r_id, make_name(data[r_id], r_id)))
