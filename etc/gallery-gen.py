@@ -64,6 +64,9 @@ result_html += '\n</div></div>'
 print(result_html)
 
 
+# h5 {
+#     font-weight: bold;
+# }
 # .gallery {
 #     margin-left: -5px;
 #     margin-right: -5px;
@@ -75,19 +78,39 @@ print(result_html)
 #     margin: 5px;
 #     border-radius: 5px;
 # }
-# iframe.landing-video {
-#     width: 830px;
-#     height: 457px;
+# div.video {
+# 	position: relative;
+# 	padding-bottom: 56.25%; /* 16:9 */
+# 	padding-top: 25px;
+# 	height: 0;
 # }
-#
-# @media (max-width: 467px) {
+# iframe.video {
+# 	position: absolute;
+# 	top: 0;
+# 	left: 0;
+# 	width: 100%;
+# 	height: 100%;
+# }
+# @media (max-width: 467px) and (min-width: 371px) {
 #     img.gallery-image-o {
-#         width: 90px;
+#         width: 110px;
 #         height: auto;
 #         margin: 2px;
 #     }
 #     img.gallery-image-p {
-#         width: 137px;
+#         width: 167px;
+#         height: auto;
+#         margin: 2px;
+#     }
+# }
+# @media (max-width: 371px) and (min-width: 310px) {
+#     img.gallery-image-o {
+#         width: 89px;
+#         height: auto;
+#         margin: 2px;
+#     }
+#     img.gallery-image-p {
+#         width: 136px;
 #         height: auto;
 #         margin: 2px;
 #     }
