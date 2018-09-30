@@ -64,9 +64,6 @@ result_html += '\n</div></div>'
 print(result_html)
 
 
-# h5 {
-#     font-weight: bold;
-# }
 # .gallery {
 #     margin-left: -5px;
 #     margin-right: -5px;
@@ -91,26 +88,19 @@ print(result_html)
 # 	width: 100%;
 # 	height: 100%;
 # }
-# @media (max-width: 467px) and (min-width: 371px) {
+# @media (max-width: 467px) and (min-width: 310px) {
+#     .gallery {
+#         display: block;
+#         margin-left: -2px;
+#         margin-right: -2px;
+#     }
 #     img.gallery-image-o {
-#         width: 110px;
+#         width: 31.7%;
 #         height: auto;
 #         margin: 2px;
 #     }
 #     img.gallery-image-p {
-#         width: 167px;
-#         height: auto;
-#         margin: 2px;
-#     }
-# }
-# @media (max-width: 371px) and (min-width: 310px) {
-#     img.gallery-image-o {
-#         width: 89px;
-#         height: auto;
-#         margin: 2px;
-#     }
-#     img.gallery-image-p {
-#         width: 136px;
+#         width: 48.1%;
 #         height: auto;
 #         margin: 2px;
 #     }
