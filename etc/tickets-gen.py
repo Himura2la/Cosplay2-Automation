@@ -5,22 +5,22 @@ import os
 
 types = {
     '01': {
-        'descr': 'Билет\nна фестиваль',
+        'descr': 'Билет\n"Тануки"',
         'image': 'tanuki.jpg',
-        'start': 300,
-        'total': 30
+        'start': 321,
+        'total': 4
     },
     '02': {
-        'descr': 'Билет\nс гримёркой',
+        'descr': 'Билет\n"Кицунэ"',
         'image': 'kitsune.jpg',
-        'start': 300,
-        'total': 20
+        'start': 310,
+        'total': 0
     },
     '03': {
-        'descr': 'VIP\nбилет',
+        'descr': 'VIP Билет\n"Ооками"',
         'image': 'ookami.jpg',
-        'start': 300,
-        'total': 10
+        'start': 305,
+        'total': 20
     }
 }
 
@@ -41,9 +41,9 @@ with open(target_csv_path, 'w', encoding='utf-8', newline='') as f:
     w = csv.writer(f, delimiter=',', quotechar='"')
     w.writerow([
         'ds'
+        , 'code'
         , 'ser'
         , 'num'
-        , 'code'
         , 'descr'
     #    , 'img'
     ])
@@ -53,9 +53,9 @@ with open(target_csv_path, 'w', encoding='utf-8', newline='') as f:
             num = data['start'] + i
             row = [
                 f"{ser}-{num}"
+                , code
                 , ser
                 , num
-                , code
                 , data['descr']
             #    , os.path.join(image_base_path, data['image'])
             ]
@@ -63,7 +63,7 @@ with open(target_csv_path, 'w', encoding='utf-8', newline='') as f:
             report[ser]['to'] = num
             print(row)
 
-report = ";".join([f"{t}-{d['from']}..{d['to']}" for t, d in report.items()])
+report = ";".join([f"{t}-{d['from']}..{d['to']}" for t, d in report.items() if 'to' in d])
 path, ext = target_csv_path.rsplit('.', 1)
 new_path = f"{path} {report}.{ext}"
 os.rename(target_csv_path, new_path)
