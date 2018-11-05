@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 # Author: Himura Kazuto <himura@tulafest.ru>
 
-import argparse
 import json
 import os
 import sqlite3
@@ -10,7 +9,7 @@ from getpass import getpass
 from urllib.error import HTTPError
 from urllib.parse import urlencode
 from urllib.request import urlopen, Request
-from yaml import load
+from yaml import load  # pip install pyyaml
 
 
 class Cosplay2API(object):
@@ -72,7 +71,7 @@ class Authenticator(object):
                 return False
 
         else:  # No cookie saved
-            if (self.password == ''):
+            if not self.password:
                 self.password = getpass('Password for ' + self.login + ': ')
             login_info = urlencode({'name':     self.login,
                                     'password': self.password}).encode('ascii')
@@ -201,36 +200,32 @@ class MakeDB(object):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--sql", help='Path to an SQL request to run after the script is finished')
-    args = parser.parse_args()
+    config = load(open("config.yml", "r").read())
 
-    configfile = open("config.yml", "r")
-    config = load(configfile.read())
-    configfile.close()
     event_name = config['event_name']
     c2_login = config['admin_cs2_name']
-    c2_password = config['admin_cs2_password']
+    c2_password = config['admin_cs2_password'] if 'admin_cs2_password' in config else None
     db_path = config['db_path']
+    sql = config['sql_after_get'].strip() if 'sql_after_get' in config else None
 
     a = Authenticator(event_name, c2_login, c2_password)
-    a.sign_in()
+    if not a.sign_in():
+        exit()
 
     print()
     f = Fetcher(a.event_name, a.cookie)
-    f.fetch()
+    if not f.fetch():
+        exit()
 
     print()
     MakeDB(db_path, f.data)
 
-    if not args.sql:
-        exit()
+    if sql:
+        from tabulate import tabulate
 
-    from tabulate import tabulate
-
-    print('\nConnecting to ' + db_path + ' again...')
-    with sqlite3.connect(db_path, isolation_level=None) as db:
-        c = db.cursor()
-        c.execute('PRAGMA encoding = "UTF-8"')
-        c.execute(open(args.sql, encoding='utf-8').read())
-        print(tabulate(c.fetchall(), headers=[description[0] for description in c.description], tablefmt='grid'))
+        print('\nConnecting to ' + db_path + ' again...')
+        with sqlite3.connect(db_path, isolation_level=None) as db:
+            c = db.cursor()
+            c.execute('PRAGMA encoding = "UTF-8"')
+            c.execute(sql)
+            print(tabulate(c.fetchall(), headers=[description[0] for description in c.description], tablefmt='grid'))

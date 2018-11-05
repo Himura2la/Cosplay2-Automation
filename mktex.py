@@ -150,7 +150,7 @@ for target_dir in target_dirs:
 texcode = texcode.replace(r'&', r'\&')
 texcode = texcode.replace(r'_', r'\_')
 texcode = texcode.replace(r'^', r'\^{}')
-texcode += r'\renewcommand{\festurl}{%s}' % (config['fest_url'])
+texcode += r'\renewcommand{\festurl}{https://%s.cosplay2.ru}' % config['event_name']
 
 print(texcode)
 open(tex_path, 'w', encoding='utf-8').write(texcode)

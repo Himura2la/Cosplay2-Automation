@@ -1,29 +1,46 @@
+# Название события на Cosplay2
+event_name: 'cr2018'
+
+# Путь к файлу базы SQLite
+db_path: 'cr2018/sqlite3_data.db'
+
+# Логин и пароль админа cosplay2
+admin_cs2_name: 'login'
+admin_cs2_password: 'password'  # Необязательно
+
+# SQL-запрос для выполнения сразу после загрузки базы
+sql_after_get: >
+  SELECT * FROM settings WHERE key != 'design'
+
+
+### get_files.py ###
+
+
 # Тестовый прогон или нет?
 # Если нет, то номера берутся из номеров заявок
 # Если да, то только из номеров для голосования
 dry_run: true
-# Название события на Cosplay2
-event_name: 'cr2018'
-# Путь к папке с файлами
-folder_path: 'cr2018'
-# Путь к папке проекта FestEngine
-festengine_path: 'festengine'
-# Путь к файлу базы SQLite
-db_path: 'cr2018/sqlite3_data.db'
-# Путь к images.tex
-tex_path: 'cr2018/images.tex'
-# Логин и пароль админа cosplay2
-admin_cs2_name: 'login'
-admin_cs2_password: 'password'
+
 # Регэкспы
 id_regex: '^№ (\d{1,3})\. (.*)\.\w{2,4}$'
 code_regex: '(\d{3}) (\w{1,2})\. (.*?)\(№(\d{1,3})\)'
+
+# Путь к папке с файлами
+folder_path: 'cr2018'
+
+# Путь к images.tex
+tex_path: 'cr2018/images.tex'
+
+# Путь к папке проекта FestEngine
+festengine_path: 'festengine'
+
 # Печатать только одну фото или все
 use_main_foto: false
+
 # Какие файлы скачивать, варианты: "all", "scene", "pdf"
 get_files: 'all'
-# Адрес феста
-fest_url: 'http://cr2018.cosplay2.ru'
+
+
 
 ### Поля ###
 
