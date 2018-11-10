@@ -184,13 +184,10 @@ class Downloader:
 
 
 if __name__ == "__main__":
-    configfile = open("config.yml", "r")
-    config = load(configfile.read())
-    configfile.close()
+    config = load(open("config.yml", "r", encoding='utf-8').read())
     db_path = config['db_path']
     folder_path = config['folder_path']
 
-    notscene = '"{noms}"'.format(noms='","'.join(config['not_scene']))
     scene_query = f"""
         SELECT request_id,
                list.title as nom,
@@ -202,49 +199,43 @@ if __name__ == "__main__":
         WHERE   list.id = topic_id AND
                 request_id = requests.id AND
                 (type = 'file' OR type = 'image') AND
-                nom NOT IN ({notscene}) AND
+                list.default_duration > 0 AND
                 status != 'disapproved'
         ORDER BY [values].title
     """
 
-    printnoms = '"{noms}"'.format(noms='","'.join(config['print_noms']))
-    mainfotojoin = ''
+    print_noms = ','.join([f'"{nom}"' for nom in config['print_noms']])
+    main_foto_join, main_foto_if = '', ''
+
     if config['use_main_foto']:
-        printtitle = config['print_title']
-        mainfotojoin = f"""
-            LEFT JOIN (SELECT request_section_id as m_rsid, value as main_foto FROM [values] 
-            WHERE title = '{printtitle}')
+        print_title = config['print_title']
+        main_foto_join = f"""
+            LEFT JOIN (SELECT request_section_id as m_rsid, 
+                              value as main_foto FROM [values] 
+                       WHERE title = '{print_title}')
             ON m_rsid = request_section_id
         """
-        mainfotoif = " || IFNULL(main_foto, '') as file_type,"
-    else:
-        mainfotoif = ','
+        main_foto_if = " || IFNULL(main_foto, '') as file_type"
     art_foto_query = f"""
         SELECT request_id,
                list.title as nom,
                requests.number,
                voting_title,
-               [values].title{mainfotoif}
+               [values].title{main_foto_if},
                value as file
         FROM [values], requests, list
-        {mainfotojoin}
+        {main_foto_join}
         WHERE   list.id = topic_id AND
                 request_id = requests.id AND
+                status != 'disapproved' AND
                 (type = 'file' OR type = 'image') AND
-                nom IN ({printnoms})
+                nom IN ({print_noms})
         ORDER BY request_id
     """
 
-    def preprocess_scene_all_data(num, dir_name, file_name):
-        skip_files_with = ['Демо-запись']
-        skip_by_field = any([s in file_name for s in skip_files_with])
-
-        return skip_by_field, dir_name, file_name
-
-    def preprocess_scene_tracks_only(num, dir_name, file_name):
+    def preprocess_scene(num, dir_name, file_name):
         skip_files_with = config['not_scene_files']
         skip_by_field = any([s in file_name for s in skip_files_with])
-
         return skip_by_field, dir_name, file_name
 
     def preprocess_for_pdf(num, dir_name, file_name):
@@ -253,16 +244,13 @@ if __name__ == "__main__":
         new_file_name = file_name.replace(' ', '-')
         return skip_by_field, new_dir_name, new_file_name
 
-    if config['get_files'] == 'pdf':
-        d = Downloader(preprocess_for_pdf)
-        query = art_foto_query
-    elif config['get_files'] == 'scene':
-        d = Downloader(preprocess_scene_tracks_only)
+
+    if config['get_files'] == 'scene':
+        d = Downloader(preprocess_scene)
         query = scene_query
     else:
-        d = Downloader(preprocess_scene_all_data)
+        d = Downloader(preprocess_for_pdf)
         query = art_foto_query
-
 
     if d.get_lists(db_path, query):
         db = sqlite3.connect(db_path, isolation_level=None)
