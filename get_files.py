@@ -198,7 +198,7 @@ if __name__ == "__main__":
         FROM [values], requests, list
         WHERE   list.id = topic_id AND
                 request_id = requests.id AND
-                (type = 'file' OR type = 'image') AND
+                type IN ('file', 'image') AND
                 list.default_duration > 0 AND
                 status != 'disapproved'
         ORDER BY [values].title
@@ -233,10 +233,12 @@ if __name__ == "__main__":
         ORDER BY request_id
     """
 
+
     def preprocess_scene(num, dir_name, file_name):
         skip_files_with = config['not_scene_files']
         skip_by_field = any([s in file_name for s in skip_files_with])
         return skip_by_field, dir_name, file_name
+
 
     def preprocess_for_pdf(num, dir_name, file_name):
         skip_by_field = "Не эту" in file_name or "персонажа" in file_name
