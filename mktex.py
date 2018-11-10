@@ -29,6 +29,7 @@ texcode = ''
 def opt(a, k, pre=''):
     return pre + a[k] if k in a else ''
 
+
 def getfield(fields, config, options):
     for field in config[options]:
         try:
@@ -36,6 +37,7 @@ def getfield(fields, config, options):
         except KeyError:
             continue
     return ''
+
 
 for target_dir in target_dirs:
     nom = target_dir
@@ -63,7 +65,7 @@ for target_dir in target_dirs:
                 portrait = w < h
                 square = (( max(w, h) - min (w, h) ) / min (w, h)) <= 0.3
 
-            if config['image_pdf'] == True:
+            if config['image_pdf']:
                 path = os.path.splitext(path)[0]+'.pdf'
 
             query = """
@@ -75,25 +77,21 @@ for target_dir in target_dirs:
                 FROM requests, [values]
                 WHERE requests.id = request_id
                 AND requests.number = ?
-                %s
+                AND requests.status != "disapproved"
                 GROUP BY key
             """
-            if config['dry_run']:
-                query = query % ''
-            else:
-                query = query % ' AND requests.status = "approved"'
             c.execute(query, (num,))
             fields = c.fetchall()
             try:
                 status = fields[0][0]
             except IndexError:
-                if config['dry_run']:
+                if config['production']:
+                    # файлы есть, заявка не одобрена
+                    continue
+                else:
                     print("SQL returned no section titles for %s." % num)
                     status = ""
                     exit(-1)
-                else:
-                    # файлы есть, заявка не одобрена
-                    continue
             try:
                 status = fields[0][2]
             except IndexError:
@@ -108,8 +106,8 @@ for target_dir in target_dirs:
                 voting_number = fields[0][4]
             except IndexError:
                 print("Please set voting numbers.")
-                voting_number = 00
-            if voting_number == None and ~config['dry_run']:
+                voting_number = 0
+            if not voting_number and config['production']:
                 print("Please set voting numbers for %s." % url_id)
 
             fields = {key: val for key, val, _, _, _ in fields}
@@ -119,11 +117,7 @@ for target_dir in target_dirs:
             """, (target_dir,))
             voting_nom = c.fetchall()
             voting_nom = voting_nom[0][0]
-            if config['dry_run']:
-                nnum = '%s~%d' % (voting_nom, num)
-            else:
-                nnum = '%s~%d' % (voting_nom, voting_number)
-
+            nnum = '%s~%d' % (voting_nom, voting_number if config['production'] else num)
             try:
                 author = getfield(fields, config, 'author_fields')
                 city = fields[config['city_field']]
