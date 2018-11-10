@@ -38,7 +38,7 @@ elif args.format == 'long':
     long_i = headers.index(args.long_col) if args.long_col in headers else None
     for record in result:
         if long_i:
-            result_txt += "%s---%s# " % (os.linesep, os.linesep)
+            result_txt += "%s%s## " % (os.linesep, os.linesep)
             for i, field in enumerate(headers):
                 if i != long_i:
                     fmt = field_format[field] if field in field_format \
