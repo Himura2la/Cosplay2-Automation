@@ -21,7 +21,10 @@ class Downloader:
             """ :returns (skip, dir_name, file_name) """
             return False, dir_name, file_name
 
-        self.preprocess = preprocess_func if preprocess_func else preprocess_sample
+        if preprocess_func:
+            self.preprocess = preprocess_func
+        else:
+            self.preprocess = preprocess_sample
         self.data = None
         self.event_name = None
         self.event_id = None
