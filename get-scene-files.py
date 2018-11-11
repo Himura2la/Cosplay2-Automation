@@ -10,7 +10,7 @@ if __name__ == '__main__':
     db_path = config['db_path']
     folder_path = config['folder_path']
 
-    scene_query = f"""
+    query = f"""
         SELECT request_id,
                list.title as nom,
                requests.number,
@@ -33,7 +33,6 @@ if __name__ == '__main__':
         return skip_by_field, dir_name, file_name
 
     d = Downloader(preprocess)
-    query = scene_query
 
     if d.get_lists(db_path, query):
         print('\nDownloading files...')
