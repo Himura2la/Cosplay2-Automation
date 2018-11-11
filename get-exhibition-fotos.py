@@ -49,4 +49,4 @@ if __name__ == '__main__':
 
     if d.get_lists(db_path, query):
         print('\nDownloading files...')
-        d.download_files(folder_path, True, check_hash_if_exists=False)
+        d.download_files(folder_path)
