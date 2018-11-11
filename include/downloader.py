@@ -14,8 +14,8 @@ from urllib import parse
 class Downloader:
     def __init__(self, preprocess_func=None):
         def preprocess_sample(num, dir_name, file_name):
-            """ :returns (skip, dir_name, file_name) """
-            return False, dir_name, file_name
+            skip = False
+            return skip, dir_name, file_name
 
         if preprocess_func:
             self.preprocess = preprocess_func
