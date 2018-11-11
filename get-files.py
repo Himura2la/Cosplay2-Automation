@@ -53,7 +53,7 @@ if __name__ == "__main__":
         WHERE   list.id = topic_id AND
                 request_id = requests.id AND
                 status != 'disapproved' AND
-                (type = 'file' OR type = 'image') AND
+                type IN ('file', 'image') AND
                 nom IN ({print_noms})
         ORDER BY request_id
     """
