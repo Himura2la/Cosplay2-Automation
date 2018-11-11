@@ -8,8 +8,8 @@ from yaml import load
 
 from include.downloader import Downloader
 
-if __name__ == "__main__":
-    config = load(open("config.yml", "r", encoding='utf-8').read())
+if __name__ == '__main__':
+    config = load(open('config.yml', 'r', encoding='utf-8').read())
     db_path = config['db_path']
     folder_path = config['folder_path']
 
