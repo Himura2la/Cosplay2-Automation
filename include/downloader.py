@@ -11,6 +11,7 @@ import unicodedata
 from urllib import request
 from urllib import parse
 
+
 class Downloader:
     def __init__(self, preprocess_func=None):
         def preprocess_sample(num, dir_name, file_name):
@@ -21,7 +22,7 @@ class Downloader:
         self.data = None
         self.event_name = None
         self.event_id = None
-        self.log_infos, self.log_errors = "", ""
+        self.log_infos, self.log_errors, self.log_links = '', '', ''
 
     def get_lists(self, db_path, query):
         if not os.path.isfile(db_path):
