@@ -1,4 +1,6 @@
+import os
 import json
+import binascii
 from urllib.error import HTTPError
 from urllib.request import urlopen, Request
 
@@ -9,6 +11,7 @@ class Fetcher(object):
     def __init__(self, event_name, cookie):
         self.__api = Cosplay2API(event_name)
         self.__cookie = cookie
+        self.wid = binascii.b2a_hex(os.urandom(8))
         self.data = dict()
 
     def fetch(self):
@@ -19,6 +22,14 @@ class Fetcher(object):
             else:
                 print(url, 'FAILED to acquire!!!')
                 return False
+
+        # for request_id in [d['id'] for d in self.data['requests']]:
+        #     self.__request('req_details',
+        #                    self.__api.request_details_POST,
+        #                    json.dumps({'request_id': request_id}).encode('ascii'))
+        #     break
+        # fields_for_history = [d for d in self.data['values'] if d['type'] in ('file', 'image')]
+
         return True
 
     def __request(self, name, url, params=None):
