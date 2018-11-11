@@ -2,9 +2,7 @@
 # -*- coding: utf-8 -*-
 # Author: Himura Kazuto <himura@tulafest.ru>
 
-import sqlite3
 from yaml import load
-
 from include.downloader import Downloader
 
 if __name__ == '__main__':
@@ -79,9 +77,5 @@ if __name__ == '__main__':
         query = art_foto_query
 
     if d.get_lists(db_path, query):
-        db = sqlite3.connect(db_path, isolation_level=None)
-        c = db.cursor()
-        c.execute('PRAGMA encoding = "UTF-8"')
-
         print('\nDownloading files...')
         d.download_files(folder_path, True, check_hash_if_exists=False)

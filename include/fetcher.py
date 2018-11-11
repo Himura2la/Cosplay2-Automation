@@ -4,6 +4,7 @@ from urllib.request import urlopen, Request
 
 from .api import Cosplay2API
 
+
 class Fetcher(object):
     def __init__(self, event_name, cookie):
         self.__api = Cosplay2API(event_name)

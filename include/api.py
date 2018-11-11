@@ -1,3 +1,7 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
+
 class Cosplay2API(object):
     def __init__(self, event_name):
         self.api = 'http://' + event_name + '.cosplay2.ru/api/'

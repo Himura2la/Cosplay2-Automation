@@ -1,6 +1,7 @@
 import os
 import sqlite3
 
+
 class MakeDB(object):
     def __init__(self, db_path, data):
         self.__db_path = db_path

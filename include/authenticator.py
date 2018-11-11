@@ -1,8 +1,10 @@
 import os
+from getpass import getpass
 from .api import Cosplay2API
 from urllib.error import HTTPError
 from urllib.parse import urlencode
 from urllib.request import urlopen, Request
+
 
 class Authenticator(object):
     __cookie_name = 'private-session.cookie'
