@@ -17,10 +17,7 @@ class Downloader:
             skip = False
             return skip, dir_name, file_name
 
-        if preprocess_func:
-            self.preprocess = preprocess_func
-        else:
-            self.preprocess = preprocess_sample
+        self.preprocess = preprocess_func if preprocess_func else preprocess_sample
         self.data = None
         self.event_name = None
         self.event_id = None
