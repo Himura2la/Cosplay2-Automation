@@ -22,6 +22,7 @@ if __name__ == '__main__':
         main_foto_if = " || IFNULL(main_foto, '')"
     query = f"""
         SELECT request_id,
+               update_time,
                list.title as nom,
                requests.number,
                voting_title,

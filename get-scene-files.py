@@ -12,6 +12,7 @@ if __name__ == '__main__':
 
     query = f"""
         SELECT request_id,
+               update_time,
                list.title as nom,
                requests.number,
                voting_title,
@@ -36,4 +37,4 @@ if __name__ == '__main__':
 
     if d.get_lists(db_path, query):
         print('\nDownloading files...')
-        d.download_files(folder_path, True, check_hash_if_exists=False)
+        d.download_files(folder_path, d.CHECK_UPDATES_ONLY)
