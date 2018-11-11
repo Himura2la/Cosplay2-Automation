@@ -92,9 +92,9 @@ class Downloader:
         for row in self.data:
             prev_name = name
             request_id, update_time, nom, num, title, file_type, file = row
-            name = self.__to_filename('%0.3d. %s' % (int(num), title if title else 'No title'))
+            name = self.to_filename('%0.3d. %s' % (int(num), title if title else 'No title'))
             name = name.replace('  ', ' ')
-            nom, file_type = self.__to_filename(nom), self.__to_filename(file_type)
+            nom, file_type = self.to_filename(nom), self.to_filename(file_type)
             download_skipped_by_preprocessor, dir_name, file_name = self.preprocess(int(num), name, file_type)
             display_path = ' | '.join([nom, dir_name, file_name])
             if download_skipped_by_preprocessor:
@@ -194,12 +194,14 @@ class Downloader:
             print(self.log_links)
 
     @staticmethod
-    def __to_filename(string):
-        filename = string.replace('й', "<икраткое>")
+    def to_filename(string):
+        filename = string.replace('й', '<икраткое>').replace('Й', '<ИКРАТКОЕ>')\
+                         .replace('ё', '<ио>')      .replace('Ё', '<ИО>')
         filename = unicodedata.normalize('NFD', filename).encode('cp1251', 'replace').decode('cp1251')
-        filename = filename.replace("<икраткое>", 'й')
-        filename = filename.replace(':', " -") \
-            .replace('|', ";").replace('/', ";").replace('\\', ";") \
+        filename = filename.replace('<икраткое>', 'й').replace('<ИКРАТКОЕ>', 'Й')\
+                           .replace('<ио>', 'ё')      .replace('<ИО>', 'Ё')
+        filename = filename.replace(':', ' -') \
+            .replace('|', ';').replace('/', ';').replace('\\', ';') \
             .replace('"', "'")
-        filename = ''.join(i if i not in "*?<>" else '' for i in filename)
+        filename = ''.join(i if i not in '*?<>' else '' for i in filename)
         return filename
