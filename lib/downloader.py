@@ -149,7 +149,7 @@ class Downloader:
                     file_url += '.jpg'  # Yes, it works this way
                 download_required = True
                 if os.path.isfile(path):
-                    self.log_info(path + ' exists. ', inline=True)
+                    self.log_info(display_path + ' exists. ', inline=True)
                     if action in (self.CHECK_UPDATES_ONLY, self.DOWNLOAD_UPDATED_REQUESTS) and existing_update_time:
                         if str(request_id) in existing_update_time \
                                 and existing_update_time[str(request_id)] == update_time:
