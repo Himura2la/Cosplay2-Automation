@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 # Author: Himura Kazuto <himura@tulafest.ru>
 
-import argparse
 import sqlite3
 from yaml import load
 

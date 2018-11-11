@@ -3,12 +3,11 @@
 # Author: Himura Kazuto <himura@tulafest.ru>
 
 import sqlite3
-from getpass import getpass
 from yaml import load  # pip install pyyaml
 
 from include.authenticator import Authenticator
 from include.fetcher import Fetcher
-from include.makedb import MakeDB
+from include.make_db import MakeDB
 
 if __name__ == '__main__':
     config = load(open('config.yml', 'r', encoding='utf-8').read())

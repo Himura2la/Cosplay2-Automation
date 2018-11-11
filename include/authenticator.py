@@ -5,7 +5,7 @@ from urllib.parse import urlencode
 from urllib.request import urlopen, Request
 
 class Authenticator(object):
-    __cookie_name = 'private_session.cookie'
+    __cookie_name = 'private-session.cookie'
 
     def __init__(self, event_name, login, password):
         self.event_name = event_name
