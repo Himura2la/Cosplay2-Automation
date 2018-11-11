@@ -10,8 +10,8 @@ from include.authenticator import Authenticator
 from include.fetcher import Fetcher
 from include.makedb import MakeDB
 
-if __name__ == "__main__":
-    config = load(open("config.yml", "r", encoding='utf-8').read())
+if __name__ == '__main__':
+    config = load(open('config.yml', 'r', encoding='utf-8').read())
 
     event_name = config['event_name']
     c2_login = config['admin_cs2_name']
