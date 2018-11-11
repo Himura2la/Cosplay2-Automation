@@ -3,7 +3,7 @@
 # Author: Himura Kazuto <himura@tulafest.ru>
 
 from yaml import load
-from include.downloader import Downloader
+from lib.downloader import Downloader
 
 if __name__ == '__main__':
     config = load(open('config.yml', 'r', encoding='utf-8').read())
