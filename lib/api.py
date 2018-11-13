@@ -7,6 +7,7 @@ class Cosplay2API(object):
         self.api = 'http://' + event_name + '.cosplay2.ru/api/'
 
         self.login_POST = self.api + 'users/login'
+        self.save_data_POST = self.api + 'requests/save_data'
 
         self.settings_GET = self.api + 'events/get_settings'
         self.list_GET = self.api + 'topics/get_list'

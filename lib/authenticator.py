@@ -9,7 +9,7 @@ from urllib.request import urlopen, Request
 class Authenticator(object):
     __cookie_name = 'private-session.cookie'
 
-    def __init__(self, event_name, login, password):
+    def __init__(self, event_name, login, password=None):
         self.event_name = event_name
         self.login = login
         self.password = password
