@@ -59,8 +59,7 @@ def make_filename(data, num, title=None):
         return False, num, None
 
     req_data = data[num]
-    # code = "%d %s" % (req_data['voting_number'], req_data['card_code'])
-    code = f"{req_data['card_code']} {req_data['№']}"
+    code = "%d %s" % (req_data['voting_number'], req_data['card_code'])
 
     if title:
         global title_differences
@@ -141,7 +140,7 @@ for dirpath, dirnames, filenames in os.walk(input_dir):
             old_path = os.path.join(root, dir_name, filename)
             new_path = os.path.join(output_dir, new_filename)
 
-            shutil.copy(old_path, new_path)
+            # shutil.copy(old_path, new_path)
         else:
             skipped_files += "%s | %s\n" % (dir_name, filename)
 

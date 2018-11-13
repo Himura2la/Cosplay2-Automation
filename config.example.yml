@@ -136,3 +136,8 @@ checker_sql: >
 
 # Изображения в формате JPG/PNG или PDF
 image_pdf: false
+
+
+### numberer.py ###
+
+numberer_table_path: 'C:\Users\glago\Desktop\voting_numbers.csv'

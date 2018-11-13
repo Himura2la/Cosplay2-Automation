@@ -109,7 +109,8 @@ class Downloader:
                 file = json.loads(file)
                 new_update_time[request_id] = update_time  # assuming it's the same for all request files
                 if 'link' in file.keys():  # External site
-                    file_exists = file_name in [name.split('.', 1)[0] for name in os.listdir(dir_path)]
+                    file_exists = file_name in [name.split('.', 1)[0] for name in os.listdir(dir_path)] \
+                                    if os.path.exists(dir_path) else False
                     request_up_to_date = existing_update_time \
                                             and str(request_id) in existing_update_time \
                                             and existing_update_time[str(request_id)] == update_time
@@ -179,8 +180,8 @@ class Downloader:
 
         if not os.path.isdir(folder):
             os.makedirs(folder)
-
-        json.dump(new_update_time, open(request_updates_path, 'w', encoding='utf-8'), indent=4)
+        if action >= self.DOWNLOAD_UPDATED_REQUESTS:
+            json.dump(new_update_time, open(request_updates_path, 'w', encoding='utf-8'), indent=4)
 
         with open(log_file, 'w', encoding='utf-8') as f:
             f.write("ERRORS:" + os.linesep + self.log_errors + os.linesep)
