@@ -1,14 +1,14 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import os
 import re
 
-output = r"C:\Users\glago\Desktop\2.csv"
+output = r"C:\Users\glago\Desktop\2.txt"
 regex_for_human = re.compile(r',("\w{1,3} \d{1,3}|Перерыв|\d блок|Внеконкурс)')
-regex_nums_only = re.compile(r',"\w{1,3} \d{1,3}')
+regex_nums_only = re.compile(r'\d{2,3}\. ')
 
-regex = regex_for_human
+regex = regex_nums_only
+
 
 def proc(text):
     ret = ''
@@ -20,7 +20,7 @@ def proc(text):
     print(ret)
     
 
-proc(open(r"C:\Users\glago\Desktop\festival_plan.csv", encoding='utf-8').read())
+proc(open(r"C:\Users\glago\Desktop\plan.txt", encoding='utf-8').read())
 
 
 # r"(^\d{2}:\d{2}\t.*?), интермедия.*?$" -> r"\n\1"
