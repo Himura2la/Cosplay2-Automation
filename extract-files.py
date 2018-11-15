@@ -26,8 +26,8 @@ skip_card_codes = 'card_code NOT IN (%s) AND' % ','.join([f'"{cc}"' for cc in co
 sql_queery = f"""
 SELECT 
     requests.number as '№',
-    card_code || ' ' || voting_number as id,
     card_code,
+    list.title as nom,
     voting_number,
     voting_title,
     sound_start
@@ -52,6 +52,7 @@ target_exts = video_exts | audio_exts
 processed_log = ""
 title_differences = ""
 skipped_files = ""
+errors = ""
 
 
 def make_filename(data, num, title=None):
@@ -59,14 +60,14 @@ def make_filename(data, num, title=None):
         return False, num, None
 
     req_data = data[num]
-    code = "%d %s" % (req_data['voting_number'], req_data['card_code'])
+    code = "%d [%s]" % (req_data['voting_number'], req_data['nom'])
 
     if title:
         global title_differences
         if req_data['voting_title'] != title:
             title_differences += "%s\nReal: %s\nFile: %s\n" % (code, req_data['voting_title'], title)
     else:
-        title = Downloader.to_filename(req_data['voting_title'])
+        title = req_data['voting_title']
 
     # sound_start = 'Неизвестно'
     # if req_data['sound_start']:
@@ -83,6 +84,9 @@ def make_filename(data, num, title=None):
     # title = "[%s] %s №%d" % (sound_start, title, req_data['№'])
 
     title = "%s №%d" % (title, req_data['№'])
+
+    code = Downloader.to_filename(code)
+    title = Downloader.to_filename(title)
 
     return True, code, title
 
@@ -124,8 +128,8 @@ for dirpath, dirnames, filenames in os.walk(input_dir):
             num = num.lstrip('0')
             success, code, name = make_filename(data_by_num, num, title)
             if not success:
-                msg = "|>>> ERROR <<<| Failed to make title for %s | %s. Check the number." % (name, filename)
-                processed_log += msg + '\n'
+                msg = "|>>> ERROR <<<| Failed to make title for %s." % os.path.join(dirpath, filename).replace(input_dir, '.')
+                errors += msg + '\n'
                 print(msg)
                 continue
             missing_files -= {num}
@@ -140,7 +144,7 @@ for dirpath, dirnames, filenames in os.walk(input_dir):
             old_path = os.path.join(root, dir_name, filename)
             new_path = os.path.join(output_dir, new_filename)
 
-            # shutil.copy(old_path, new_path)
+            shutil.copy(old_path, new_path)
         else:
             skipped_files += "%s | %s\n" % (dir_name, filename)
 
@@ -148,6 +152,7 @@ for dirpath, dirnames, filenames in os.walk(input_dir):
 missing_files_msg = "\n".join([". ".join(make_filename(data_by_num, num)[1:]) for num in missing_files])
 info_log = "\n--- Skipped by extension ---\n" + skipped_files + \
            "\n--- Title differences ---\n" + title_differences + \
+           "\n--- Errors ---\n" + errors + \
            "\n--- Missing files ---\n" + missing_files_msg
 print(info_log)
 log_file = os.path.join(output_dir, time.strftime("log-%d%m%y%H%M%S.txt", time.localtime()))
