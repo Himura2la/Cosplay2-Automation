@@ -16,11 +16,10 @@ if __name__ == '__main__':
     event_name = config['event_name']
     c2_login = config['admin_cs2_name']
     c2_password = config['admin_cs2_password'] if 'admin_cs2_password' in config else None
-    backups_root = config['backups_path'] \
+    backup_dir = config['backups_path'] \
         if 'backups_path' in config and config['backups_path'] != "." \
         else os.path.dirname(os.path.realpath(__file__))
 
-    backup_dir = os.path.join(backups_root, datetime.now().strftime('%y-%m-%d_%H-%M-%S'))
     if not os.path.isdir(backup_dir):
         os.makedirs(backup_dir)
 
@@ -34,4 +33,4 @@ if __name__ == '__main__':
     if not f.fetch_etickets():
         exit()
 
-    MakeDB(os.path.join(backup_dir, event_name + '.db'), f.data)
+    MakeDB(os.path.join(backup_dir, datetime.now().strftime('%y-%m-%d_%H-%M-%S.db')), f.data)
