@@ -24,7 +24,7 @@ if __name__ == '__main__':
 
     print()
     f = Fetcher(a.event_name, a.cookie)
-    if not f.fetch():
+    if not f.fetch_data():
         exit()
 
     print()

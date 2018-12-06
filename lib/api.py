@@ -13,6 +13,6 @@ class Cosplay2API(object):
         self.list_GET = self.api + 'topics/get_list'
         self.requests_GET = self.api + 'topics/get_all_requests'
         self.values_GET = self.api + 'requests/get_all_values'
+        self.data_GET_URLs = [self.settings_GET, self.list_GET, self.requests_GET, self.values_GET]
 
-        self.GET_URLs = [self.settings_GET, self.list_GET, self.requests_GET, self.values_GET]
-
+        self.etickets_GET = self.api + 'etickets/get_list'

@@ -11,8 +11,8 @@ class Fetcher(object):
         self.__cookie = cookie
         self.data = dict()
 
-    def fetch(self):
-        for url in self.__api.GET_URLs:
+    def fetch_data(self):
+        for url in self.__api.data_GET_URLs:
             name = url.split('_')[-1]
             if self.__request(name, url):
                 print("Dataset '%s' acquired successfully." % name)
@@ -21,12 +21,20 @@ class Fetcher(object):
                 return False
         return True
 
-    def __request(self, name, url, params=None):
+    def fetch_etickets(self):
+        if self.__request('etickets', self.__api.etickets_GET, key='etickets'):
+            print("E-tickets acquired successfully.")
+            return True
+        else:
+            print('E-tickets are FAILED to acquire!!!')
+        return False
+
+    def __request(self, name, url, params=None, key=None):
         req = Request(url, params, {'Cookie': self.__cookie})
         try:
             with urlopen(req) as r:
                 response = json.loads(r.read().decode('utf-8-sig'))
-                self.data[name] = response
+                self.data[name] = response[key] if key else response
             return True
         except HTTPError as e:
             print("Request failed:", e)
