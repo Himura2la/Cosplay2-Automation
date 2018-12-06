@@ -9,10 +9,11 @@ from urllib.request import urlopen, Request
 class Authenticator(object):
     __cookie_name = 'private-session.cookie'
 
-    def __init__(self, event_name, login, password=None):
+    def __init__(self, event_name, login, password=None, interactive=True):
         self.event_name = event_name
         self.login = login
         self.password = password
+        self.interactive = interactive
         self.cookie = None
         self.__attempts = None
         self.__api = None
@@ -52,7 +53,11 @@ class Authenticator(object):
 
         else:  # No cookie saved
             if not self.password:
-                self.password = getpass('Password for ' + self.login + ': ')
+                if self.interactive:
+                    self.password = getpass('Password for ' + self.login + ': ')
+                else:
+                    print("Unable to ask for password in non-interactive mode.")
+                    exit()
             login_info = urlencode({'name':     self.login,
                                     'password': self.password}).encode('ascii')
             try:

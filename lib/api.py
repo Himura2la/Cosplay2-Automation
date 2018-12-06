@@ -4,7 +4,7 @@
 
 class Cosplay2API(object):
     def __init__(self, event_name):
-        self.api = 'http://' + event_name + '.cosplay2.ru/api/'
+        self.api = 'https://' + event_name + '.cosplay2.ru/api/'
 
         self.login_POST = self.api + 'users/login'
         self.save_data_POST = self.api + 'requests/save_data'

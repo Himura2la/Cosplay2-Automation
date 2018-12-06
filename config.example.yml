@@ -51,6 +51,11 @@ print_title: 'Какую фотографию печатать?'
 
 
 
+### backup-data.py ###
+
+# Путь к папке с бэкапами
+backups_path: .
+
 
 
 ### mktex.py ###
