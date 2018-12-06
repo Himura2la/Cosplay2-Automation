@@ -7,7 +7,7 @@ from urllib.request import urlopen, Request
 
 
 class Authenticator(object):
-    __cookie_name = 'private-session.cookie'
+    __cookie_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'private-session.cookie')
 
     def __init__(self, event_name, login, password=None, interactive=True):
         self.event_name = event_name
@@ -33,10 +33,10 @@ class Authenticator(object):
         return False
 
     def __sign_in(self):
-        if os.path.isfile(self.__cookie_name):
-            with open(self.__cookie_name, 'r') as f:
+        if os.path.isfile(self.__cookie_path):
+            with open(self.__cookie_path, 'r') as f:
                 self.cookie = f.read()
-            print('Checking the cookie from ' + self.__cookie_name + ' file.')
+            print('Checking the cookie from ' + self.__cookie_path + ' file.')
 
             req = Request(self.__api.settings_GET, None, {'Cookie': self.cookie})
             try:
@@ -47,7 +47,7 @@ class Authenticator(object):
             except HTTPError as e:
                 print(e)
                 print("Seems like the cookie is out of date, deleting it...")
-                os.remove(self.__cookie_name)
+                os.remove(self.__cookie_path)
                 self.__attempts += 1
                 return False
 
@@ -63,10 +63,10 @@ class Authenticator(object):
             try:
                 with urlopen(self.__api.login_POST, login_info) as r:
                     cookie = r.getheader('Set-Cookie')
-                    with open(self.__cookie_name, 'w') as f:
+                    with open(self.__cookie_path, 'w') as f:
                         f.write(cookie)
                         self.cookie = cookie
-                    print("Saved cookie to the '%s' file. Keep this file as your password !!!" % self.__cookie_name)
+                    print("Saved cookie to the '%s' file. Keep this file as your password !!!" % self.__cookie_path)
                     return True
             except HTTPError as e:
                 print(e)
