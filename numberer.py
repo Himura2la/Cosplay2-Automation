@@ -17,7 +17,7 @@ from yaml import load
 num_row = 'num'
 voting_number_row = 'voting_number'
 
-config = load(open('config.yml', 'r', encoding='utf-8').read())
+config = load(open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.yml'), 'r', encoding='utf-8').read())
 db_path = config['db_path']
 event_name = config["event_name"]
 api = Cosplay2API(event_name)

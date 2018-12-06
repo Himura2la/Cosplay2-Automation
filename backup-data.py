@@ -11,14 +11,15 @@ from lib.fetcher import Fetcher
 from lib.make_db import MakeDB
 
 if __name__ == '__main__':
-    config = load(open('config.yml', 'r', encoding='utf-8').read())
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    config = load(open(os.path.join(script_dir, 'config.yml'), 'r', encoding='utf-8').read())
 
     event_name = config['event_name']
     c2_login = config['admin_cs2_name']
     c2_password = config['admin_cs2_password'] if 'admin_cs2_password' in config else None
     backup_dir = config['backups_path'] \
         if 'backups_path' in config and config['backups_path'] != "." \
-        else os.path.dirname(os.path.realpath(__file__))
+        else script_dir
 
     if not os.path.isdir(backup_dir):
         os.makedirs(backup_dir)

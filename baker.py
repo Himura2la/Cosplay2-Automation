@@ -5,16 +5,19 @@
 from urllib.error import HTTPError
 from urllib.parse import urlencode
 from urllib.request import urlopen
+
+import os
 from yaml import load
 from getpass import getpass
 
-configfile = open("config.yml", "r")
+configfile = open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.yml'), 'r')
 config = load(configfile.read())
 configfile.close()
 event_name = config['event_name']
 login = config['admin_cs2_name']
 password = config['admin_cs2_password']
-if (password == ''):
+
+if not password:
     password = getpass('Password for ' + login + ': ')
 
 login_info = urlencode({'name': login, 'password': password}).encode('ascii')

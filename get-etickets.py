@@ -2,13 +2,14 @@
 # -*- coding: utf-8 -*-
 # Author: Himura Kazuto <himura@tulafest.ru>
 
+import os
 from yaml import load  # pip install pyyaml
 
 from lib.authenticator import Authenticator
 from lib.fetcher import Fetcher
 
 if __name__ == '__main__':
-    config = load(open('config.yml', 'r', encoding='utf-8').read())
+    config = load(open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.yml'), 'r', encoding='utf-8').read())
 
     event_name = config['event_name']
     c2_login = config['admin_cs2_name']
