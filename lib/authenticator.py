@@ -7,7 +7,7 @@ from urllib.request import urlopen, Request
 
 
 class Authenticator(object):
-    __cookie_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'private-session.cookie')
+    __cookie_path = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'private-session.cookie')
 
     def __init__(self, event_name, login, password=None, interactive=True):
         self.event_name = event_name
