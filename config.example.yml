@@ -54,8 +54,10 @@ print_title: 'Какую фотографию печатать?'
 ### backup-data.py ###
 
 # Путь к папке с бэкапами
-backups_path: .
+backups_path:
 
+# Путь к отчету валидатора (не указывайте, если заявки не нужно валидировать)
+report_path: 'report.md'
 
 
 ### mktex.py ###

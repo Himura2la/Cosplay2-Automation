@@ -9,6 +9,7 @@ from yaml import load  # pip install pyyaml
 from lib.authenticator import Authenticator
 from lib.fetcher import Fetcher
 from lib.make_db import MakeDB
+from lib.validator import Validator
 
 if __name__ == '__main__':
     script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -20,6 +21,7 @@ if __name__ == '__main__':
     backup_dir = config['backups_path'] \
         if 'backups_path' in config and config['backups_path'] != "." \
         else script_dir
+    report_path = config['report_path'] if 'report_path' in config else None
 
     if not os.path.isdir(backup_dir):
         os.makedirs(backup_dir)
@@ -34,4 +36,13 @@ if __name__ == '__main__':
     if not f.fetch_etickets():
         exit()
 
-    MakeDB(os.path.join(backup_dir, datetime.now().strftime('%y-%m-%d_%H-%M-%S.db')), f.data)
+    db_path = os.path.join(backup_dir, datetime.now().strftime('%y-%m-%d_%H-%M-%S.db'))
+    MakeDB(db_path, f.data)
+
+    if report_path:
+        print('Validating...')
+        report_md = "%s\n===\n\n" % os.path.basename(db_path)
+        report_md += Validator().validate(db_path)
+        print('Saving report...')
+        with open(report_path, 'w', encoding='utf-8') as f:
+            f.write(report_md)
