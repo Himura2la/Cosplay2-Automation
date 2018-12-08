@@ -47,12 +47,12 @@ if __name__ == '__main__':
             import markdown
         except ImportError:
             print('[WARNING] Execute `pip install markdown` to generate true HTML !!!')
-            report_html = '<!DOCTYPE html><html><head><meta charset="utf-8"></head>' \
-                          '<body><pre>%s</pre></body></html>' % report_md
+            report_html = '<pre>%s</pre>' % report_md
         else:
             print('Converting report to HTML...')
             report_html = markdown.markdown(report_md)
-
+        report_html = '<!DOCTYPE html><html><head><meta charset="utf-8"></head>' \
+                      '<body>%s</body></html>' % report_html
         print('Saving report...')
         with open(report_path, 'w', encoding='utf-8') as f:
             f.write(report_html)

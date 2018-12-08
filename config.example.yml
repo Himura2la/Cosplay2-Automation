@@ -57,7 +57,7 @@ print_title: 'Какую фотографию печатать?'
 backups_path:
 
 # Путь к отчету валидатора (не указывайте, если заявки не нужно валидировать)
-report_path: 'report.md'
+report_path: 'report.html'
 
 
 ### mktex.py ###

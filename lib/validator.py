@@ -65,7 +65,7 @@ class Validator(object):
                     if errors:
                         topic_report += "- В заявке [№ %d](https://%s.cosplay2.ru/orgs/requests/request/%s):\n" % \
                               (req['number'], event_name, req['id'])
-                        topic_report += '  - %s\n' % '\n  - '.join(errors)
+                        topic_report += '    - %s\n' % '\n    - '.join(errors)
                 if topic_report:
                     report += "\n### В разделе '%s':\n" % topic['title'] + topic_report
         return report
