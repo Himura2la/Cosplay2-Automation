@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
+import re
 import sqlite3
 
 
@@ -27,20 +28,15 @@ class Validator(object):
                           (expected_participants, len(real_participant_ids)))
         for i, sec_id in enumerate(sorted(list(real_participant_ids))):
             p_data = list(filter(lambda f: f['request_section_id'] == sec_id, fields))
-            ok_fields = set(d['title'] for d in p_data if len(d['value']) > 0 and
-                                                          not d['value'].lower().startswith("нет"))
+            ok_fields = set(d['title'] for d in p_data if d['value']
+                                                          and (len(d['value']) > 1 or re.match(r'\w', d['value']))
+                                                          and not d['value'].lower().startswith("нет"))
             empty_fields = self.required_fields - ok_fields
             if empty_fields:
-                errors.append('У участника %d не' % (i + 1) +
+                errors.append('У участника %d не ' % (i + 1) +
                              ('заполнены поля %s' % str(empty_fields) if len(empty_fields) > 1
                                                                       else "заполнено поле '%s'" % empty_fields.pop()))
         return errors
-
-    # def validate_required_fields(self, request, fields):
-    #     validation_result = True
-    #     if request['status'] != 'review':
-    #         return True
-    #     return validation_result
 
     def validate_request(self, request, fields):
         validators = [
@@ -65,7 +61,8 @@ class Validator(object):
                     if errors:
                         topic_report += "- В заявке [№ %d](https://%s.cosplay2.ru/orgs/requests/request/%s):\n" % \
                               (req['number'], event_name, req['id'])
-                        topic_report += '    - %s\n' % '\n    - '.join(errors)
+                        prefix = '    - '
+                        topic_report += prefix + ('\n' + prefix).join(errors) + '\n'
                 if topic_report:
                     report += "\n### В разделе '%s':\n" % topic['title'] + topic_report
         return report
