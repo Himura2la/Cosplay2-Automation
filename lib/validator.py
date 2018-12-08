@@ -9,6 +9,7 @@ class Validator(object):
     participant_fields = {'Ваши данные', 'Остальные участники', 'Авторы', 'Представители', 'Члены команды'}
     participant_number_fields = {'Количество участников', 'Количество представителей'}
     required_fields = {'Фамилия', 'Имя', 'Отчество', 'Ник', 'Город'}
+    capital_fields = {'Фамилия', 'Имя', 'Отчество', 'Город'}
 
     def validate_participants(self, _, fields):
         errors = []
@@ -38,9 +39,26 @@ class Validator(object):
                                                                       else "заполнено поле '%s'" % empty_fields.pop()))
         return errors
 
+    def validate_fields(self, _, fields):
+        errors = []
+        city_prefix_error = False
+        for city in set(r['value'] for r in filter(lambda f: f['title'] == 'Город', fields)):
+            if city.startswith('г'):
+                errors.append('Город с буквой гэ: %s' % city)
+                city_prefix_error = True
+            elif city in ('Орел', 'Щекино', 'Могилев', 'Королев'):
+                errors.append('Город без буквы ё: %s' % city)
+
+        for t, f in set((r['title'], r['value']) for r in filter(lambda f: f['title'] in self.capital_fields, fields)):
+            if re.match(r'^[а-я].*', f) and not city_prefix_error:
+                errors.append('%s с маленькой буквы: %s' % (t, f))
+
+        return errors
+
     def validate_request(self, request, fields):
         validators = [
-            self.validate_participants
+            self.validate_participants,
+            self.validate_fields
         ]
         return [error for f in validators for error in f(request, fields)]
 
