@@ -45,7 +45,7 @@ if __name__ == '__main__':
         report_md += Validator().validate(db_path)
         try:
             import markdown
-        except ModuleNotFoundError:
+        except ImportError:
             print('[WARNING] Execute `pip install markdown` to generate true HTML !!!')
             report_html = "<!DOCTYPE html><html><body><pre>%s</pre></body></html>" % report_md
         else:
