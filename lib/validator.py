@@ -42,16 +42,12 @@ class Validator(object):
 
     def validate_fields(self, _, fields):
         errors = []
-        city_prefix_error = False
         for city in set(r['value'] for r in filter(lambda f: f['title'] == 'Город', fields)):
-            if city.startswith('г'):
-                errors.append('Город с буквой гэ: %s' % city)
-                city_prefix_error = True
-            elif city in self.invalid_city_names:
+            if city in self.invalid_city_names:
                 errors.append('Неправильное написание города: %s' % city)
 
         for t, f in set((r['title'], r['value']) for r in filter(lambda f: f['title'] in self.capital_fields, fields)):
-            if re.match(r'^[а-я].*', f) and not city_prefix_error:
+            if re.match(r'^[а-я].*', f):
                 errors.append('%s с маленькой буквы: %s' % (t, f))
 
         return errors
