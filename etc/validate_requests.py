@@ -12,7 +12,7 @@ participant_number_fields = {'Количество участников', 'Ко�
 required_fields = {'Фамилия', 'Имя', 'Отчество', 'Ник', 'Город'}
 
 
-def validate_participants(fields):
+def validate_participants(_, fields):
     validation_result = True
     try:
         expected_participants = filter(lambda f: f['title'] in participant_number_fields, fields).__next__()['value']
@@ -41,28 +41,37 @@ def validate_participants(fields):
     return validation_result
 
 
-def validate_request(fields):
+def validate_required_fields(request, fields):
+    validation_result = True
+    if request['status'] != 'review':
+        return True
+
+    return validation_result
+
+
+def validate_request(request, fields):
     validators = [
         validate_participants
+        #validate_required_fields
     ]
-    return all((f(fields) for f in validators))
+    return all((f(request, fields) for f in validators))
 
 
 def fetch_all(cursor):
     return [{cursor.description[i][0]: v for i, v in enumerate(d)} for d in c.fetchall()]
 
 
-print('Connecting to %s...\n' % os.path.abspath(db_path))
+print('База данных: %s\n' % os.path.basename(db_path))
 with sqlite3.connect(db_path, isolation_level=None) as db:
     c = db.cursor()
     c.execute('PRAGMA encoding = "UTF-8"')
     c.execute("SELECT * FROM list")
     for topic in fetch_all(c):
         c.execute("SELECT * FROM requests WHERE topic_id = ? AND status != 'disapproved'", [topic['id']])
-        for request in fetch_all(c):
-            c.execute("SELECT * FROM [values] WHERE request_id = ?", [request['id']])
-            if not validate_request(fetch_all(c)):
+        for req in fetch_all(c):
+            c.execute("SELECT * FROM [values] WHERE request_id = ?", [req['id']])
+            if not validate_request(req, fetch_all(c)):
                 print("В заявке раздела '%s' [№ %d](https://%s.cosplay2.ru/orgs/requests/request/%s)\n" %
-                      (topic['title'], request['number'], event_name, request['id']))
-    print('Closing the database...')
+                      (topic['title'], req['number'], event_name, req['id']))
+    print('Done')
 
