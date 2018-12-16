@@ -74,8 +74,8 @@ class Validator(object):
                     c.execute("SELECT * FROM [values] WHERE request_id = ?", [req['id']])
                     errors = self.validate_request(req, self.fetch_all(c))
                     if errors:
-                        topic_report += "- В заявке [№ %d](https://%s.cosplay2.ru/orgs/requests/request/%s):\n" % \
-                              (req['number'], event_name, req['id'])
+                        topic_report += "- В заявке [№ %d](https://%s.cosplay2.ru/orgs/requests/request/%s) (%s):\n" % \
+                              (req['number'], event_name, req['id'], req['status'])
                         prefix = '    - '
                         topic_report += prefix + ('\n' + prefix).join(errors) + '\n'
                 if topic_report:
