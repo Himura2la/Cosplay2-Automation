@@ -78,8 +78,8 @@ class Validator(object):
                     c.execute("SELECT * FROM [values] WHERE request_id = ?", [req['id']])
                     errors = self.validate_request(req, self.fetch_all(c))
                     if errors:
-                        topic_report += "- В заявке [№ %d](https://%s.cosplay2.ru/orgs/requests/request/%s) (%s):\n" % \
-                              (req['number'], event_name, req['id'], req['status'])
+                        topic_report += "- В заявке [№ %d](https://%s.cosplay2.ru/orgs/requests/request/%s) %s :\n" % \
+                              (req['number'], event_name, req['id'], self.iconize_status(req['status']))
                         prefix = '    - '
                         topic_report += prefix + ('\n' + prefix).join(errors) + '\n'
                 if topic_report:
@@ -89,3 +89,12 @@ class Validator(object):
     @staticmethod
     def fetch_all(cursor):
         return [{cursor.description[i][0]: v for i, v in enumerate(d)} for d in cursor.fetchall()]
+
+    @staticmethod
+    def iconize_status(status):
+        return {'pending':     '<span title="Проверяется">🗎</span>',
+                'waiting':     '<span title="Нужен отклик">❓</span>',
+                'materials':   '<span title="Досыл">⏳</span>',
+                'review':      '<span title="Рассмотрена">👌</span>',
+                'approved':    '<span title="Принята">✔️</span>',
+                'disapproved': '<span title="Отклонена">❌</span>'}[status]
