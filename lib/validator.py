@@ -8,11 +8,13 @@ import sqlite3
 class Validator(object):
     participant_fields = {'Ваши данные', 'Остальные участники', 'Авторы', 'Представители', 'Члены команды'}
     participant_number_fields = {'Количество участников', 'Количество представителей', 'Количество представителей (кроме помощников)'}
-    required_fields = {'Фамилия', 'Имя', 'Отчество', 'Ник', 'Город'}
     capital_fields = {'Фамилия', 'Имя', 'Отчество', 'Город'}
+    required_fields = capital_fields | {'Ник'}
     invalid_city_names = {'Орел', 'Щекино', 'Могилев', 'Королев'}
+    required_in_scenic_fields = {'Транскрипция ника (для ведущих)'}
+    scenic_topic_ids = {3926, 3941, 3925, 3942, 3943, 3948, 3949, 3903, 3937, 3940, 3950, 3904, 3938, 3939, 3944}
 
-    def validate_participants(self, _, fields):
+    def validate_participants(self, request, fields):
         errors = []
         try:
             expected_participants = filter(
@@ -33,7 +35,9 @@ class Validator(object):
             ok_fields = set(d['title'] for d in p_data if d['value']
                                                           and (len(d['value']) > 1 or re.match(r'\w', d['value']))
                                                           and not d['value'].lower().startswith("нет"))
-            empty_fields = self.required_fields - ok_fields
+            required_fields = self.required_fields | (
+                self.required_in_scenic_fields if request['topic_id'] in self.scenic_topic_ids else set())
+            empty_fields = required_fields - ok_fields
             if empty_fields:
                 errors.append('У участника %d не ' % (i + 1) +
                              ('заполнены поля %s' % str(empty_fields) if len(empty_fields) > 1
