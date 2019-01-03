@@ -7,12 +7,13 @@ from urllib.request import urlopen, Request
 
 
 class Authenticator(object):
-    __cookie_name = 'private-session.cookie'
+    __cookie_path = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'private-session.cookie')
 
-    def __init__(self, event_name, login, password):
+    def __init__(self, event_name, login, password=None, interactive=True):
         self.event_name = event_name
         self.login = login
         self.password = password
+        self.interactive = interactive
         self.cookie = None
         self.__attempts = None
         self.__api = None
@@ -32,10 +33,10 @@ class Authenticator(object):
         return False
 
     def __sign_in(self):
-        if os.path.isfile(self.__cookie_name):
-            with open(self.__cookie_name, 'r') as f:
+        if os.path.isfile(self.__cookie_path):
+            with open(self.__cookie_path, 'r') as f:
                 self.cookie = f.read()
-            print('Checking the cookie from ' + self.__cookie_name + ' file.')
+            print('Checking the cookie from ' + self.__cookie_path + ' file.')
 
             req = Request(self.__api.settings_GET, None, {'Cookie': self.cookie})
             try:
@@ -46,22 +47,26 @@ class Authenticator(object):
             except HTTPError as e:
                 print(e)
                 print("Seems like the cookie is out of date, deleting it...")
-                os.remove(self.__cookie_name)
+                os.remove(self.__cookie_path)
                 self.__attempts += 1
                 return False
 
         else:  # No cookie saved
             if not self.password:
-                self.password = getpass('Password for ' + self.login + ': ')
+                if self.interactive:
+                    self.password = getpass('Password for ' + self.login + ': ')
+                else:
+                    print("Unable to ask for password in non-interactive mode.")
+                    exit()
             login_info = urlencode({'name':     self.login,
                                     'password': self.password}).encode('ascii')
             try:
                 with urlopen(self.__api.login_POST, login_info) as r:
                     cookie = r.getheader('Set-Cookie')
-                    with open(self.__cookie_name, 'w') as f:
+                    with open(self.__cookie_path, 'w') as f:
                         f.write(cookie)
                         self.cookie = cookie
-                    print("Saved cookie to the '%s' file. Keep this file as your password !!!" % self.__cookie_name)
+                    print("Saved cookie to the '%s' file. Keep this file as your password !!!" % self.__cookie_path)
                     return True
             except HTTPError as e:
                 print(e)

@@ -4,14 +4,19 @@
 import os
 import json
 import time
-import hashlib
 import sqlite3
 import unicodedata
 
 from urllib import request
 from urllib import parse
 
+
 class Downloader:
+    SKIP_DOWNLOAD = 0
+    CHECK_UPDATES_ONLY = 1
+    DOWNLOAD_UPDATED_REQUESTS = 2
+    FORCE_DOWNLOAD_ALL = 3
+
     def __init__(self, preprocess_func=None):
         def preprocess_sample(num, dir_name, file_name):
             skip = False
@@ -21,9 +26,12 @@ class Downloader:
         self.data = None
         self.event_name = None
         self.event_id = None
-        self.log_infos, self.log_errors = "", ""
+        self.log_infos, self.log_errors, self.log_links = '', '', ''
 
     def get_lists(self, db_path, query):
+        """`query` should SELECT the following fields:
+            [request_id, update_time, nom, num, title, file_type, file]"""
+
         if not os.path.isfile(db_path):
             print('Database ' + db_path + ' not exists...')
             return False
@@ -43,7 +51,6 @@ class Downloader:
         print('Querying...')
         c.execute(query)
         self.data = c.fetchall()
-
         db.close()
         print('Database', db_path, 'safely closed...')
         return True
@@ -65,23 +72,33 @@ class Downloader:
         print('[LINK] ' + msg)
         self.log_links += msg + os.linesep
 
-    def download_files(self, folder, download_allowed_by_arg=True, check_hash_if_exists=True):
-        log_file = os.path.join(folder, time.strftime("log-%d%m%y%H%M%S.txt", time.localtime()))
+    def download_files(self, folder, action=DOWNLOAD_UPDATED_REQUESTS):
+        run_time = time.strftime('%d%m%y%H%M%S', time.localtime())
+        log_file = os.path.join(folder, 'log-%s.txt' % run_time)
         self.log_infos, self.log_errors, self.log_links = '', '', ''
         paths = set()
         name = ""
         counter = 0
 
+        new_update_time = {}
+        request_updates_path = os.path.join(folder, 'requests-update-time.json')
+
+        if os.path.isfile(request_updates_path):
+            existing_update_time = json.load(open(request_updates_path, 'r', encoding='utf-8'), parse_int=True)
+            os.rename(request_updates_path, request_updates_path.replace('.', '-bkp-%s.' % run_time))
+        else:
+            existing_update_time = None
+
         for row in self.data:
             prev_name = name
-            request_id, nom, num, title, file_type, file = row
-            name = self.__to_filename("%0.3d. %s" % (int(num), title if title else "No title"))
+            request_id, update_time, nom, num, title, file_type, file = row
+            name = self.to_filename('%0.3d. %s' % (int(num), title if title else 'No title'))
             name = name.replace('  ', ' ')
-            nom, file_type = self.__to_filename(nom), self.__to_filename(file_type)
+            nom, file_type = self.to_filename(nom), self.to_filename(file_type)
             download_skipped_by_preprocessor, dir_name, file_name = self.preprocess(int(num), name, file_type)
             display_path = ' | '.join([nom, dir_name, file_name])
             if download_skipped_by_preprocessor:
-                self.log_info("SKIP: " + display_path)
+                self.log_info('SKIP: ' + display_path)
                 continue
             dir_path = os.path.join(folder, nom, dir_name)
             try:
@@ -90,11 +107,28 @@ class Downloader:
                     self.log_error('No file for %s.' % display_path)
                     continue
                 file = json.loads(file)
+                new_update_time[request_id] = update_time  # assuming it's the same for all request files
                 if 'link' in file.keys():  # External site
-                    self.log_link("%s -> %s" % (file['link'], display_path))
-                    link_dir_path = os.path.join(folder, nom, '[LINK]' + dir_name)
-                    if not os.path.exists(dir_path) and not os.path.exists(link_dir_path) and download_allowed_by_arg:
-                        os.makedirs(link_dir_path)
+                    file_exists = file_name in [name.split('.', 1)[0] for name in os.listdir(dir_path)] \
+                                    if os.path.exists(dir_path) else False
+                    request_up_to_date = existing_update_time \
+                                            and str(request_id) in existing_update_time \
+                                            and existing_update_time[str(request_id)] == update_time
+                    if file_exists:
+                        self.log_info(display_path + ' exists. ', inline=True)
+                        if request_up_to_date:
+                            self.log_info('And the request did not update. Skipping...', head=False)
+                        else:
+                            self.log_info('And the request updated. You should update it!', head=False)
+
+                    if not file_exists or (file_exists and not request_up_to_date):
+                        self.log_link("%s -> %s" % (file['link'], display_path))
+                        link_dir_path = os.path.join(folder, nom, dir_name)
+                        if not os.path.exists(dir_path) \
+                                and not os.path.exists(link_dir_path) \
+                                and action >= self.DOWNLOAD_UPDATED_REQUESTS:
+                            os.makedirs(link_dir_path)
+
                     continue
                 else:
                     src_filename = file['filename']
@@ -115,16 +149,17 @@ class Downloader:
                 if is_img:
                     file_url += '.jpg'  # Yes, it works this way
                 download_required = True
-                if os.path.isfile(path):
-                    self.log_info(path + ' exists. ', inline=True)
-                    if check_hash_if_exists:
-                        if self.__md5(file_url) == self.__md5(path):
-                            self.log_info('The same as remote. Skipping...', head=False)
+                if os.path.isfile(path) or os.path.isfile(path + '_'):  # This makes a file invisible for extractor
+                    self.log_info(display_path + ' exists. ', inline=True)
+                    if action in (self.CHECK_UPDATES_ONLY, self.DOWNLOAD_UPDATED_REQUESTS) and existing_update_time:
+                        if str(request_id) in existing_update_time \
+                                and existing_update_time[str(request_id)] == update_time:
+                            self.log_info('And the request did not update. Skipping...', head=False)
                             download_required = False
                         else:
-                            self.log_info('And differs from the remote one. Updating...', head=False)
+                            self.log_info('And the request updated. Updating...', head=False)
                     else:
-                        self.log_info('Configured not to check. Skipping...', head=False)
+                        self.log_info('Configured not to check or no data on updates. Skipping...', head=False)
                         download_required = False
                 if download_required:
                     if path not in paths:
@@ -133,7 +168,7 @@ class Downloader:
                         self.log_error("!!!! %s was about to overwrite. Check your SQL query!!!" % path)
                         break
                     self.log_info(("DL: " + file_url + " -> " + path), inline=True)
-                    if download_allowed_by_arg:
+                    if action >= self.DOWNLOAD_UPDATED_REQUESTS:
                         if not os.path.isdir(dir_path):
                             os.makedirs(dir_path)
                         request.urlretrieve(file_url, path)
@@ -145,35 +180,29 @@ class Downloader:
 
         if not os.path.isdir(folder):
             os.makedirs(folder)
+        if action >= self.DOWNLOAD_UPDATED_REQUESTS:
+            json.dump(new_update_time, open(request_updates_path, 'w', encoding='utf-8'), indent=4)
+
         with open(log_file, 'w', encoding='utf-8') as f:
             f.write("ERRORS:" + os.linesep + self.log_errors + os.linesep)
             f.write("LINKS:" + os.linesep + self.log_links + os.linesep)
             f.write("INFO:" + os.linesep + self.log_infos + os.linesep)
+        if self.log_errors:
+            print("\n--- ERRORS ---")
+            print(self.log_errors)
         if self.log_links:
             print("\n--- LINKS ---")
             print(self.log_links)
 
     @staticmethod
-    def __to_filename(string):
-        filename = string.replace('й', "<икраткое>")
+    def to_filename(string):
+        filename = string.replace('й', '<икраткое>').replace('Й', '<ИКРАТКОЕ>')\
+                         .replace('ё', '<ио>')      .replace('Ё', '<ИО>')
         filename = unicodedata.normalize('NFD', filename).encode('cp1251', 'replace').decode('cp1251')
-        filename = filename.replace("<икраткое>", 'й')
-        filename = filename.replace(':', " -") \
-            .replace('|', ";").replace('/', ";").replace('\\', ";") \
+        filename = filename.replace('<икраткое>', 'й').replace('<ИКРАТКОЕ>', 'Й')\
+                           .replace('<ио>', 'ё')      .replace('<ИО>', 'Ё')
+        filename = filename.replace(':', ' -') \
+            .replace('|', ';').replace('/', ';').replace('\\', ';') \
             .replace('"', "'")
-        filename = ''.join(i if i not in "*?<>" else '' for i in filename)
+        filename = ''.join(i if i not in '*?<>' else '' for i in filename)
         return filename
-
-    @staticmethod
-    def __md5(uri):
-        remote = True
-        if uri.find("http://") == 0 or uri.find("https://") == 0:
-            file = request.urlopen(uri)
-        else:
-            file = open(uri, 'rb')
-        hash = hashlib.md5()
-        for chunk in iter(lambda: file.read(4096), b""):
-            hash.update(chunk)
-        if not remote:
-            file.close()
-        return hash.hexdigest()

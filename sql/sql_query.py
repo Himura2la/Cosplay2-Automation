@@ -19,7 +19,7 @@ default_field_format = "%s: "
 last_field_format = "%s"
 
 print('Connecting to %s...' % os.path.abspath(args.db_path))
-result, headers = [], []
+
 with sqlite3.connect(args.db_path, isolation_level=None) as db:
     c = db.cursor()
     c.execute('PRAGMA encoding = "UTF-8"')

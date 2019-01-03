@@ -5,20 +5,29 @@ import os
 import time
 import shutil
 import sqlite3
+from yaml import load
 
-db_path = r"D:\Clouds\YandexDisk\Fests\Yuki no Odori 7\db\tulafest\sqlite3_data.db"
+from lib.downloader import Downloader
 
-input_dir = r"D:\Clouds\YandexDisk\Fests\Yuki no Odori 7\files_by_folder"
-output_dir = r"H:\Fest"
+config = load(open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.yml'), 'r', encoding='utf-8').read())
+db_path = config['db_path']
+input_dir = config['folder_path']
+output_dir = config['extracted_folder_path']
+
+if not os.path.isdir(output_dir):
+    os.makedirs(output_dir)
 
 num_title_splitter = '. '
 nums_in_filenames = False
 
-sql_queery = """
+skip_card_codes = 'card_code NOT IN (%s) AND' % ','.join([f'"{cc}"' for cc in config['not_scene_card_codes']]) \
+                    if 'not_scene_card_codes' in config else ''
+
+sql_queery = f"""
 SELECT 
     requests.number as '№',
-    card_code || ' ' || voting_number as id,
     card_code,
+    list.title as nom,
     voting_number,
     voting_title,
     sound_start
@@ -28,30 +37,22 @@ LEFT JOIN (SELECT request_id, value as sound_start FROM [values]
     ON request_id = requests.id
 WHERE list.id = topic_id AND
       status = 'approved' AND
+      {skip_card_codes}
       default_duration > 0
 """
 num_field = '№'
 
-
-# https://github.com/Himura2la/FestEngine/blob/36ca9fd60fa3139f342f7b479406211980ce22b8/src/constants.py#L49
-vid_exts = {'avi', 'mp4', 'mov', 'wmv', 'mkv'}
-aud_exts = {'mp3', 'wav', 'flac', 'ogg', 'm4a', 'aac'}
+video_exts = {'avi', 'mp4', 'mov', 'wmv', 'mkv'}
+audio_exts = {'mp3', 'wav', 'flac', 'ogg', 'm4a', 'aac'}
 img_exts = {'jpeg', 'png', 'jpg'}
 
 # target_exts = img_exts
-target_exts = vid_exts | aud_exts
+target_exts = video_exts | audio_exts
 
 processed_log = ""
 title_differences = ""
 skipped_files = ""
-
-
-def __to_filename(string):  # from get_files.py
-    fn = string.encode('cp1251', 'replace').decode('cp1251')
-    fn = ''.join(i if i not in "\/*?<>|" else "#" for i in fn)
-    fn = fn.replace(':', " -")
-    fn = fn.replace('"', "'")
-    return fn
+errors = ""
 
 
 def make_filename(data, num, title=None):
@@ -59,28 +60,33 @@ def make_filename(data, num, title=None):
         return False, num, None
 
     req_data = data[num]
-    code = "%d %s" % (req_data['voting_number'], req_data['card_code'])
+    code = "%d [%s]" % (req_data['voting_number'], req_data['nom'])
 
     if title:
         global title_differences
         if req_data['voting_title'] != title:
             title_differences += "%s\nReal: %s\nFile: %s\n" % (code, req_data['voting_title'], title)
     else:
-        title = __to_filename(req_data['voting_title'])
+        title = req_data['voting_title']
 
-    sound_start = 'Неизвестно'
-    if req_data['sound_start']:
-        sound_start = {
-            'Трек начинается до выхода на сцену (выход из за кулис под музыку)': 'Сразу',
-            'Трек начинается после выхода на сцену (начало с точки, трек начинается вместе с танцем)': 'С точки',
-            'Трек начинается после выхода на сцену (начало с точки)': 'С точки',
-        }[req_data['sound_start']]
-    elif req_data['card_code'][0] == 'V':  # Videos
-            sound_start = 'Сразу~'
-    elif req_data['card_code'][0] == 'T':  # Dances
-            sound_start = 'С точки~'
+    # sound_start = 'Неизвестно'
+    # if req_data['sound_start']:
+    #     sound_start = {
+    #         'Трек начинается до выхода на сцену (выход из за кулис под музыку)': 'Сразу',
+    #         'Трек начинается после выхода на сцену (начало с точки, трек начинается вместе с танцем)': 'С точки',
+    #         'Трек начинается после выхода на сцену (начало с точки)': 'С точки',
+    #     }[req_data['sound_start']]
+    # elif req_data['card_code'][0] == 'V':  # Videos
+    #         sound_start = 'Сразу~'
+    # elif req_data['card_code'][0] == 'T':  # Dances
+    #         sound_start = 'С точки~'
+    #
+    # title = "[%s] %s №%d" % (sound_start, title, req_data['№'])
 
-    title = "[%s] %s №%d" % (sound_start, title, req_data['№'])
+    title = "%s №%d" % (title, req_data['№'])
+
+    code = Downloader.to_filename(code)
+    title = Downloader.to_filename(title)
 
     return True, code, title
 
@@ -110,6 +116,8 @@ for dirpath, dirnames, filenames in os.walk(input_dir):
             prev_dir = dirpath
             rep = 1
         root, dir_name = os.path.split(dirpath)
+        if dir_name.endswith('-not-extract'):
+            continue
         if any([filename.endswith(ext) for ext in target_exts]):
             name = filename.rsplit('.', 1)[0] if nums_in_filenames else dir_name
             ext = filename.rsplit('.', 1)[1]
@@ -120,8 +128,8 @@ for dirpath, dirnames, filenames in os.walk(input_dir):
             num = num.lstrip('0')
             success, code, name = make_filename(data_by_num, num, title)
             if not success:
-                msg = "|>>> ERROR <<<| Failed to make title for %s | %s. Check the number." % (name, filename)
-                processed_log += msg + '\n'
+                msg = "|>>> ERROR <<<| Failed to make title for %s." % os.path.join(dirpath, filename).replace(input_dir, '.')
+                errors += msg + '\n'
                 print(msg)
                 continue
             missing_files -= {num}
@@ -144,6 +152,7 @@ for dirpath, dirnames, filenames in os.walk(input_dir):
 missing_files_msg = "\n".join([". ".join(make_filename(data_by_num, num)[1:]) for num in missing_files])
 info_log = "\n--- Skipped by extension ---\n" + skipped_files + \
            "\n--- Title differences ---\n" + title_differences + \
+           "\n--- Errors ---\n" + errors + \
            "\n--- Missing files ---\n" + missing_files_msg
 print(info_log)
 log_file = os.path.join(output_dir, time.strftime("log-%d%m%y%H%M%S.txt", time.localtime()))

@@ -16,7 +16,7 @@
     * Для каждой номинации своя папка 
     * Для сбора всех файлов в одну папку для [FestEngine](https://github.com/Himura2la/FestEngine), применяется скрипт [files_extractor.py](extract-files.py)
     * Имена файлов составляются из номера заявки и названия карточки. Если у вас нет названий карточек, сгенерируйте их или нагородите LEFT JOIN'ов в SQL (не рекомендуется, но вот [пример](https://github.com/Himura2la/Cosplay2-Downloader/blob/cr17/get_files.py#L51)).
-* [image_list_gen.py](gen-image-list.py) 
+* [image_list_gen.py](etc/gen-image-list.py) 
     * Генерилка списка путей к картинкам для вставки в CSV файл, который
 используется для определения переменных фотошопе при генерации задников.
     * Если вы ничего не поняли, [начните отсюда](http://www.richmediacs.com/user_manuals/RMCS_PS_Training/Using%20PS%20Variables/UsingVariablesInPS_EXTERNAL.html)
@@ -35,8 +35,7 @@
 * [regex_renamer.py](etc/regex_renamer.py) - переименователь по регэкспам, можно заменить на GNU reanme. Но не нужно.
 * [sql_query.py](etc/sql_query.py) - выполняет SQL в указанной базе SQLite. Там есть очень полезная фича - делать плоские тексты с длинными полями, для пожеланий по стаффу волонтёрам и светосценариев.
 * [csv_renamer.py](etc/csv_renamer.py) - для фестов, которые не через к2. Делает имена файлов для FestEngine из таблицы
-* [program_cleaner.py](etc/program_cleaner.py) -- скрипт для очистки программы феста от лишних строк (для сверки выложенной
-ВК программы с программой, из раздела к2 "Планирование расписания").
+* [festival_plan-parser.py](etc/festival_plan-parser.py) и его запускатор [parse-festival_plan.drop.bat](etc/parse-festival_plan.drop.bat) -- скрипт для парсинга файла `festival_plan.xls` из планировщика расписания и выгрузки текста, готового к публикации, а также чистого CSV исключительно с номерами.
 * Куча полезных SQL запросов, можно хватать идеи по работе с БД. Особенно полезен файл [задники.sql](sql/задники.sql),
 мне очень мешало то, что я вспомнил про **JOIN** не сразу и по-началу городил **CREATE TEMP TABLE AS SELECT**...
 * Про остальное лень рассказывать, вам это скорее всего не нужно.

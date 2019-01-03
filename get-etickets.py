@@ -3,12 +3,10 @@
 # Author: Himura Kazuto <himura@tulafest.ru>
 
 import os
-import sqlite3
 from yaml import load  # pip install pyyaml
 
 from lib.authenticator import Authenticator
 from lib.fetcher import Fetcher
-from lib.make_db import MakeDB
 
 if __name__ == '__main__':
     config = load(open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.yml'), 'r', encoding='utf-8').read())
@@ -25,18 +23,10 @@ if __name__ == '__main__':
 
     print()
     f = Fetcher(a.event_name, a.cookie)
-    if not f.fetch_data():
+    if not f.fetch_etickets():
         exit()
 
-    print()
-    MakeDB(db_path, f.data)
+    etickets = f.data['etickets']
+    paid_etickets = [t for t in etickets if t['etickets_paymethod']]
 
-    if sql:
-        from tabulate import tabulate
-
-        print('\nConnecting to ' + db_path + ' again...')
-        with sqlite3.connect(db_path, isolation_level=None) as db:
-            c = db.cursor()
-            c.execute('PRAGMA encoding = "UTF-8"')
-            c.execute(sql)
-            print(tabulate(c.fetchall(), headers=[description[0] for description in c.description], tablefmt='grid'))
+    print('Я вам посылку принёс, только я вам её не отдам!')  # TODO: Save somehow
