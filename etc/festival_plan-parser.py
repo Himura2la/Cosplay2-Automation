@@ -10,8 +10,8 @@ festival_plan_xls = r"%USERPROFILE%\Desktop\festival_plan.xls" if len(sys.argv) 
 out_dir = os.path.split(festival_plan_xls)[0]
 
 xls_contents = open(festival_plan_xls, encoding='utf-8-sig').read()
-xls_contents = xls_contents.split('<body>', 1)[1].replace(' style="""', '').replace('&', '&amp;')
-# open(festival_plan_xls + "_.txt", 'w', encoding='utf-8').write(xls_contents)  # dump edited text for debugging
+xls_contents = xls_contents.split('<body>', 1)[1].replace(' style="""', '').replace('&', '&amp;')  # баги в вёрстке :(
+# open(os.path.join(out_dir, 'xls_contents.html'), 'w', encoding='utf-8').write(xls_contents)  # на случай новых багов
 table = ElementTree.XML(xls_contents)
 
 plan = []
