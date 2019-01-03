@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
+# Author: Himura Kazuto <himura@tulafest.ru>
 
 import os
 import sys
