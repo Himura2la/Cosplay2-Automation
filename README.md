@@ -16,7 +16,7 @@
     * Для каждой номинации своя папка 
     * Для сбора всех файлов в одну папку для [FestEngine](https://github.com/Himura2la/FestEngine), применяется скрипт [files_extractor.py](extract-files.py)
     * Имена файлов составляются из номера заявки и названия карточки. Если у вас нет названий карточек, сгенерируйте их или нагородите LEFT JOIN'ов в SQL (не рекомендуется, но вот [пример](https://github.com/Himura2la/Cosplay2-Downloader/blob/cr17/get_files.py#L51)).
-* [image_list_gen.py](gen-image-list.py) 
+* [image_list_gen.py](etc/gen-image-list.py) 
     * Генерилка списка путей к картинкам для вставки в CSV файл, который
 используется для определения переменных фотошопе при генерации задников.
     * Если вы ничего не поняли, [начните отсюда](http://www.richmediacs.com/user_manuals/RMCS_PS_Training/Using%20PS%20Variables/UsingVariablesInPS_EXTERNAL.html)
