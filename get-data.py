@@ -4,6 +4,8 @@
 
 import os
 import sqlite3
+import sys
+
 from yaml import load  # pip install pyyaml
 
 from lib.authenticator import Authenticator
@@ -19,6 +21,8 @@ if __name__ == '__main__':
     db_path = config['db_path']
     sql = config['sql_after_get'].strip() if 'sql_after_get' in config else None
 
+    all_data = len(sys.argv) > 1 and sys.argv[1] == '-a'
+
     a = Authenticator(event_name, c2_login, c2_password)
     if not a.sign_in():
         exit()
@@ -28,7 +32,13 @@ if __name__ == '__main__':
     if not f.fetch_data():
         exit()
 
-    print()
+    if all_data:
+        if not f.fetch_etickets():
+            exit()
+        if not f.fetch_details():
+            exit()
+
+    print('\nCreating ' + db_path + '...')
     MakeDB(db_path, f.data)
 
     if sql:

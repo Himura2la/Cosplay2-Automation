@@ -45,20 +45,20 @@ class MakeDB(object):
             c.execute("""CREATE TABLE list (
             id INTEGER PRIMARY KEY, card_code INTEGER, title TEXT, category TEXT, card_enabled INTEGER, card_name_rule TEXT,
             card_announcement_rule TEXT, card_diplom_rule TEXT, default_duration REAL, description TEXT, event_id INTEGER,
-            intro TEXT, [order] INTEGER, print_badges INTEGER, public_requests TEXT, time_addons_close TEXT,
+            intro TEXT, `order` INTEGER, print_badges INTEGER, public_requests TEXT, time_addons_close TEXT,
             time_cards_open TEXT, time_requests_close TEXT, time_requests_open TEXT, time_voting_close TEXT,
             time_voting_open TEXT, url_code TEXT, voting_group INTEGER, voting_jury INTEGER, voting_public INTEGER)""")
         elif key == 'requests':
             c.execute("DROP TABLE IF EXISTS requests")
             c.execute("""CREATE TABLE requests (
-            id INTEGER PRIMARY KEY, voting_title TEXT, status TEXT, topic_id INTEGER, number INTEGER, comment_time TEXT,
-            image_update_time TEXT, new_comments INTEGER, new_updates INTEGER, update_time TEXT, user_id INTEGER,
-            user_title TEXT, voting_number INTEGER)""")
+            id INTEGER PRIMARY KEY, voting_title TEXT, announcement_title TEXT, status TEXT, topic_id INTEGER,
+            number INTEGER, comment_time TEXT, image_update_time TEXT, new_comments INTEGER, new_updates INTEGER,
+            update_time TEXT, user_id INTEGER, user_title TEXT, voting_number INTEGER)""")
         elif key == 'values':
-            c.execute("DROP TABLE IF EXISTS [values]")
-            c.execute("""CREATE TABLE [values] (
-            id INTEGER PRIMARY KEY AUTOINCREMENT, request_id INT, request_section_id INT, section_title TEXT, title TEXT,
-            value TEXT, type TEXT, public INTEGER, max_repeat INTEGER)""")
+            c.execute("DROP TABLE IF EXISTS `values`")
+            c.execute("""CREATE TABLE `values` (
+            id INTEGER PRIMARY KEY AUTOINCREMENT, request_id INTEGER, request_section_id INTEGER,
+            section_title TEXT, title TEXT, value TEXT, type TEXT, public INTEGER, max_repeat INTEGER)""")
         elif key == 'etickets':
             c.execute("DROP TABLE IF EXISTS etickets")
             c.execute("""CREATE TABLE etickets (
@@ -66,6 +66,9 @@ class MakeDB(object):
             etickets_type_id INTEGER, etickets_paymethod TEXT, money_transfered INTEGER, pay_time TEXT,
             pay_details TEXT, time_create TEXT, user_title TEXT, user_city TEXT, image_update_time TEXT, ett_title TEXT
             )""")
+        elif key == 'details':
+            c.execute("DROP TABLE IF EXISTS details")
+            c.execute("CREATE TABLE details (id INTEGER PRIMARY KEY AUTOINCREMENT, request_id INTEGER, json TEXT)")
         else:
             return False
         return True
@@ -85,7 +88,7 @@ class MakeDB(object):
             values = ':' + ', :'.join(keys)
 
             c.execute("BEGIN TRANSACTION")
-            c.executemany("INSERT INTO [%s] (%s) VALUES(%s)" % (key, rows, values), self.data[key])
+            c.executemany("INSERT INTO `%s` (%s) VALUES(%s)" % (key, rows, values), self.data[key])
             c.execute("COMMIT")
             return True
         else:
