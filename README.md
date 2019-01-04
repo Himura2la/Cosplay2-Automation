@@ -8,13 +8,17 @@
 гибкостью не блещет). Так и родился этот репозиторий.
 
 # Основные скрипты
-* [get_data.py](get_data.py)
+* [backup-data.py](backup-data.py) 
+    * Резервное копирование данных фестиваля
+    * Автоматическая валидация частных ошибок
+    * Запускается через cron каждый день
+* [get-data.py](get-data.py)
     * Загрузка всех данных из всех заявок на фестиваль.
     * Генерация базы данных SQLite из этих данных.
-* [get_files.py](get_files.py)
+* [get-scene-files.py](get-scene-files.py), [get-exhibition-fotos.py](get-exhibition-fotos.py)
     * Загрузка всех файлов из всех заявок.
     * Для каждой номинации своя папка 
-    * Для сбора всех файлов в одну папку для [FestEngine](https://github.com/Himura2la/FestEngine), применяется скрипт [files_extractor.py](extract-files.py)
+    * Для сбора всех файлов в одну папку для [FestEngine](https://github.com/Himura2la/FestEngine), применяется скрипт [extract-files.py](extract-files.py)
     * Имена файлов составляются из номера заявки и названия карточки. Если у вас нет названий карточек, сгенерируйте их или нагородите LEFT JOIN'ов в SQL (не рекомендуется, но вот [пример](https://github.com/Himura2la/Cosplay2-Downloader/blob/cr17/get_files.py#L51)).
 * [image_list_gen.py](etc/gen-image-list.py) 
     * Генерилка списка путей к картинкам для вставки в CSV файл, который
@@ -23,6 +27,7 @@
 * [mktex.py](mktex.py)
     * Открытая часть нашего с [@Oreolek](https://github.com/Oreolek) секретного проекта для фотовыставки.
     * Пишите [в Gitter](https://gitter.im/FestEngine/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link) за подробностями.
+
 
 ## Папка `etc`
 Тут хранятся легаси и ad-hoc скрипты для специфических задач.
@@ -33,9 +38,11 @@
 * [compare_folders.py](etc/compare_folders.py) - скрипт сверки папок, можете заменить на [meld](http://meldmerge.org/) или обычный diff. А можете нет.
 * [gui.py](etc/gui.py) - Заготовка GUI на wxWidgets. Очень легаси, но убивать жалко, а читать код страшно.
 * [regex_renamer.py](etc/regex_renamer.py) - переименователь по регэкспам, можно заменить на GNU reanme. Но не нужно.
-* [sql_query.py](etc/sql_query.py) - выполняет SQL в указанной базе SQLite. Там есть очень полезная фича - делать плоские тексты с длинными полями, для пожеланий по стаффу волонтёрам и светосценариев.
+* [sql_query.py](sql/sql_query.py) - выполняет SQL в указанной базе SQLite. Там есть одна очень полезная фича -- делать плоские тексты с длинными полями, для пожеланий по стаффу волонтёрам и светосценариев.
 * [csv_renamer.py](etc/csv_renamer.py) - для фестов, которые не через к2. Делает имена файлов для FestEngine из таблицы
-* [festival_plan-parser.py](etc/festival_plan-parser.py) и его запускатор [parse-festival_plan.drop.bat](etc/parse-festival_plan.drop.bat) -- скрипт для парсинга файла `festival_plan.xls` из планировщика расписания и выгрузки текста, готового к публикации, а также чистого CSV исключительно с номерами.
+* [festival_plan-parser.py](etc/festival_plan-parser.py) -- скрипт для парсинга файла `festival_plan.xls` из планировщика расписания и выгрузки текста, готового к публикации, а также чистого CSV исключительно с номерами. [Подробнее](https://github.com/Himura2la/Cosplay2-Automation/releases/tag/1).
+* [tickets-gen.py](etc/tickets-gen.py) -- Генератор кодов, похожих на коды электронных билетов для использования в бумажных билетах.
+* [participants-table-maker.py](etc/participants-table-maker.py) -- Кастомный генератор таблицы участников. Не нравятся мне списки, которые делает к2...
 * Куча полезных SQL запросов, можно хватать идеи по работе с БД. Особенно полезен файл [задники.sql](sql/задники.sql),
 мне очень мешало то, что я вспомнил про **JOIN** не сразу и по-началу городил **CREATE TEMP TABLE AS SELECT**...
 * Про остальное лень рассказывать, вам это скорее всего не нужно.
