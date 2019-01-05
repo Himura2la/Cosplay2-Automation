@@ -33,8 +33,8 @@ if __name__ == '__main__':
     f = Fetcher(a.event_name, a.cookie)
     if not f.fetch_data():
         exit()
-    if not f.fetch_etickets():
-        exit()
+    f.fetch_etickets()
+    f.fetch_details()
 
     db_path = os.path.join(backup_dir, datetime.now().strftime('%y-%m-%d_%H-%M-%S.db'))
     MakeDB(db_path, f.data)
