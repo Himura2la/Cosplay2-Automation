@@ -7,27 +7,30 @@ types = {
     '01': {
         'descr': 'Билет\n"Тануки"',
         'image': 'tanuki.jpg',
-        'start': 325,
-        'total': 24
+        'start': 349,
+        'total': 48
     },
     '02': {
         'descr': 'Билет\n"Кицунэ"',
         'image': 'kitsune.jpg',
-        'start': 310,
-        'total': 24
+        'start': 334,
+        'total': 12
     },
     '03': {
         'descr': 'VIP Билет\n"Ооками"',
         'image': 'ookami.jpg',
-        'start': 325,
-        'total': 12
+        'start': 337,
+        'total': 0
     }
 }
 
 image_base_path = r'D:\Clouds\YandexDisk\Fests\Yuki no Odori 8\design\Tickets\krol'
-target_csv_path = f'D:\Clouds\YandexDisk\Fests\Yuki no Odori 8\design\Tickets\Print3\\tickets-%s.csv'
+target_csv_path = f'D:\Clouds\YandexDisk\Fests\Yuki no Odori 8\design\Tickets\Print4\\tickets-%s.csv'
 pool = ['A', 'B', 'D', 'E', 'F', 'H', 'K', 'L', 'M', 'P', 'R', 'S', 'T', 'U', 'V', 'X', 'Y', 'Z'] + \
        [chr(ord('1') + i) for i in range(9)]
+
+if not os.path.exists(os.path.split(target_csv_path)[0]):
+    os.makedirs(os.path.split(target_csv_path)[0])
 
 
 def make_codes(how_many):
