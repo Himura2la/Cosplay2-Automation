@@ -7,25 +7,25 @@ types = {
     '01': {
         'descr': 'Билет\n"Тануки"',
         'image': 'tanuki.jpg',
-        'start': 349,
-        'total': 48
+        'start': 397,
+        'total': 108
     },
     '02': {
         'descr': 'Билет\n"Кицунэ"',
         'image': 'kitsune.jpg',
-        'start': 334,
-        'total': 12
+        'start': 346,
+        'total': 72
     },
     '03': {
         'descr': 'VIP Билет\n"Ооками"',
         'image': 'ookami.jpg',
         'start': 337,
-        'total': 0
+        'total': 36
     }
 }
 
 image_base_path = r'D:\Clouds\YandexDisk\Fests\Yuki no Odori 8\design\Tickets\krol'
-target_csv_path = f'D:\Clouds\YandexDisk\Fests\Yuki no Odori 8\design\Tickets\Print4\\tickets-%s.csv'
+target_csv_path = f'D:\Clouds\YandexDisk\Fests\Yuki no Odori 8\design\Tickets\Print5\\tickets-%s.csv'
 pool = ['A', 'B', 'D', 'E', 'F', 'H', 'K', 'L', 'M', 'P', 'R', 'S', 'T', 'U', 'V', 'X', 'Y', 'Z'] + \
        [chr(ord('1') + i) for i in range(9)]
 
