@@ -4,7 +4,6 @@
 import os
 import sqlite3
 import re
-import string
 from yaml import load
 from PIL import Image
 
