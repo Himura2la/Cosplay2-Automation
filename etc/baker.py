@@ -10,7 +10,7 @@ import os
 from yaml import load
 from getpass import getpass
 
-configfile = open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.yml'), 'r')
+configfile = open(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'config.yml'), 'r', encoding='utf-8')
 config = load(configfile.read())
 configfile.close()
 event_name = config['event_name']

@@ -30,7 +30,7 @@ test('Write to All', async t => {
         var noms = side_topics.find('a[ng-bind="topic.title"]')
         var nom = await noms.nth(i).innerText
         console.log(`(i->${i}) `, nom)
-        if (nom == "AMV") // nom protection
+        if (nom == "ART") // nom protection
             break
         if (i != start_i)
             await t.click(await noms.nth(i))  // Open the next nom
@@ -56,30 +56,17 @@ test('Write to All', async t => {
             const message = message1.replace('{num}', voting_number)
 
             //await t.debug()
+            // await t
+            //     .click(Selector('button[ng-click="confirmDelete=true"]').nth(-1))
+            //     .click(Selector('button[ng-click="$ctrl.commentDelete(comment.id)"]').nth(-1))
+
 
             await t
                 .click(Selector('a[ng-click="$ctrl.newCommentFormVisible = true"]'))
-                .typeText(Selector('textarea[ng-model="$ctrl.newCommentForm.comtext"]'), message)
-                .click(Selector('input[ng-model="$ctrl.newCommentForm.email"]'))
-                //.click(Selector('input[ng-model="$ctrl.newCommentForm.sms"]'))
+                .typeText(Selector('textarea[ng-model="$ctrl.newCommentForm.comtext"]'), message.trim(), {'paste': true})
+                //.click(Selector('input[ng-model="$ctrl.newCommentForm.email"]'))
                 .click(Selector('button[type=submit]'))  // Жмем кнопку "Отправить"
 
-            var last_comment = Selector('tr[ng-repeat="comment in $ctrl.comments track by comment.id"]')
-                                .find('span[ng-bind-html="comment.content | htmltext"]').nth(-1)
-            await t.expect(last_comment.innerText).eql(message)  // Проверяем, что отправилось
-        
-          //  await t
-          //      .click(Selector('a[ng-click="$ctrl.newCommentFormVisible = true"]'))
-          //          .typeText(Selector('textarea[ng-model="$ctrl.newCommentForm.comtext"]'), message2)
-          //      .click(Selector('input[ng-model="$ctrl.newCommentForm.email"]'))
-          //          .click(Selector('input[ng-model="$ctrl.newCommentForm.sms"]')) // СНИМАЕМ чекбокс
-          //          .click(Selector('button[type=submit]'))  // Жмем кнопку "Отправить"
-          //      
-          //      last_comment = Selector('tr[ng-repeat="comment in $ctrl.comments track by comment.id"]')
-          //                      .find('span[ng-bind-html="comment.content | htmltext"]').nth(-1)
-          //      await t.expect(last_comment.innerText).eql(message2)  // Проверяем, что отправилось
-                
-            
             console.log("Sent!")
 
         }
