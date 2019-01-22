@@ -2,6 +2,7 @@
 # coding:utf-8
 
 import os
+import re
 import sqlite3
 from yaml import load
 from PIL import Image
@@ -37,6 +38,8 @@ def get_field(req_num, titles, sections=None):
     return res if res else ''
 
 
+texcode = r'\renewcommand{\festurl}{https://%s.cosplay2.ru}' % config['event_name']
+
 for target_dir in target_dirs:
     base_dir = os.path.join(fest_path, target_dir)
     for img_name in os.listdir(base_dir):
@@ -63,16 +66,25 @@ for target_dir in target_dirs:
         other_authors_nicks = get_field(num, config['nick_fields'], config['other_authors_sections'])
         other_authors_teams = get_field(num, config['team_fields'], config['other_authors_sections'])
 
-        texcode += ('\\imgsquare' if square else '\\imgportrait') if portrait else '\\imglandscape'
         req_code = f'{card_code}~{voting_number}'
-        authors = (f'{nicks} (косбэнд {team})' if team else nicks) + f' ({cities})'
-        extra = f'Номинация: {nom}'
+        authors = f'{nicks}~({"косбэнд " if not re.search("косб[эе]нд", team, re.I) else ""}{team})' if team else nicks
+        authors += f'~({cities})'
         if other_authors_nicks or other_authors_teams:
-            extra += '. Фотограф: ' + (f'{other_authors_nicks} (команда {other_authors_teams})' if other_authors_teams else other_authors_nicks)
-        texcode += '{%s}{%s}{%s}{%s}{%s}{%s}{%s}\n' % (req_code, authors, title, fandom, extra, req_id, img_path)
+            authors += f'. Фотограф{"ы" if "," in other_authors_nicks or other_authors_teams else ""}:~'
+            authors += f'{other_authors_nicks}~(команда~{other_authors_teams})' if other_authors_teams else other_authors_nicks
 
-texcode = texcode.replace(r'&', r'\&').replace(r'_', r'\_').replace(r'^', r'\^{}')
-texcode += r'\renewcommand{\festurl}{https://%s.cosplay2.ru}' % config['event_name']
+        if fandom and fandom in title:
+            if fandom == title:
+                fandom = ''
+            else:
+                title = re.sub(rf'^(.*)\W*{fandom}\W*(.*)$', r'\1\2', title)
+        img_path = img_path.replace(os.sep, '/')
+        chunk = '\n    '.join(('{%s}' % field for field in (nom, req_code, title, fandom, authors, req_id, img_path)))
+        texcode += '\n' + (('\\imgsquare' if square else '\\imgportrait') if portrait else '\\imglandscape') + '\n    '
+        texcode += chunk.replace('\\', ' \\textbackslash ')\
+                        .replace(r'&', r'\&')\
+                        .replace(r'_', r'\_')\
+                        .replace(r'^', r'\^{}')
 
 print(texcode)
 # open(tex_path, 'w', encoding='utf-8').write(texcode)
