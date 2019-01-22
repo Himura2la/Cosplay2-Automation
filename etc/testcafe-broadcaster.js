@@ -30,7 +30,7 @@ test('Write to All', async t => {
         var noms = side_topics.find('a[ng-bind="topic.title"]')
         var nom = await noms.nth(i).innerText
         console.log(`(i->${i}) `, nom)
-        if (nom == "ART") // nom protection
+        if (nom == "Арт") // nom protection
             break
         if (i != start_i)
             await t.click(await noms.nth(i))  // Open the next nom
