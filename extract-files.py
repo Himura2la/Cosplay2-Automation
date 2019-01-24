@@ -9,6 +9,8 @@ from yaml import load
 
 from lib.downloader import Downloader
 
+no_op = bool(0)
+
 config = load(open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.yml'), 'r', encoding='utf-8').read())
 db_path = config['db_path']
 input_dir = config['folder_path']
@@ -55,38 +57,35 @@ skipped_files = ""
 errors = ""
 
 
-def make_filename(data, num, title=None):
+def make_filename(data, num, dl_title=None):
     if num not in data:
         return False, num, None
 
     req_data = data[num]
-    code = "%d [%s]" % (req_data['voting_number'], req_data['nom'])
+    code = Downloader.to_filename(f"{req_data['voting_number']} {req_data['card_code']}")
+    title = Downloader.to_filename(req_data['voting_title'])
 
-    if title:
+    if dl_title:
         global title_differences
-        if req_data['voting_title'] != title:
-            title_differences += "%s\nReal: %s\nFile: %s\n" % (code, req_data['voting_title'], title)
-    else:
-        title = req_data['voting_title']
+        if req_data['voting_title'] != title or req_data['voting_title'] != dl_title:
+            title_differences += f"\n{code}" \
+                                 f"\nDownloaded: {dl_title}" \
+                                 f"\nExtracted:  {title}" \
+                                 f"\nReal:       {req_data['voting_title']}"
 
-    # sound_start = 'Неизвестно'
-    # if req_data['sound_start']:
-    #     sound_start = {
-    #         'Трек начинается до выхода на сцену (выход из за кулис под музыку)': 'Сразу',
-    #         'Трек начинается после выхода на сцену (начало с точки, трек начинается вместе с танцем)': 'С точки',
-    #         'Трек начинается после выхода на сцену (начало с точки)': 'С точки',
-    #     }[req_data['sound_start']]
-    # elif req_data['card_code'][0] == 'V':  # Videos
-    #         sound_start = 'Сразу~'
-    # elif req_data['card_code'][0] == 'T':  # Dances
-    #         sound_start = 'С точки~'
-    #
-    # title = "[%s] %s №%d" % (sound_start, title, req_data['№'])
+    sound_start = 'Неизвестно'
+    if req_data['sound_start']:
+        sound_start = {
+            'Трек начинается до выхода на сцену (выход из за кулис под музыку)': 'Сразу',
+            'Трек начинается после выхода на сцену (начало с точки)': 'С точки',
+            'Трек содержит превью (выход из за кулис во время превью танца)': 'Превью',
+            'Трек начинается после выноса реквизита и подготовки': 'Стафф'
+        }[req_data['sound_start']]
+    elif req_data['card_code'][0] == 'V':  # Videos
+            sound_start = 'Сразу'
+    title = f"[{sound_start}] {title}"
 
-    title = "%s №%d" % (title, req_data['№'])
-
-    code = Downloader.to_filename(code)
-    title = Downloader.to_filename(title)
+    title = Downloader.to_filename(f"{title} №{req_data['№']:d}")
 
     return True, code, title
 
@@ -133,20 +132,21 @@ for dirpath, dirnames, filenames in os.walk(input_dir):
                 print(msg)
                 continue
             missing_files -= {num}
-            new_filename = "%s. %s.%s" % (code, name, ext)
+            new_filename = f"{code}. {name}.{ext}"
             if os.path.exists(os.path.join(output_dir, new_filename)):
                 rep += 1
-                new_filename = "%s. %s (%d).%s" % (code, name, rep, ext)
+                new_filename = f"{code}. {name} ({rep}).{ext}"
 
-            msg = "%s | %s -> %s" % (name, filename, new_filename)
+            msg = f"{dir_name} | {filename} -> {new_filename}"
             processed_log += msg + '\n'
             print(msg)
             old_path = os.path.join(root, dir_name, filename)
             new_path = os.path.join(output_dir, new_filename)
 
-            shutil.copy(old_path, new_path)
+            if not no_op:
+                shutil.copy(old_path, new_path)
         else:
-            skipped_files += "%s | %s\n" % (dir_name, filename)
+            skipped_files += f"{dir_name} | {filename}\n"
 
 
 missing_files_msg = "\n".join([". ".join(make_filename(data_by_num, num)[1:]) for num in missing_files])

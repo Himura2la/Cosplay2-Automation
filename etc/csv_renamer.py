@@ -5,10 +5,10 @@ import re
 import csv
 import unicodedata
 
-csv_path = r"D:\Clouds\YandexDisk\Загрузки\Стивенфест 2019 медиа\StevenFest2018.csv"
+csv_path = r"D:\Clouds\YandexDisk\Fests\2019 Steven Fest\StevenFest2018.csv"
 id_row = 'num'
 
-folder_paths = [r"D:\Clouds\YandexDisk\Загрузки\Стивенфест 2019 медиа\Tracks"]
+folder_paths = [r"D:\Clouds\YandexDisk\Fests\2019 Steven Fest\Pics"]
 id_regex_filename = r"^(?P<id>\d{3})"
 
 no_op = bool(1)

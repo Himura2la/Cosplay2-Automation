@@ -201,8 +201,8 @@ class Downloader:
         filename = unicodedata.normalize('NFD', filename).encode('cp1251', 'replace').decode('cp1251')
         filename = filename.replace('<икраткое>', 'й').replace('<ИКРАТКОЕ>', 'Й')\
                            .replace('<ио>', 'ё')      .replace('<ИО>', 'Ё')
-        filename = filename.replace(':', ' -') \
-            .replace('|', ';').replace('/', ';').replace('\\', ';') \
-            .replace('"', "'")
+        filename = filename\
+            .replace(':', ';').replace('|', ';').replace('/', ';').replace('\\', ';')\
+            .replace('"', "'").replace('×', 'x')
         filename = ''.join(i if i not in '*?<>' else '' for i in filename)
         return filename
