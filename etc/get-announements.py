@@ -15,5 +15,5 @@ header = [d[0] for d in c.description]
 data = [{header[i]: val for i, val in enumerate(row)} for row in c.fetchall()]
 
 for d in data:
-    r = f"\n[{d['card_code']} {d['number']}] {d['title']}\n{d['voting_title']}\n{d['announcement_title']}"
+    r = f"\n[{d['card_code']} {d['voting_number']}] {d['title']}\n{d['voting_title']}\n{d['announcement_title']}"
     print(r)

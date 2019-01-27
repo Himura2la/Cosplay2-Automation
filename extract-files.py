@@ -22,7 +22,7 @@ if not os.path.isdir(output_dir):
 num_title_splitter = '. '
 nums_in_filenames = False
 
-skip_card_codes = 'card_code NOT IN (%s) AND' % ','.join([f'"{cc}"' for cc in config['not_scene_card_codes']]) \
+skip_card_codes = 'AND card_code NOT IN (%s)' % ','.join([f'"{cc}"' for cc in config['not_scene_card_codes']]) \
                     if 'not_scene_card_codes' in config else ''
 
 sql_queery = f"""
@@ -37,10 +37,9 @@ FROM list, requests
 LEFT JOIN (SELECT request_id, value as sound_start FROM [values]
            WHERE title LIKE 'Начало%')
     ON request_id = requests.id
-WHERE list.id = topic_id AND
-      status = 'approved' AND
+WHERE list.id = topic_id
+      AND status = 'approved'
       {skip_card_codes}
-      default_duration > 0
 """
 num_field = '№'
 

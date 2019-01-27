@@ -38,4 +38,4 @@ if __name__ == '__main__':
 
     if d.get_lists(db_path, query):
         print('\nDownloading files...')
-        d.download_files(folder_path)
+        d.download_files(folder_path, d.DOWNLOAD_UPDATED_REQUESTS)

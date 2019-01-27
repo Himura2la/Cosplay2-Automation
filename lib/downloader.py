@@ -80,14 +80,13 @@ class Downloader:
         name = ""
         counter = 0
 
-        new_update_time = {}
+        existing_update_time, new_update_time = None, {}
         request_updates_path = os.path.join(folder, 'requests-update-time.json')
 
         if os.path.isfile(request_updates_path):
             existing_update_time = json.load(open(request_updates_path, 'r', encoding='utf-8'), parse_int=True)
-            os.rename(request_updates_path, request_updates_path.replace('.', '-bkp-%s.' % run_time))
-        else:
-            existing_update_time = None
+            if action >= self.DOWNLOAD_UPDATED_REQUESTS:
+                os.rename(request_updates_path, request_updates_path.replace('.', '-bkp-%s.' % run_time))
 
         for row in self.data:
             prev_name = name

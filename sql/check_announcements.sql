@@ -1,4 +1,4 @@
-SELECT number, card_code, title, voting_title, announcement_title
+SELECT voting_number, card_code, title, voting_title, announcement_title
 
 FROM list, requests
 
@@ -7,3 +7,4 @@ WHERE
 	AND	status in ('approved')
 	AND default_duration > 0
 
+ORDER BY voting_number
