@@ -6,11 +6,24 @@ import os
 import sqlite3
 from yaml import load
 
-card_code_order = ["S", "T", "DSJ", "DGJ", "DA", "DSE", "DU", "DSG", "DSO", "DGE", "DGG", "DGO", "K",  "KA", "INK", "V", "VC", "ART", "FC", "ACF"]
+card_code_order = ["DGJ",
+                   "DSJ",
+                   "KA",
+                   "S",
+                   "DGO",
+                   "DU",
+                   "DSW",
+                   "DGW",
+                   "DA",
+                   "K",
+                   "INS",
+                   "DSO",
+                   "T"]
 
 config = load(
-    open(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'config.yml'), 'r', encoding='utf-8').read())
-db_path = r"D:\Clouds\YandexDisk\Fests\Yuki no Odori 7\db\tulafest\sqlite3_data.db"  # config['db_path']
+    open(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'config.yml'), 'r',
+         encoding='utf-8').read())
+db_path = config['db_path']
 output_file = r"C:\Users\glago\Desktop\participants.csv"
 
 fio_joins = """
@@ -28,7 +41,8 @@ LEFT JOIN ( SELECT request_section_id as mn_rsid, value as mid_name
 where = """
 list.id = topic_id AND requests.id = request_id
     AND status != 'disapproved'
-    AND section_title in ("Участники", "Косплееры")
+    AND section_title in ('Ваши данные', 'Остальные участники')
+    AND card_code in (""" + ",".join([f"'{c}'" for c in card_code_order]) + """)
 """
 
 
@@ -53,7 +67,7 @@ WHERE """ + where + """
 with sqlite3.connect(db_path, isolation_level=None) as db:
     c = db.cursor()
     c.execute('PRAGMA encoding = "UTF-8"')
-    c.execute("""
+    q = """
 SELECT DISTINCT
     group_concat(distinct nick) as nick, city,
     group_concat(distinct phone) as phone,
@@ -67,16 +81,16 @@ LEFT JOIN ( SELECT request_section_id as n_rsid, value as nick
             FROM [values] WHERE title LIKE 'Ник%')
     ON n_rsid = request_section_id
 LEFT JOIN ( SELECT request_section_id as r_rsid, value as phone
-            FROM [values] WHERE title = 'Мобильный телефон (необязательно)')
+            FROM [values] WHERE title LIKE 'Мобильный телефон%')
     ON r_rsid = request_section_id
 WHERE """ + where + """
 GROUP BY last_name, first_name, mid_name
-""")
+"""
+    c.execute(q)
     header = [description[0] for description in c.description] + ["nums"]
     rows = [list(p.values()) +
             get_numbers(c, (p['last_name'], p['first_name'], p['mid_name']))
             for p in fetch_dict(c)]
-
 
 with open(output_file, 'w', newline='', encoding='utf=8') as f:
     writer = csv.writer(f)
