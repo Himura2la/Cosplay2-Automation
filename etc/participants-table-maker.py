@@ -10,6 +10,9 @@ card_code_order = ["DGJ",
                    "DSJ",
                    "KA",
                    "S",
+                   "VOL",
+                   "SY",
+                   "AA",
                    "DGO",
                    "DU",
                    "DSW",
@@ -18,6 +21,7 @@ card_code_order = ["DGJ",
                    "K",
                    "INS",
                    "DSO",
+                   "MM",
                    "T"]
 
 config = load(
@@ -41,7 +45,7 @@ LEFT JOIN ( SELECT request_section_id as mn_rsid, value as mid_name
 where = """
 list.id = topic_id AND requests.id = request_id
     AND status != 'disapproved'
-    AND section_title in ('Ваши данные', 'Остальные участники')
+    AND section_title in ('Помощники (необязательно)')
     AND card_code in (""" + ",".join([f"'{c}'" for c in card_code_order]) + """)
 """
 

@@ -9,7 +9,7 @@ from yaml import load
 
 from lib.downloader import Downloader
 
-no_op = bool(0)
+no_op = bool(1)
 
 config = load(open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.yml'), 'r', encoding='utf-8').read())
 db_path = config['db_path']

@@ -72,7 +72,7 @@ class Downloader:
         print('[LINK] ' + msg)
         self.log_links += msg + os.linesep
 
-    def download_files(self, folder, action=DOWNLOAD_UPDATED_REQUESTS):
+    def download_files(self, folder, action=DOWNLOAD_UPDATED_REQUESTS, flat=False):
         run_time = time.strftime('%d%m%y%H%M%S', time.localtime())
         log_file = os.path.join(folder, 'log-%s.txt' % run_time)
         self.log_infos, self.log_errors, self.log_links = '', '', ''
@@ -99,7 +99,7 @@ class Downloader:
             if download_skipped_by_preprocessor:
                 self.log_info('SKIP: ' + display_path)
                 continue
-            dir_path = os.path.join(folder, nom, dir_name)
+            dir_path = os.path.join(folder, dir_name) if flat else os.path.join(folder, nom, dir_name)
             try:
                 is_img = False
                 if not file:
@@ -122,7 +122,7 @@ class Downloader:
 
                     if not file_exists or (file_exists and not request_up_to_date):
                         self.log_link("%s -> %s" % (file['link'], display_path))
-                        link_dir_path = os.path.join(folder, nom, dir_name)
+                        link_dir_path = os.path.join(folder, dir_name) if flat else os.path.join(folder, nom, dir_name)
                         if not os.path.exists(dir_path) \
                                 and not os.path.exists(link_dir_path) \
                                 and action >= self.DOWNLOAD_UPDATED_REQUESTS:

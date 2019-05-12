@@ -10,10 +10,10 @@ if __name__ == '__main__':
     config = load(open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.yml'), 'r', encoding='utf-8').read())
     db_path = config['db_path']
     folder_path = config['folder_path']
-    not_scene_nom_codes = config['not_scene_nom_codes']
+    not_scene_card_codes = config['not_scene_card_codes']
     print_photo_title = config['print_photo_title'] if 'print_photo_title' in config else None
 
-    not_scene_nom_codes = ','.join([f"'{nom}'" for nom in not_scene_nom_codes])
+    not_scene_card_codes = ','.join([f"'{nom}'" for nom in not_scene_card_codes])
     main_foto_join, main_foto_where = [''] * 2
     if print_photo_title:
         main_foto_join = f"""
@@ -38,7 +38,7 @@ if __name__ == '__main__':
             AND request_id = requests.id
             AND status != 'disapproved'
             AND type IN ('file', 'image')
-            AND card_code IN ({not_scene_nom_codes})
+            AND card_code IN ({not_scene_card_codes})
             {main_foto_where}
         ORDER BY request_id
     """

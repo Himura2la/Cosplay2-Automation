@@ -33,17 +33,18 @@ technical_plan = []
 for row in plan[2:]:  # Отрезаем День и Место
     tag, time, val = row
     if tag == 'b':  # Доп. инфа
-        human_plan += f'\n{time} --- {val} ---\n'
+        human_plan += f'\n{time} {val}:\n'
+        technical_plan.append((val, '', '', '', ''))
     elif tag is None:  # Номер
         human_plan += f"{time} {val.replace(',', '.', 1)}\n"
         code, title = val.split(', ', 1)
         code, num = code.split(' ', 1)
-        technical_plan.append((time, code, num, title))
+        technical_plan.append(('', time, code, num, title))
     else:
         raise Exception("Unexpected tag in cell: <%s>" % tag)
 
 open(os.path.join(out_dir, 'human_plan.txt'), 'w', encoding='utf-8').write(human_plan)
 with open(os.path.join(out_dir, 'technical_plan.csv'), 'w', newline='', encoding='utf=8') as f:
     writer = csv.writer(f)
-    writer.writerow(['time', 'code', 'num', 'voting_title'])
+    writer.writerow(['info', 'time', 'code', 'num', 'voting_title'])
     writer.writerows(technical_plan)
