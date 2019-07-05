@@ -129,12 +129,12 @@ class Downloader:
                             os.makedirs(link_dir_path)
                         successful_download = False
                         if action >= self.DOWNLOAD_UPDATED_REQUESTS:
-                            self.log_info(("DL: " + file['link'] + " -> " + display_path), inline=True)
-                            successful_download = CloudDownloader.get(file['link'], display_path)
+                            self.log_info(("DL: " + file['link'] + " -> " + display_path))
+                            successful_download = CloudDownloader.get(file['link'], os.path.join(dir_path, file_name))
                         if successful_download:
-                            self.log_info(' [CLOUD OK]', head=False)
+                            self.log_info("[CLOUD OK] " + display_path)
                         else:
-                            self.log_info(' [CLOUD FAIL]', head=False)
+                            self.log_info("[CLOUD FAIL] " + display_path)
                             self.log_link("%s -> %s" % (file['link'], display_path))
                     continue
                 else:

@@ -17,24 +17,27 @@ class CloudDownloader(object):
         }
         print(f'Downloading {url} to {target}...')
         ext = None
-        if '://yadi.sk/i' in url:
-            print('Trying to download from Yandex Disk...')
-            url, ext = CloudDownloader.get_link_yadisk(url)
-        elif '://cloud.mail.ru/public/' in url:
-            print('Trying to download from Mail.Ru Cloud...')
-            url, ext = CloudDownloader.get_link_mailru(url)
-        if ext is not None:
-            print(f'Downloading the direct link: {url}')
-            request.urlretrieve(url, f'{target}.{ext}')
-        else:
-            print('Using YoutubeDL...')
-            with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-                try:
+        try:
+            if '://yadi.sk/' in url:
+                print('Trying to download from Yandex Disk...')
+                url, ext = CloudDownloader.get_link_yadisk(url)
+            elif '://cloud.mail.ru/public/' in url:
+                print('Trying to download from Mail.Ru Cloud...')
+                url, ext = CloudDownloader.get_link_mailru(url)
+                return True
+            if ext is not None:
+                print(f'Downloading the direct link: {url}')
+                request.urlretrieve(url, f'{target}.{ext}')
+                return True
+            else:
+                print('Using YoutubeDL...')
+                with youtube_dl.YoutubeDL(ydl_opts) as ydl:
                     ydl.download([url])
                     return True
-                except Exception as e:
-                    print(e)
-                    return False
+        except Exception as e:
+            print('Cloud download FAILED !!!')
+            print(e)
+            return False
 
     @staticmethod
     def get_link_yadisk(url):

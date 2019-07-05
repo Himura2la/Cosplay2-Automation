@@ -32,11 +32,11 @@ if __name__ == '__main__':
     def preprocess(num, dir_name, file_name):
         skip_files_with = config['not_scene_files']
         skip_by_field = any([s in file_name for s in skip_files_with])
-        dir_name = dir_name.split('. ', 1)[1]
+        # dir_name = dir_name.split('. ', 1)[1]
         return skip_by_field, dir_name, file_name
 
     d = Downloader(preprocess)
 
     if d.get_lists(db_path, query):
         print('\nDownloading files...')
-        d.download_files(folder_path, d.DOWNLOAD_UPDATED_REQUESTS, flat=True)
+        d.download_files(folder_path, d.DOWNLOAD_UPDATED_REQUESTS, flat=False)
