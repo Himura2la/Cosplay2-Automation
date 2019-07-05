@@ -24,7 +24,6 @@ class CloudDownloader(object):
             elif '://cloud.mail.ru/public/' in url:
                 print('Trying to download from Mail.Ru Cloud...')
                 url, ext = CloudDownloader.get_link_mailru(url)
-                return True
             if ext is not None:
                 print(f'Downloading the direct link: {url}')
                 request.urlretrieve(url, f'{target}.{ext}')
@@ -56,7 +55,7 @@ class CloudDownloader(object):
         items_count = int(folder['count']['folders']) + int(folder['count']['files'])
         if items_count > 1:
             print(f'Link shares {items_count} items, no idea which one to download...')
-            return False
+            return url, None
         file_name = folder['list'][0]['name']
         if weblink != folder['list'][0]['weblink'] or weblink != folder['list'][0]['id']:
             print(f'Strange things with mail.ru weblink. URL: {url}, folder: {json.dumps(folder)}')
