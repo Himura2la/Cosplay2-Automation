@@ -10,6 +10,8 @@ import unicodedata
 from urllib import request
 from urllib import parse
 
+from lib.cloud_downloader import CloudDownloader
+
 
 class Downloader:
     SKIP_DOWNLOAD = 0
@@ -121,13 +123,19 @@ class Downloader:
                             self.log_info('And the request updated. You should update it!', head=False)
 
                     if not file_exists or (file_exists and not request_up_to_date):
-                        self.log_link("%s -> %s" % (file['link'], display_path))
                         link_dir_path = os.path.join(folder, dir_name) if flat else os.path.join(folder, nom, dir_name)
                         if not os.path.exists(dir_path) \
-                                and not os.path.exists(link_dir_path) \
-                                and action >= self.DOWNLOAD_UPDATED_REQUESTS:
+                                and not os.path.exists(link_dir_path):
                             os.makedirs(link_dir_path)
-
+                        successful_download = False
+                        if action >= self.DOWNLOAD_UPDATED_REQUESTS:
+                            self.log_info(("DL: " + file['link'] + " -> " + display_path), inline=True)
+                            successful_download = CloudDownloader.get(file['link'], display_path)
+                        if successful_download:
+                            self.log_info(' [CLOUD OK]', head=False)
+                        else:
+                            self.log_info(' [CLOUD FAIL]', head=False)
+                            self.log_link("%s -> %s" % (file['link'], display_path))
                     continue
                 else:
                     src_filename = file['filename']
