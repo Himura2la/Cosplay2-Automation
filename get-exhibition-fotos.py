@@ -46,11 +46,11 @@ if __name__ == '__main__':
 
     def preprocess(num, dir_name, file_name):
         new_dir_name = ''  # No subdirectory for each file
-        new_file_name = dir_name.replace(' ', '-').replace('--', '-').replace('--', '-')
+        new_file_name = str(num) + '. ' + dir_name.replace(' ', '-').replace('--', '-').replace('--', '-')
         return False, new_dir_name, new_file_name
 
     d = Downloader(preprocess)
 
     if d.get_lists(db_path, query):
         print('\nDownloading files...')
-        d.download_files(folder_path)
+        d.download_files(folder_path, d.DOWNLOAD_UPDATED_REQUESTS)

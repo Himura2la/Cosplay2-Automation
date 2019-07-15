@@ -15,7 +15,7 @@ query = f"""
            update_time,
            list.title as nom,
            requests.number,
-           voting_number || ' ' || card_code || '. ' || voting_title,
+           voting_title,
            [values].title as file_type,
            value as file
     FROM [values], requests, list
@@ -28,11 +28,12 @@ query = f"""
 """
 
 
-def preprocess(num, dir_name, file_name):
+def preprocess(num, name, file_name):
     skip_files_with = config['not_scene_files']
     skip_by_field = any([s in file_name for s in skip_files_with])
-    # dir_name = dir_name.split('. ', 1)[1]
+    dir_name = f'№{num}. {name}'
     return skip_by_field, dir_name, file_name
+
 
 d = Downloader(preprocess)
 

@@ -75,6 +75,7 @@ def make_filename(data, num, dl_title=None):
     sound_start = 'Неизвестно'
     if req_data['sound_start']:
         sound_start = {
+            'Трек начинается до выхода на сцену': 'Сразу',
             'Трек начинается до выхода на сцену (выход из за кулис под музыку)': 'Сразу',
             'Трек начинается после выхода на сцену (начало с точки)': 'С точки',
             'Трек содержит превью (выход из за кулис во время превью танца)': 'Превью',
@@ -121,6 +122,7 @@ for dirpath, dirnames, filenames in os.walk(input_dir):
             ext = filename.rsplit('.', 1)[1]
             if num_title_splitter:
                 num, title = name.split(num_title_splitter, 1)
+                num = num.lstrip('№')
             else:
                 num, title = name, None
             num = num.lstrip('0')

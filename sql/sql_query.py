@@ -6,11 +6,11 @@ import sqlite3
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--db_path", help='Path to the database', required=True)
 parser.add_argument("--sql", help='Path to an SQL request to run', required=True)
+parser.add_argument("--db_path", help='Path to the database (overrides config)')
 parser.add_argument("-o", help='File to save the result into')
-parser.add_argument("--format", help='Output format. Possible values: "raw" (default), "long"', default='raw')
-parser.add_argument("--long_col", help='In "long" format specifies the column with long data. Default: "value"', default='value')
+parser.add_argument("--format", help='Output format. Possible values: "long" (default)', default='long')
+parser.add_argument("--long_col", help='In "long" format specifies the column with long data. Default: "text"', default='text')
 args = parser.parse_args()
 
 # For header formatting in long_col 
@@ -18,9 +18,16 @@ field_format = {'number': "№%s. "}
 default_field_format = "%s: "
 last_field_format = "%s"
 
-print('Connecting to %s...' % os.path.abspath(args.db_path))
+db_path = args.db_path
+if not db_path:
+    from yaml import load
+    root = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+    config = load(open(os.path.join(root, 'config.yml'), 'r', encoding='utf-8').read())
+    db_path = config['db_path']
 
-with sqlite3.connect(args.db_path, isolation_level=None) as db:
+print('Connecting to %s...' % os.path.abspath(db_path))
+
+with sqlite3.connect(db_path, isolation_level=None) as db:
     c = db.cursor()
     c.execute('PRAGMA encoding = "UTF-8"')
     c.execute(open(args.sql, encoding='utf-8').read())
@@ -31,28 +38,30 @@ with sqlite3.connect(args.db_path, isolation_level=None) as db:
 
 result_txt = ""
 
-if args.format == 'raw':
-    result_txt = str([headers] + result)
-
-elif args.format == 'long':
+if args.format == 'long':
     long_i = headers.index(args.long_col) if args.long_col in headers else None
     for record in result:
+        if not record[1]:
+            continue
         if long_i:
-            result_txt += "%s%s## " % (os.linesep, os.linesep)
+            result_txt += f"{os.linesep}{os.linesep}## "
             for i, field in enumerate(headers):
                 if i != long_i:
                     fmt = field_format[field] if field in field_format \
                                                 else last_field_format if i >= len(headers) - 2 \
                                                 else default_field_format
                     result_txt += fmt % record[i]
-            result_txt += "%s%s" % (os.linesep, record[long_i])
+            result_txt += f"{os.linesep}{record[long_i]}"
         else:
             for i, field in enumerate(headers):
-                result_txt += "%s: %s%s" % (field, record[i], os.linesep)
+                result_txt += f"{field}: {record[i]}{os.linesep}"
+        result_txt = result_txt.replace('\\n', os.linesep)
         result_txt += os.linesep
+
+# if args.format == 'TODO':
 
 print(result_txt)
 
 if args.o:
-    open(args.o, 'w', encoding='utf-8').write(result_txt.replace('\\n', os.linesep))
+    open(args.o, 'w', encoding='utf-8').write(result_txt)
     print("Saved to %s" % os.path.abspath(args.o))

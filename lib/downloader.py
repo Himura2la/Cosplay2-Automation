@@ -93,8 +93,7 @@ class Downloader:
         for row in self.data:
             prev_name = name
             request_id, update_time, nom, num, title, file_type, file = row
-            name = self.to_filename('%0.3d. %s' % (int(num), title if title else 'No title'))
-            name = name.replace('  ', ' ')
+            name = self.to_filename(title if title else 'No title').replace('  ', ' ')
             nom, file_type = self.to_filename(nom), self.to_filename(file_type)
             download_skipped_by_preprocessor, dir_name, file_name = self.preprocess(int(num), name, file_type)
             display_path = ' | '.join([nom, dir_name, file_name])
