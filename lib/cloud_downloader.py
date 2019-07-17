@@ -3,7 +3,6 @@
 # Author: Himura Kazuto <himura@tulafest.ru>
 
 from urllib import request
-import requests
 import youtube_dl
 import json
 
@@ -41,14 +40,17 @@ class CloudDownloader(object):
     @staticmethod
     def get_link_yadisk(url):
         YADISK_ENDPOINT = 'https://cloud-api.yandex.net/v1/disk/public/resources/download?public_key={}'
-        href = requests.get(YADISK_ENDPOINT.format(url)).json()['href']
-        ext = href.split('filename=', 1)[-1].split('&', 1)[0].split('.', 1)[-1]
+        href = None
+        with request.urlopen(YADISK_ENDPOINT.format(url)) as response:
+            href = json.loads(response.read())['href']
+        ext = href.split('filename=', 1)[-1].split('&', 1)[0].rsplit('.', 1)[-1]
         return href, ext
 
     @staticmethod
     def get_link_mailru(url):
         CLOUD_MAILRU_TOKEN_URL = 'https://cloud.mail.ru/api/v2/tokens/download'
-        page = requests.get(url).text
+        with urllib.request.urlopen(url) as response:
+            page = response.read()
         weblink = url.split('/public/', 1)[-1]
         folders_section = page.rsplit('"folders": {', 1)[-1].rsplit('};</script>', 1)[0]
         folder = json.loads(f'{{{folders_section}')['folder']
