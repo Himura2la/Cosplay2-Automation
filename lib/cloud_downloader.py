@@ -49,7 +49,7 @@ class CloudDownloader(object):
     @staticmethod
     def get_link_mailru(url):
         CLOUD_MAILRU_TOKEN_URL = 'https://cloud.mail.ru/api/v2/tokens/download'
-        with urllib.request.urlopen(url) as response:
+        with request.urlopen(url) as response:
             page = response.read()
         weblink = url.split('/public/', 1)[-1]
         folders_section = page.rsplit('"folders": {', 1)[-1].rsplit('};</script>', 1)[0]
