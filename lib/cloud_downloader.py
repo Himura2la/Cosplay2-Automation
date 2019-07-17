@@ -50,7 +50,7 @@ class CloudDownloader(object):
     def get_link_mailru(url):
         CLOUD_MAILRU_TOKEN_URL = 'https://cloud.mail.ru/api/v2/tokens/download'
         with request.urlopen(url) as response:
-            page = response.read()
+            page = response.read().decode('utf-8')
         weblink = url.split('/public/', 1)[-1]
         folders_section = page.rsplit('"folders": {', 1)[-1].rsplit('};</script>', 1)[0]
         folder = json.loads(f'{{{folders_section}')['folder']
@@ -63,7 +63,8 @@ class CloudDownloader(object):
             print(f'Strange things with mail.ru weblink. URL: {url}, folder: {json.dumps(folder)}')
         weblink_get_section = page.rsplit('"weblink_get": [', 1)[-1].split(']', 1)[0]
         weblink_get = json.loads(weblink_get_section)['url']
-        token = requests.get(CLOUD_MAILRU_TOKEN_URL).json()['body']['token']
+        with request.urlopen(CLOUD_MAILRU_TOKEN_URL) as response:
+            token = json.loads(response.read())['body']['token']
         file_url = f'{weblink_get}/{weblink}?key={token}'
         ext = file_name.rsplit('.', 1)[-1]
         return file_url, ext
