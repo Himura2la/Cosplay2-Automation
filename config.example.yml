@@ -19,6 +19,8 @@ sql_after_get: >
 # Путь к папке с файлами
 folder_path: 'cr2018'
 
+# Путь к папке с треками для FestEngine
+extracted_folder_path: 'Fest'
 
 
 ### get-scene-files.py ###
