@@ -29,9 +29,12 @@ def to_filename(string):
     filename = string.replace('й', "<икраткое>")
     filename = unicodedata.normalize('NFD', filename).encode('cp1251', 'replace').decode('cp1251')
     filename = filename.replace("<икраткое>", 'й')
-    filename = filename.replace(':', " -")\
+    filename = filename.replace(':', "")\
                        .replace('|', "-").replace('/', "-").replace('\\', "-")\
-                       .replace('"', "'")
+                       .replace('"', "'")\
+                       .replace('’', "'")\
+                       .replace(' ,', ", ")\
+                       .replace('  ', " ")
     filename = ''.join(i if i not in "*?<>" else '' for i in filename)
     return filename
 
