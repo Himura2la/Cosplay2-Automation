@@ -43,7 +43,7 @@ not_scene_files:
 print_photo_title: 'Это заглавное фото'
 
 # Внесценические номинации, которые надо печатать
-print_nom_codes:
+not_scene_nom_codes:
     - 'ART'
     - 'FC'
 
