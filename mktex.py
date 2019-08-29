@@ -5,7 +5,7 @@ import os
 import re
 import sqlite3
 from yaml import load
-from PIL import Image
+from PIL import Image  # pip install Pillow
 
 config = load(
     open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.yml'), 'r', encoding='utf-8').read())
