@@ -41,7 +41,11 @@ portrait_count, landscape_count = 0, 0
 result_html = '<div class="gallery"><div class="gallery-block">\n'
 
 for i, photo in enumerate(response):
-    full = filter(lambda size: size['type'] == full_size, photo['sizes']).__next__()
+    try:
+        full = filter(lambda size: size['type'] == full_size, photo['sizes']).__next__()
+    except StopIteration:
+        print(f"No size '{full_size}' for photo {i}")
+        full = filter(lambda size: size['type'] == 'z', photo['sizes']).__next__()
     if full['width'] > full['height']:
         thumb_size = landscape_thumb_size
         landscape_count += 1
