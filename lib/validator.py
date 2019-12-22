@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-
+import json
 import re
 import sqlite3
 
@@ -12,9 +12,9 @@ class Validator(object):
     required_fields = capital_fields | {'Ник'}
     invalid_city_names = {'Орел', 'Щекино', 'Могилев', 'Королев'}
     required_in_scenic_fields = {'Транскрипция ника (для ведущих)'}
-    scenic_topic_ids = {3926, 3941, 3925, 3942, 3943, 3948, 3949, 3903, 3937, 3940, 3950, 3904, 3938, 3939, 3944}
+    scenic_topic_ids = {3926, 3941, 3925, 3942, 3943, 3948, 3949, 3903, 3937, 3940, 3950, 3904, 3938, 3939, 3944}  # TODO: Get from details
 
-    def validate_participants(self, request, fields):
+    def validate_participants(self, request, fields, details):
         errors = []
         try:
             expected_participants = filter(
@@ -44,7 +44,7 @@ class Validator(object):
                                                                       else "заполнено поле '%s'" % empty_fields.pop()))
         return errors
 
-    def validate_fields(self, _, fields):
+    def validate_fields(self, request, fields, details):
         errors = []
         for city in set(r['value'] for r in filter(lambda f: f['title'] == 'Город', fields)):
             if city in self.invalid_city_names:
@@ -56,12 +56,13 @@ class Validator(object):
 
         return errors
 
-    def validate_request(self, request, fields):
+    def validate_request(self, request, fields, details_string):
+        details = json.loads(details_string)
         validators = [
             self.validate_participants,
             self.validate_fields
         ]
-        return [error for f in validators for error in f(request, fields)]
+        return [error for f in validators for error in f(request, fields, details)]
 
     def validate(self, db_path):
         report = ''
@@ -76,7 +77,10 @@ class Validator(object):
                 c.execute("SELECT * FROM requests WHERE topic_id = ? AND status != 'disapproved'", [topic['id']])
                 for req in self.fetch_all(c):
                     c.execute("SELECT * FROM [values] WHERE request_id = ?", [req['id']])
-                    errors = self.validate_request(req, self.fetch_all(c))
+                    values = self.fetch_all(c)
+                    c.execute("SELECT json FROM details WHERE request_id = ?", [req['id']])
+                    details = c.fetchone()
+                    errors = self.validate_request(req, values, details[0] if len(details) == 1 else None)
                     if errors:
                         topic_report += "- В заявке [№ %d](https://%s.cosplay2.ru/orgs/requests/request/%s) %s :\n" % \
                               (req['number'], event_name, req['id'], self.iconize_status(req['status']))
