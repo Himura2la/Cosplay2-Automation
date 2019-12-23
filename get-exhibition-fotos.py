@@ -3,11 +3,11 @@
 # Author: Himura Kazuto <himura@tulafest.ru>
 
 import os
-from yaml import load
+from yaml import load, FullLoader
 from lib.downloader import Downloader
 
 if __name__ == '__main__':
-    config = load(open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.yml'), 'r', encoding='utf-8').read())
+    config = load(open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.yml'), 'r', encoding='utf-8').read(), Loader=FullLoader)
     db_path = config['db_path']
     folder_path = config['folder_path']
     not_scene_card_codes = config['not_scene_card_codes']

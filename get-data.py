@@ -6,14 +6,14 @@ import os
 import sqlite3
 import sys
 
-from yaml import load  # pip install pyyaml
+from yaml import load, FullLoader  # pip install pyyaml
 
 from lib.authenticator import Authenticator
 from lib.fetcher import Fetcher
 from lib.make_db import MakeDB
 
 if __name__ == '__main__':
-    config = load(open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.yml'), 'r', encoding='utf-8').read())
+    config = load(open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.yml'), 'r', encoding='utf-8').read(), Loader=FullLoader)
 
     event_name = config['event_name']
     c2_login = config['admin_cs2_name']

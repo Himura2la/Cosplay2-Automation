@@ -4,7 +4,7 @@
 import csv
 import os
 import sqlite3
-from yaml import load
+from yaml import load, FullLoader
 
 card_code_order = ["DGJ",
                    "DSJ",
@@ -26,7 +26,8 @@ card_code_order = ["DGJ",
 
 config = load(
     open(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'config.yml'), 'r',
-         encoding='utf-8').read())
+         encoding='utf-8').read(),
+         Loader=FullLoader)
 db_path = config['db_path']
 output_file = r"C:\Users\glago\Desktop\participants.csv"
 

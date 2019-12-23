@@ -7,10 +7,10 @@ import os
 import sqlite3
 import sys
 import csv
-from yaml import load
+from yaml import load, FullLoader
 
 root = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-config = load(open(os.path.join(root, 'config.yml'), 'r', encoding='utf-8').read())
+config = load(open(os.path.join(root, 'config.yml'), 'r', encoding='utf-8').read(), Loader=FullLoader)
 
 technical_plan_csv = f"{os.environ['USERPROFILE']}\\Desktop\\technical_plan.csv" if len(sys.argv) < 2 else sys.argv[1]
 out_dir = os.path.split(technical_plan_csv)[0]

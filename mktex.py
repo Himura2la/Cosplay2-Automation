@@ -4,11 +4,11 @@
 import os
 import re
 import sqlite3
-from yaml import load
+from yaml import load, FullLoader
 from PIL import Image  # pip install Pillow
 
 config = load(
-    open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.yml'), 'r', encoding='utf-8').read())
+    open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.yml'), 'r', encoding='utf-8').read(), Loader=FullLoader)
 db_path = config['db_path']
 tex_path = config['tex_path']
 fest_path = config['folder_path']

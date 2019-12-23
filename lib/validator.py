@@ -9,10 +9,8 @@ class Validator(object):
     participant_fields = {'Ваши данные', 'Остальные участники', 'Авторы', 'Представители', 'Члены команды'}
     participant_number_fields = {'Количество участников', 'Количество представителей', 'Количество представителей (кроме помощников)'}
     capital_fields = {'Фамилия', 'Имя', 'Отчество', 'Город'}
-    required_fields = capital_fields | {'Ник'}
+    required_participant_fields = capital_fields | {'Ник', 'Транскрипция ника (для ведущих)'}
     invalid_city_names = {'Орел', 'Щекино', 'Могилев', 'Королев'}
-    required_in_scenic_fields = {'Транскрипция ника (для ведущих)'}
-    scenic_topic_ids = {3926, 3941, 3925, 3942, 3943, 3948, 3949, 3903, 3937, 3940, 3950, 3904, 3938, 3939, 3944}  # TODO: Get from details
 
     def validate_participants(self, request, fields, details):
         errors = []
@@ -26,17 +24,24 @@ class Validator(object):
             errors.append('Не указано количество участников')
             expected_participants = None
         participants_data = list(filter(lambda f: f['section_title'] in self.participant_fields, fields))
-        real_participant_ids = set(p['request_section_id'] for p in participants_data)
-        if expected_participants is not None and expected_participants != len(real_participant_ids):
+        participant_sections = set(p['request_section_id'] for p in participants_data)
+        if expected_participants is not None and expected_participants != len(participant_sections):
             errors.append('Несоответствие количества участников: заявлено: %d, добавлено: %d' %
-                          (expected_participants, len(real_participant_ids)))
-        for i, sec_id in enumerate(sorted(list(real_participant_ids))):
+                          (expected_participants, len(participant_sections)))
+        unique_participants = set()
+        for i, sec_id in enumerate(sorted(list(participant_sections))):
             p_data = list(filter(lambda f: f['request_section_id'] == sec_id, fields))
+            participant_basic_info = tuple(f['value'] for f in sorted(filter(lambda f: f['title'] in self.capital_fields, p_data), key=lambda f: f['title']))
+            if participant_basic_info in unique_participants:
+                errors.append('Участник %s упомянается в заявке несколько раз' % (participant_basic_info,))
+            else:
+                unique_participants.add(participant_basic_info)
             ok_fields = set(d['title'] for d in p_data if d['value']
                                                           and (len(d['value']) > 1 or re.match(r'\w', d['value']))
                                                           and not d['value'].lower().startswith("нет"))
-            required_fields = self.required_fields | (
-                self.required_in_scenic_fields if request['topic_id'] in self.scenic_topic_ids else set())
+            all_fields = {f['title'] for f in details['fields']}
+            not_applicable_fields = self.required_participant_fields - all_fields
+            required_fields = self.required_participant_fields - not_applicable_fields
             empty_fields = required_fields - ok_fields
             if empty_fields:
                 errors.append('У участника %d не ' % (i + 1) +

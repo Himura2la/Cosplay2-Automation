@@ -5,13 +5,13 @@ import os
 import time
 import shutil
 import sqlite3
-from yaml import load
+from yaml import load, FullLoader
 
 from lib.downloader import Downloader
 
 no_op = bool(1)
 
-config = load(open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.yml'), 'r', encoding='utf-8').read())
+config = load(open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.yml'), 'r', encoding='utf-8').read(), Loader=FullLoader)
 db_path = config['db_path']
 input_dir = config['folder_path']
 output_dir = config['extracted_folder_path']

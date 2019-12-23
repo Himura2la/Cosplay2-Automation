@@ -4,7 +4,7 @@
 
 from datetime import datetime
 import os
-from yaml import load  # pip install pyyaml
+from yaml import load, FullLoader  # pip install pyyaml
 
 from lib.authenticator import Authenticator
 from lib.fetcher import Fetcher
@@ -13,7 +13,7 @@ from lib.validator import Validator
 
 if __name__ == '__main__':
     script_dir = os.path.dirname(os.path.realpath(__file__))
-    config = load(open(os.path.join(script_dir, 'config.yml'), 'r', encoding='utf-8').read())
+    config = load(open(os.path.join(script_dir, 'config.yml'), 'r', encoding='utf-8').read(), Loader=FullLoader)
 
     event_name = config['event_name']
     c2_login = config['admin_cs2_name']
@@ -26,18 +26,20 @@ if __name__ == '__main__':
     if not os.path.isdir(backup_dir):
         os.makedirs(backup_dir)
 
-    a = Authenticator(event_name, c2_login, c2_password, interactive=False)
-    if not a.sign_in():
-        exit()
+#    a = Authenticator(event_name, c2_login, c2_password, interactive=False)
+#    if not a.sign_in():
+#        exit()
+#
+#    f = Fetcher(a.event_name, a.cookie)
+#    if not f.fetch_data():
+#        exit()
+#    f.fetch_etickets()
+#    f.fetch_details()
+#
+#    db_path = os.path.join(backup_dir, datetime.now().strftime('%y-%m-%d_%H-%M-%S.db'))
+#    MakeDB(db_path, f.data)
 
-    f = Fetcher(a.event_name, a.cookie)
-    if not f.fetch_data():
-        exit()
-    f.fetch_etickets()
-    f.fetch_details()
-
-    db_path = os.path.join(backup_dir, datetime.now().strftime('%y-%m-%d_%H-%M-%S.db'))
-    MakeDB(db_path, f.data)
+    db_path = config['db_path']
 
     if report_path:
         print('Validating...')
