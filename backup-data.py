@@ -26,20 +26,18 @@ if __name__ == '__main__':
     if not os.path.isdir(backup_dir):
         os.makedirs(backup_dir)
 
-#    a = Authenticator(event_name, c2_login, c2_password, interactive=False)
-#    if not a.sign_in():
-#        exit()
-#
-#    f = Fetcher(a.event_name, a.cookie)
-#    if not f.fetch_data():
-#        exit()
-#    f.fetch_etickets()
-#    f.fetch_details()
-#
-#    db_path = os.path.join(backup_dir, datetime.now().strftime('%y-%m-%d_%H-%M-%S.db'))
-#    MakeDB(db_path, f.data)
+    a = Authenticator(event_name, c2_login, c2_password, interactive=False)
+    if not a.sign_in():
+        exit()
 
-    db_path = config['db_path']
+    f = Fetcher(a.event_name, a.cookie)
+    if not f.fetch_data():
+        exit()
+    f.fetch_etickets()
+    f.fetch_details()
+
+    db_path = os.path.join(backup_dir, datetime.now().strftime('%y-%m-%d_%H-%M-%S.db'))
+    MakeDB(db_path, f.data)
 
     if report_path:
         print('Validating...')
