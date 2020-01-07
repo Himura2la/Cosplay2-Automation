@@ -2,19 +2,15 @@
 # -*- coding: utf-8 -*-
 
 from lib.authenticator import Authenticator
-from lib.api import Cosplay2API
-from urllib.error import HTTPError
-from urllib.request import urlopen, Request
+from lib.api import Cosplay2API, Requester
 
 import os
-import binascii
 import csv
-import json
 import sqlite3
 from yaml import load, FullLoader
 
 
-RESET_NUMBERS_MODE = False
+RESET_NUMBERS_MODE = True
 num_row = 'num'
 voting_number_row = 'voting_number'
 
@@ -39,27 +35,6 @@ if not RESET_NUMBERS_MODE:
         head = reader.__next__()
         voting_numbers = {int(row[head.index(num_row)]): int(row[head.index(voting_number_row)]) for row in reader}
 
-
-class Requester:
-    def __init__(self, cookie, wid):
-        self.__cookie = cookie
-        self.__wid = wid
-
-    def request(self, url, params=None):
-        if params:
-            params['wid'] = self.__wid
-            params = json.dumps(params).encode('ascii')
-        req = Request(url, params, {'Cookie': self.__cookie})
-        try:
-            with urlopen(req) as r:
-                response = json.loads(r.read().decode('utf-8-sig'))
-            return response
-        except HTTPError as e:
-            print("Request failed:", e)
-            print("Maybe login required...")
-            return False
-
-
 # --------
 
 
@@ -71,7 +46,7 @@ def set_number(r, request_id, voting_number):
 a = Authenticator(event_name, c2_login, c2_password)
 if not a.sign_in():
     exit()
-r = Requester(a.cookie, binascii.b2a_hex(os.urandom(8)).decode())
+r = Requester(a.cookie)
 
 
 if RESET_NUMBERS_MODE:
