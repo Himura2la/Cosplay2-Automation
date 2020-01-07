@@ -3,7 +3,7 @@
 
 comment = """
 Кончается время досыла на Yuki no Odori! tulafest.ru очень ждёт Т__Т
-""".strip()  # ----------------------------------------------- 1 SMS |
+""".strip()  # --------------------------------------------- 1 SMS ->|      --------- 2 SMS with "YnO9, заявка 000: " ->|
 target = "status in ('materials')"
 email = True
 sms = True
