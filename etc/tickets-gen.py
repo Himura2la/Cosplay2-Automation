@@ -5,27 +5,27 @@ import os
 
 types = {
     '01': {
-        'descr': 'Билет\n"Тануки"',
-        'image': 'tanuki.jpg',
-        'start': 397,
-        'total': 108
+        'descr': 'Билет «Тануки»',
+        'image': '1. Тануки.jpg',
+        'start': 440,
+        'total': 0
     },
     '02': {
-        'descr': 'Билет\n"Кицунэ"',
-        'image': 'kitsune.jpg',
-        'start': 346,
-        'total': 72
+        'descr': 'Билет «Кицунэ»',
+        'image': '2. Кицунэ.jpg',
+        'start': 330,
+        'total': 40
     },
     '03': {
-        'descr': 'VIP Билет\n"Ооками"',
-        'image': 'ookami.jpg',
-        'start': 337,
-        'total': 36
+        'descr': 'VIP Билет «Ооками»',
+        'image': '3. Оками.jpg',
+        'start': 350,
+        'total': 0
     }
 }
 
-image_base_path = r'D:\Clouds\YandexDisk\Fests\Yuki no Odori 8\design\Tickets\krol'
-target_csv_path = f'D:\Clouds\YandexDisk\Fests\Yuki no Odori 8\design\Tickets\Print5\\tickets-%s.csv'
+image_base_path = r'D:\Clouds\YandexDisk\Fests\Yuki no Odori\Кроли\Билетные кроли'
+target_csv_path = r'D:\Clouds\YandexDisk\Fests\Yuki no Odori 9\Tickets\%s.csv'
 pool = ['A', 'B', 'D', 'E', 'F', 'H', 'K', 'L', 'M', 'P', 'R', 'S', 'T', 'U', 'V', 'X', 'Y', 'Z'] + \
        [chr(ord('1') + i) for i in range(9)]
 
@@ -40,11 +40,11 @@ def make_codes(how_many):
 target_csv_path = target_csv_path % datetime.now().strftime('%y%m%d%H%M%S')
 report = {}
 
-with open(target_csv_path, 'w', encoding='utf-8', newline='') as f:
+with open(target_csv_path, 'w', encoding='utf-16', newline='') as f:
     w = csv.writer(f, delimiter=',', quotechar='"')
     w.writerow([
-        'ds'
-        , 'code'
+    #    'ds',
+        'code'
         , 'ser'
         , 'num'
         , 'descr'
@@ -55,8 +55,8 @@ with open(target_csv_path, 'w', encoding='utf-8', newline='') as f:
         for i, code in enumerate(make_codes(data['total'])):
             num = data['start'] + i
             row = [
-                f"{ser}-{num}"
-                , code
+            #    f"{ser}-{num}",
+                code
                 , ser
                 , num
                 , data['descr']

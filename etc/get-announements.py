@@ -2,10 +2,10 @@
 
 import os
 import sqlite3
-from yaml import load
+from yaml import load, FullLoader
 
 root = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-config = load(open(os.path.join(root, 'config.yml'), 'r', encoding='utf-8').read())
+config = load(open(os.path.join(root, 'config.yml'), 'r', encoding='utf-8').read(), Loader=FullLoader)
 db_path = config['db_path']
 db = sqlite3.connect(db_path, isolation_level=None)
 c = db.cursor()

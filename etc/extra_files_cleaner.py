@@ -1,5 +1,5 @@
 import os
-from send2trash import send2trash
+from send2trash import send2trash  # pip install Send2Trash
 
 
 for dirpath, dirnames, filenames in os.walk(r"D:\Fests Local\Yuki no Odori 7\Files\tulafest"):

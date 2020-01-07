@@ -7,11 +7,11 @@ from urllib.parse import urlencode
 from urllib.request import urlopen
 
 import os
-from yaml import load
+from yaml import load, FullLoader
 from getpass import getpass
 
 configfile = open(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'config.yml'), 'r', encoding='utf-8')
-config = load(configfile.read())
+config = load(configfile.read(), Loader=FullLoader)
 configfile.close()
 event_name = config['event_name']
 login = config['admin_cs2_name']

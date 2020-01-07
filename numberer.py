@@ -11,14 +11,14 @@ import binascii
 import csv
 import json
 import sqlite3
-from yaml import load
+from yaml import load, FullLoader
 
 
 RESET_NUMBERS_MODE = False
 num_row = 'num'
 voting_number_row = 'voting_number'
 
-config = load(open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.yml'), 'r', encoding='utf-8').read())
+config = load(open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.yml'), 'r', encoding='utf-8').read(), Loader=FullLoader)
 db_path = config['db_path']
 event_name = config["event_name"]
 api = Cosplay2API(event_name)

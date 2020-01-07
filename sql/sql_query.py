@@ -20,9 +20,9 @@ last_field_format = "%s"
 
 db_path = args.db_path
 if not db_path:
-    from yaml import load
+    from yaml import load, FullLoader
     root = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-    config = load(open(os.path.join(root, 'config.yml'), 'r', encoding='utf-8').read())
+    config = load(open(os.path.join(root, 'config.yml'), 'r', encoding='utf-8').read(), Loader=FullLoader)
     db_path = config['db_path']
 
 print('Connecting to %s...' % os.path.abspath(db_path))

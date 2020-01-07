@@ -4,7 +4,7 @@
 
 from datetime import datetime
 import os
-from yaml import load  # pip install pyyaml
+from yaml import load, FullLoader  # pip install pyyaml
 
 from lib.authenticator import Authenticator
 from lib.fetcher import Fetcher
@@ -13,7 +13,7 @@ from lib.validator import Validator
 
 if __name__ == '__main__':
     script_dir = os.path.dirname(os.path.realpath(__file__))
-    config = load(open(os.path.join(script_dir, 'config.yml'), 'r', encoding='utf-8').read())
+    config = load(open(os.path.join(script_dir, 'config.yml'), 'r', encoding='utf-8').read(), Loader=FullLoader)
 
     event_name = config['event_name']
     c2_login = config['admin_cs2_name']

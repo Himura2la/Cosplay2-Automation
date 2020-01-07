@@ -1,10 +1,10 @@
 import os
 import sqlite3
 import re
-from yaml import load
+from yaml import load, FullLoader
 
 configfile = open("config.yml", "r")
-config = load(configfile.read())
+config = load(configfile.read(), Loader=FullLoader)
 configfile.close()
 db_name = config['db_path']
 event_name = config['event_name']
