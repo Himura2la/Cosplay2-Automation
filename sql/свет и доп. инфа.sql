@@ -1,7 +1,6 @@
 SELECT 
-requests.number,
+[number],
 list.title,
---card_code||' '||voting_number,
 voting_title,
 replace(group_concat('### '||[values].title||':\n'||value||'\n'), '\n,', '\n') as text
 
@@ -11,10 +10,11 @@ list, requests, [values]
 WHERE
 requests.id = request_id AND
 list.id = topic_id AND
+default_duration > 0 AND
 status = 'approved' AND
 [values].value != '' AND
-([values].title = 'Пожелания по сценическому свету (необязательно)' OR
- [values].title = 'Описание номера')
+([values].title = 'Пожелания к организаторам' OR
+ [values].title = 'Описание')
  
 group by requests.id
-order by list.title
+order by voting_number
