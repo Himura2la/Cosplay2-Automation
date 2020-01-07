@@ -35,8 +35,6 @@ if not RESET_NUMBERS_MODE:
         head = reader.__next__()
         voting_numbers = {int(row[head.index(num_row)]): int(row[head.index(voting_number_row)]) for row in reader}
 
-# --------
-
 
 def set_number(r, request_id, voting_number):
     print(f'https://{event_name}.cosplay2.ru/orgs/requests/request/{request_id}', '->', voting_number)
