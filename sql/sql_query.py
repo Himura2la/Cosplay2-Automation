@@ -4,12 +4,13 @@
 import os
 import sqlite3
 import argparse
+import json
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--sql", help='Path to an SQL request to run', required=True)
 parser.add_argument("--db_path", help='Path to the database (overrides config)')
 parser.add_argument("-o", help='File to save the result into')
-parser.add_argument("--format", help='Output format. Possible values: "long" (default)', default='long')
+parser.add_argument("--format", help='Output format. Possible values: "long" (default), "csv"', default='long')
 parser.add_argument("--long_col", help='In "long" format specifies the column with long data. Default: "text"', default='text')
 args = parser.parse_args()
 
@@ -58,10 +59,29 @@ if args.format == 'long':
         result_txt = result_txt.replace('\\n', os.linesep)
         result_txt += os.linesep
 
-# if args.format == 'TODO':
+    print(result_txt)
 
-print(result_txt)
+    if args.o:
+        open(args.o, 'w', encoding='utf-8').write(result_txt)
+        print("Saved to %s" % os.path.abspath(args.o))
 
-if args.o:
-    open(args.o, 'w', encoding='utf-8').write(result_txt)
-    print("Saved to %s" % os.path.abspath(args.o))
+
+
+if args.format == 'csv':
+    import csv
+    json_i = headers.index("json")
+    headers.pop(json_i)
+    headers.append('notes')
+    
+    with open(args.o, 'w', newline='', encoding='utf=8') as f:
+        writer = csv.writer(f)
+        writer.writerow(headers)
+        for record in result:
+            if not record[1]:
+                continue
+            row = list(record)
+            description =  json.loads(row.pop(json_i))
+            notes = description['request']['notes']
+            row.append(notes)
+            writer.writerow(row)
+
