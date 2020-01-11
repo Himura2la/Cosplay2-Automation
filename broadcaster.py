@@ -28,7 +28,7 @@ with sqlite3.connect(db_path, isolation_level=None) as db:
     c.execute(f"""
         SELECT DISTINCT
             requests.id,
-            '[' || status || '] ' || list.card_code || ' ' || number || '. ' || voting_title AS details
+            '[' || status || '] ' || list.card_code || ' ' || number || IFNULL('. ' || voting_title, '') AS details
         FROM requests, list, [values]
         WHERE topic_id = list.id
           AND request_id = requests.id
