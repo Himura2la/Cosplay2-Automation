@@ -6,24 +6,22 @@ import sqlite3
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--sql", help='Path to an SQL request to run', required=True)
-parser.add_argument("--db_path", help='Path to the database (overrides config)')
+parser.add_argument("sql", help='Path to an SQL request to run')
 parser.add_argument("-o", help='File to save the result into')
 parser.add_argument("--format", help='Output format. Possible values: "long" (default)', default='long')
-parser.add_argument("--long_col", help='In "long" format specifies the column with long data. Default: "text"', default='text')
 args = parser.parse_args()
+
+long_col = 'text'
 
 # For header formatting in long_col 
 field_format = {'number': "№%s. "}
 default_field_format = "%s: "
 last_field_format = "%s"
 
-db_path = args.db_path
-if not db_path:
-    from yaml import load, FullLoader
-    root = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-    config = load(open(os.path.join(root, 'config.yml'), 'r', encoding='utf-8').read(), Loader=FullLoader)
-    db_path = config['db_path']
+from yaml import load, FullLoader
+root = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+config = load(open(os.path.join(root, 'config.yml'), 'r', encoding='utf-8').read(), Loader=FullLoader)
+db_path = config['db_path']
 
 print('Connecting to %s...' % os.path.abspath(db_path))
 
@@ -39,7 +37,7 @@ with sqlite3.connect(db_path, isolation_level=None) as db:
 result_txt = ""
 
 if args.format == 'long':
-    long_i = headers.index(args.long_col) if args.long_col in headers else None
+    long_i = headers.index(long_col)
     for record in result:
         if not record[1]:
             continue

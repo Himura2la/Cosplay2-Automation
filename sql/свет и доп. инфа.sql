@@ -13,8 +13,9 @@ list.id = topic_id AND
 default_duration > 0 AND
 status = 'approved' AND
 [values].value != '' AND
-([values].title = 'Пожелания к организаторам' OR
- [values].title = 'Описание')
+([values].title = 'Пожелания по сценическому свету (необязательно)' OR
+ [values].title = 'Оборудование и реквизит (необязательно)' OR
+ [values].title = 'Описание номера')
  
 group by requests.id
 order by voting_number
