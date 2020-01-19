@@ -8,6 +8,7 @@ import os
 import csv
 import sqlite3
 from yaml import load, FullLoader
+from time import sleep
 
 
 RESET_NUMBERS_MODE = True
@@ -25,7 +26,7 @@ c2_password = config['admin_cs2_password'] if 'admin_cs2_password' in config els
 with sqlite3.connect(db_path, isolation_level=None) as db:
     c = db.cursor()
     c.execute('PRAGMA encoding = "UTF-8"')
-    c.execute("SELECT number, id FROM requests WHERE status in ('approved')")
+    c.execute("SELECT number, id FROM requests WHERE status in ('disapproved')")
     request_ids = {num: r_id for num, r_id in c.fetchall()}
 
 
@@ -48,10 +49,14 @@ r = Requester(a.cookie)
 
 
 if RESET_NUMBERS_MODE:
-    for num in request_ids.keys():
+    for i, num in enumerate(request_ids.keys()):
         r_id = request_ids[num]
-        set_number(r, r_id, num)
+        print('[', i+1, '/', len(request_ids), ']', end=" ")
+        set_number(r, r_id, "")
+        sleep(1)
 else:
-    for num, v_num in voting_numbers.items():
+    for i, (num, v_num) in enumerate(voting_numbers.items()):
         r_id = request_ids[num]
+        print('[', i+1, '/', len(request_ids), ']', end=" ")
         set_number(r, r_id, v_num)
+        sleep(1)

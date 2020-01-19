@@ -1,6 +1,10 @@
-SELECT	"http://tulafest.cosplay2.ru/orgs/requests/request/" || requests.id as link,
-		requests.number, list.title, contest,
-		voting_title, duration, cities, wish
+SELECT	card_code as "Код",
+		"№ " || requests.number as "№",
+		contest as "Конкурс",
+		'=HYPERLINK("http://tulafest.cosplay2.ru/orgs/requests/request/'||requests.id||'", "'||REPLACE(IFNULL(voting_title,'[Заявка без названия]'),'"',"'")||'")' as "Заявка",
+		duration as "Длительность",
+		cities as "Города",
+		wish as "Пожелание по блоку"
 
 FROM list, requests
 
@@ -9,7 +13,7 @@ LEFT JOIN ( SELECT request_id as con_rid, value as contest
 			WHERE title == 'Участие в конкурсе')
 	ON con_rid = requests.id
 
-LEFT JOIN ( SELECT request_id as t_rid, CAST(value AS INT) || "m " || CAST(ROUND(value*60)%60 AS INT) || "s" as duration
+LEFT JOIN ( SELECT request_id as t_rid, value as duration
 			FROM [values] 
 			WHERE title LIKE 'Продолжительность%')
 	ON t_rid = requests.id
@@ -28,3 +32,5 @@ LEFT JOIN ( SELECT request_id as w_rid, value as wish
 WHERE	list.id = topic_id
 		AND status != 'disapproved'
 		AND default_duration > 0
+
+ORDER BY card_code
