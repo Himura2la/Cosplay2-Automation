@@ -11,10 +11,10 @@ WHERE
 requests.id = request_id AND
 list.id = topic_id AND
 default_duration > 0 AND
-status = 'approved' AND
+status != 'disapproved' AND
 [values].value != '' AND
-([values].title = 'Пожелания к организаторам' OR
- [values].title = 'Описание')
+([values].title = 'Описание номера' OR
+ [values].title = 'Пожелания по сценическому свету (необязательно)')
  
 group by requests.id
 order by voting_number
