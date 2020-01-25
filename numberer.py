@@ -11,7 +11,7 @@ from yaml import load, FullLoader
 from time import sleep
 
 
-RESET_NUMBERS_MODE = True
+RESET_NUMBERS_MODE = False
 num_row = 'num'
 voting_number_row = 'voting_number'
 
@@ -26,7 +26,7 @@ c2_password = config['admin_cs2_password'] if 'admin_cs2_password' in config els
 with sqlite3.connect(db_path, isolation_level=None) as db:
     c = db.cursor()
     c.execute('PRAGMA encoding = "UTF-8"')
-    c.execute("SELECT number, id FROM requests WHERE status in ('disapproved')")
+    c.execute("SELECT number, id FROM requests WHERE status not in ('disapproved')")
     request_ids = {num: r_id for num, r_id in c.fetchall()}
 
 
@@ -34,7 +34,7 @@ if not RESET_NUMBERS_MODE:
     with open(config['numberer_table_path'], 'r', encoding='utf-8') as f:
         reader = csv.reader(f)
         head = reader.__next__()
-        voting_numbers = {int(row[head.index(num_row)]): int(row[head.index(voting_number_row)]) for row in reader}
+        voting_numbers = {int(row[head.index(num_row)]): int(row[head.index(voting_number_row)]) for row in reader if row[head.index(voting_number_row)]}
 
 
 def set_number(r, request_id, voting_number):
@@ -57,6 +57,6 @@ if RESET_NUMBERS_MODE:
 else:
     for i, (num, v_num) in enumerate(voting_numbers.items()):
         r_id = request_ids[num]
-        print('[', i+1, '/', len(request_ids), ']', end=" ")
+        print('[', i+1, '/', len(voting_numbers), ']', end=" ")
         set_number(r, r_id, v_num)
-        sleep(1)
+        sleep(0.5)

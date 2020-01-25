@@ -37,7 +37,7 @@ with sqlite3.connect(db_path, isolation_level=None) as db:
 result_txt = ""
 
 if args.format == 'long':
-    long_i = headers.index(long_col)
+    long_i = headers.index(long_col) if long_col in headers else None
     for record in result:
         if not record[1]:
             continue
