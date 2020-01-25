@@ -16,6 +16,7 @@ class Cosplay2API(object):
         self.login_POST = self.api + 'users/login'
         self.request_details_POST = self.api + 'requests/get'
         self.save_data_POST = self.api + 'requests/save_data'
+        self.get_comments_POST = self.api + 'requests/get_comments'
         self.add_comment_POST = self.api + 'requests/add_comment'
 
         self.settings_GET = self.api + 'events/get_settings'

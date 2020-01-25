@@ -23,7 +23,7 @@ num_title_splitter = '. '
 nums_in_filenames = False
 
 skip_card_codes = 'AND card_code NOT IN (%s)' % ','.join([f'"{cc}"' for cc in config['not_scene_card_codes']]) \
-                    if 'not_scene_card_codes' in config else ''
+                    if 'not_scene_card_codes' in config else 'AND default_duration > 0'
 
 sql_queery = f"""
 SELECT 
@@ -38,7 +38,7 @@ LEFT JOIN (SELECT request_id, value as sound_start FROM [values]
            WHERE title LIKE 'Начало%')
     ON request_id = requests.id
 WHERE list.id = topic_id
-      AND status = 'approved'
+      AND status != 'disapproved'
       {skip_card_codes}
 """
 num_field = '№'
@@ -77,6 +77,7 @@ def make_filename(data, num, dl_title=None):
         sound_start = {
             'Трек начинается до выхода на сцену': 'Сразу',
             'Трек начинается до выхода на сцену (выход из за кулис под музыку)': 'Сразу',
+            'Трек начинается после выхода на сцену (без реквизита)': 'С точки',
             'Трек начинается после выхода на сцену (начало с точки)': 'С точки',
             'Трек содержит превью (выход из за кулис во время превью танца)': 'Превью',
             'Трек начинается после выноса реквизита и подготовки': 'Стафф'
