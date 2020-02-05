@@ -8,13 +8,13 @@ types = {
         'descr': 'Билет «Тануки»',
         'image': '1. Тануки.jpg',
         'start': 440,
-        'total': 0
+        'total': 50
     },
     '02': {
         'descr': 'Билет «Кицунэ»',
         'image': '2. Кицунэ.jpg',
-        'start': 330,
-        'total': 40
+        'start': 370,
+        'total': 30
     },
     '03': {
         'descr': 'VIP Билет «Ооками»',

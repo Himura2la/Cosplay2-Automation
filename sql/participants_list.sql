@@ -1,8 +1,11 @@
 
 SELECT DISTINCT
-    group_concat(distinct nick) as nick, city,
+    last_name, first_name, mid_name, city,
+    group_concat(distinct nick) as nick,
     group_concat(distinct phone) as phone,
-    last_name, first_name, mid_name
+	replace(group_concat(distinct card_code ||' '|| voting_number),',',', ') as 'Номера',
+	replace(group_concat(distinct '№ '|| number),',',', ') as 'Заявки',
+	group_concat(distinct list.title) as 'Разделы', group_concat(distinct section_title) as 'Секции'
 FROM list, requests, [values]
 
 LEFT JOIN ( SELECT request_section_id as ln_rsid, value as last_name
@@ -27,7 +30,7 @@ LEFT JOIN ( SELECT request_section_id as r_rsid, value as phone
 WHERE 
 list.id = topic_id AND requests.id = request_id
     AND status != 'disapproved'
-    AND section_title in ('Ваши данные', 'Остальные участники')
-    AND card_code in ('ART','AA','SY','VOL','MM')
+    AND [values].title = 'Имя'  -- use sections with name
+	AND (default_duration > 0 or card_code in ('VOL','ACG','AA','ACF','SY'))
 
 GROUP BY last_name, first_name, mid_name

@@ -10,9 +10,9 @@ from PIL import Image  # pip install Pillow
 config = load(
     open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.yml'), 'r', encoding='utf-8').read(), Loader=FullLoader)
 db_path = config['db_path']
-tex_path = config['tex_path']
-fest_path = config['folder_path']
-target_dirs = config['print_noms']
+tex_path = 'D:\\Git\\Cosplay2-Exhibition\\images'
+fest_path = 'D:\\Temp'
+target_dirs = [ 'tulafest9-temp' ]
 texcode = ''
 
 print('Connecting to %s...' % os.path.basename(db_path))
@@ -39,6 +39,8 @@ def get_field(req_num, titles, sections=None):
 
 
 texcode = r'\renewcommand{\festurl}{https://%s.cosplay2.ru}' % config['event_name']
+texcode_portrait = texcode
+texcode_landscape = texcode
 
 for target_dir in target_dirs:
     base_dir = os.path.join(fest_path, target_dir)
@@ -57,7 +59,10 @@ for target_dir in target_dirs:
         """, (num,))
         req_id, card_code, voting_number = c.fetchone()
 
+        competition = get_field(num, ["Участие в конкурсе"])
         nom = get_field(num, config['nom_fields'])
+        if competition == "Вне конкурса":
+            nom = f'{nom} ({competition})'
         nicks = get_field(num, config['nick_fields'], config['authors_sections'])
         cities = get_field(num, config['city_fields'], config['authors_sections'])
         title = get_field(num, config['title_fields'])
@@ -80,11 +85,18 @@ for target_dir in target_dirs:
                 title = re.sub(rf'^(.*)\W*{fandom}\W*(.*)$', r'\1\2', title)
         img_path = img_path.replace(os.sep, '/')
         chunk = '\n    '.join(('{%s}' % field for field in (nom, req_code, title, fandom, authors, req_id, img_path)))
-        texcode += '\n' + (('\\imgsquare' if square else '\\imgportrait') if portrait else '\\imglandscape') + '\n    '
-        texcode += chunk.replace('\\', ' \\textbackslash ')\
-                        .replace(r'&', r'\&')\
-                        .replace(r'_', r'\_')\
-                        .replace(r'^', r'\^{}')
+        if square or portrait:
+            texcode_portrait += '\n' + ('\\imgsquare' if square else '\\imgportrait') + '\n    '
+            texcode_portrait += chunk.replace('\\', ' \\textbackslash ')\
+                            .replace(r'&', r'\&')\
+                            .replace(r'_', r'\_')\
+                            .replace(r'^', r'\^{}')
+        else:
+            texcode_landscape += '\n\\imglandscape' + '\n    '
+            texcode_landscape += chunk.replace('\\', ' \\textbackslash ')\
+                            .replace(r'&', r'\&')\
+                            .replace(r'_', r'\_')\
+                            .replace(r'^', r'\^{}')
 
-print(texcode)
-# open(tex_path, 'w', encoding='utf-8').write(texcode)
+open(tex_path + '-landscape.tex', 'w', encoding='utf-8').write(texcode_landscape)
+open(tex_path + '-portrait.tex', 'w', encoding='utf-8').write(texcode_portrait)
