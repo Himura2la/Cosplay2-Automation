@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 comment = """
-Кончается время досыла на Yuki no Odori! tulafest.ru очень ждёт Т__Т
+Вашей заявке присвоен номер {} по программе (выступление в блоке {})! Конечный вариант программы фестиваля уже ВК!
 """.strip()  # --------------------------------------------- 1 SMS ->|      --------- 2 SMS with "YnO9, заявка 000: " ->|
-target = "status in ('materials')"
+target = "status = 'approved' and default_duration > 0"
 email = True
 sms = True
 
@@ -28,7 +28,7 @@ with sqlite3.connect(db_path, isolation_level=None) as db:
     c.execute(f"""
         SELECT DISTINCT
             requests.id,
-            '[' || status || '] ' || list.card_code || ' ' || number || IFNULL('. ' || voting_title, '') AS details
+            '[' || status || '] ' || list.card_code || ' ' || voting_number || IFNULL('. ' || voting_title, '') AS details
         FROM requests, list, [values]
         WHERE topic_id = list.id
           AND request_id = requests.id
@@ -51,8 +51,11 @@ r = Requester(a.cookie)
 done_requests = set()
 try:
     for request_id, details in target_requests:
-        r.request(api.add_comment_POST, {"request_id": request_id, "comment": comment, "email": email, "sms": sms})
+        voting_number = details.split('] ', 1)[1].split('. ', 1)[0]
+        ready_comment = comment.format(voting_number, voting_number.split(' ', 1)[1][0])
+        r.request(api.add_comment_POST, {"request_id": request_id, "comment": ready_comment, "email": email, "sms": sms})
         print(f'✔️ {details} ({api.request_url(request_id)})')
+        print(ready_comment)
         done_requests.add(str(request_id))
         sleep(1)
 except Exception as e:
