@@ -12,10 +12,10 @@ db_dirs = [
     r"C:\Users\himura\Desktop\yno9-backups"
 ]
 queries = {
-    'scene': 'select count(*) from list, requests where list.id = topic_id and default_duration > 0 and card_code not like "V%"'
-#    'etickets': 'select count(*) from etickets where money_transfered not null'
+    'scene': 'select count(*) from list, requests where list.id = topic_id and default_duration > 0 and card_code not like "V%"',
+    'etickets': 'select count(*) from etickets where money_transfered not null'
 }
-line_colors = ['-b', '-r']
+line_colors = ['b.', 'r.', 'k.', 'g.']
 
 data = {}
 for d in db_dirs:
@@ -34,7 +34,9 @@ for d in db_dirs:
                 c.execute(query)
                 result, = c.fetchone()
                 results[f'{fest_info["short_title"]}-{query_name}'] = result
-        days_to_fest = int((fest_info['start_time'] - date).days)
+        days_to_fest = int((date - fest_info['start_time']).days)
+        if days_to_fest > 0:
+            break
         if not days_to_fest in data:
             data[days_to_fest] = results
         else:
@@ -47,5 +49,6 @@ datasets = data[x[0]].keys()
 for i, name in enumerate(datasets):
     ax.plot(x, [v[name] if name in v else None for k, v in data.items()], line_colors[i])
 ax.grid()
+ax.set_xlabel('Дней до феста')
 ax.legend(datasets)
 plt.show()
