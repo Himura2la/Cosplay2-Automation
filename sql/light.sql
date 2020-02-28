@@ -1,8 +1,8 @@
 SELECT 
-[number],
+card_code || ' ' || voting_number || ' (№ ' || number || ')',
 list.title,
 voting_title,
-replace(group_concat('### '||[values].title||':\n'||value||'\n'), '\n,', '\n') as text
+replace(group_concat('### '||replace([values].title,' (необязательно)','')||':\n'||value||'\n'), '\n,', '\n') as text
 
 FROM
 list, requests, [values]
