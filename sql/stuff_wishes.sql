@@ -1,13 +1,13 @@
 SELECT DISTINCT
-	card_code||' '||voting_number || '. ' || voting_title as num,
-	text
+	card_code||' '||voting_number||'. '||voting_title||' (№ '||requests.number||')' as num,
+	replace(text,' (необязательно)','') as text
 
 FROM list, requests
 
 LEFT JOIN ( 
 	SELECT request_id as p_rid, replace(group_concat('### '||[values].title||':\n'||value||'\n'), '\n,', '\n') as text
 	FROM [values]
-	WHERE title = 'Оборудование и реквизит (необязательно)' OR title = 'Описание номера'
+	WHERE title in ('Оборудование и реквизит (необязательно)', 'Описание номера', 'Пожелания к организаторам', 'Пожелания по сценическому свету (необязательно)', 'Начало выступления')
 	group by request_id
 )
 ON p_rid = requests.id
