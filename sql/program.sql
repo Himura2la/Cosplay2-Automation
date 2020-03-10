@@ -14,7 +14,7 @@ WHERE
 list.id = topic_id AND
 requests.id = request_id AND
 status = 'approved' AND
-voting_number > 100
+default_duration > 0
 
 GROUP BY voting_number
 ORDER BY voting_number

@@ -28,7 +28,7 @@ class Cosplay2API(object):
         self.etickets_GET = self.api + 'etickets/get_list'
 
     def request_url(self, request_id):
-        return f'https://{self.event_name}.cosplay2.ru/orgs/requests/request/{request_id}'
+        return 'https://%s.cosplay2.ru/orgs/requests/request/%s' % (self.event_name, request_id)
 
 
 class Requester(object):

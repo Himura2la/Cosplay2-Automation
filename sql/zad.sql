@@ -1,11 +1,12 @@
 SELECT 
+    number as '№',
 	card_code ||' '|| voting_number as num,
 	IFNULL(list.title||' / '||nom, list.title) as nom,
-	nicks,
-	team,
-	fandom,
-	cahrs,
-	IFNULL(item_title, s_artist||' - '||s_title||IFNULL(' (OST '||s_ost||')', '')) as title,
+	IFNULL(team||': '||nicks, nicks) as 'Участник',
+	fandom as 'Фэндом/OST',
+	cahrs as 'Персоонажи/Исполнитель',
+	item_title as 'Название',
+	cahrs||' - '||item_title as track,
 	cities
 
 FROM list, requests
@@ -31,25 +32,16 @@ LEFT JOIN (	SELECT request_id as n_rid, value as nom FROM [values]
 	ON n_rid = requests.id
 				 
 LEFT JOIN (	SELECT request_id as f_rid, value as fandom FROM [values] 
-			WHERE title LIKE 'Фэндом%')
+			WHERE title LIKE 'Фэндом%' OR title = 'OST (необязательно)')
 	ON f_rid = requests.id
 
 LEFT JOIN (	SELECT request_id as ch_rid, REPLACE(GROUP_CONCAT(DISTINCT value), ',', ', ') as cahrs FROM [values] 
-			WHERE (title = 'Имя персонажа' OR title = 'Персонаж') AND section_title NOT LIKE 'Изображени%'
+			WHERE (title in ('Имя персонажа','Персонаж') OR title LIKE 'Исполнитель%')
+			  AND section_title NOT LIKE 'Изображени%'
+			  AND section_title NOT LIKE 'Фотографии%'
 			GROUP BY request_id)
 	ON ch_rid = requests.id
 
-LEFT JOIN (	SELECT request_id as a_rid, value as s_artist FROM [values] 
-			WHERE title LIKE 'Исполнитель композиции%')
-	ON a_rid = requests.id
-
-LEFT JOIN (	SELECT request_id as t_rid, value as s_title FROM [values] 
-			WHERE title = 'Название композиции')
-	ON t_rid = requests.id
-
-LEFT JOIN (	SELECT request_id as o_rid, value as s_ost FROM [values] 
-			WHERE title = 'OST (необязательно)')
-	ON o_rid = requests.id
 
 LEFT JOIN (	SELECT request_id as tm_rid, value as team FROM [values] 
 			WHERE	title LIKE 'Название косб%' OR
@@ -58,11 +50,8 @@ LEFT JOIN (	SELECT request_id as tm_rid, value as team FROM [values]
 	ON tm_rid = requests.id
 
 LEFT JOIN (	SELECT request_id as it_rid, value as item_title FROM [values] 
-			WHERE	title = 'Название номера (необязательно)' OR
-					title = 'Название работы' OR
-					title = 'Название сценки')
+			WHERE title IN ('Название номера (необязательно)','Название работы','Название сценки','Название композиции'))
 	ON it_rid = requests.id
-
 
 WHERE
 	list.id = topic_id

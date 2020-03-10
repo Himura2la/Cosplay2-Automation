@@ -1,4 +1,4 @@
-SELECT list.title || ' №' || number || ': ' || voting_title as num,
+SELECT '[' || card_code || ' ' || voting_number || '] ' || list.title as num,
 		voting_title, announcement_title
 
 FROM list, requests
@@ -8,4 +8,4 @@ WHERE
 	AND	status in ('approved')
 	AND default_duration > 0
 
-ORDER BY list.title, voting_number
+ORDER BY voting_number
