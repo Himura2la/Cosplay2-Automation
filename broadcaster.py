@@ -28,7 +28,7 @@ with sqlite3.connect(db_path, isolation_level=None) as db:
     c.execute(f"""
         SELECT DISTINCT
             requests.id,
-            '[' || status || '] ' || list.card_code || ' ' || voting_number || IFNULL('. ' || voting_title, '') AS details
+	        '[' || status || '] ' || IFNULL(list.card_code || ' ' || voting_number, '№ ' || requests.number) || IFNULL('. ' || voting_title, user_title) AS details,
         FROM requests, list, [values]
         WHERE topic_id = list.id
           AND request_id = requests.id
@@ -53,7 +53,8 @@ try:
     for request_id, details in target_requests:
         voting_number = details.split('] ', 1)[1].split('. ', 1)[0]
         ready_comment = comment.format(voting_number, voting_number.split(' ', 1)[1][0])
-        r.request(api.add_comment_POST, {"request_id": request_id, "comment": ready_comment, "email": email, "sms": sms})
+        if not r.request(api.add_comment_POST, {"request_id": request_id, "comment": ready_comment, "email": email, "sms": sms}):
+            raise Exception("Maybe you ran out of SMS money...")
         print(f'✔️ {details} ({api.request_url(request_id)})')
         print(ready_comment)
         done_requests.add(str(request_id))
