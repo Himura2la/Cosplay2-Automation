@@ -102,11 +102,6 @@ class Downloader:
                 continue
             dir_path = os.path.join(folder, dir_name) if flat else os.path.join(folder, nom, dir_name)
             try:
-                if prev_name == name:
-                    counter += 1
-                    file_name += '-' + str(counter)
-                file_name += file_ext
-                path = os.path.join(dir_path, file_name)
                 is_img = False
                 if not file:
                     self.log_error('No file for %s.' % display_path)
@@ -134,9 +129,9 @@ class Downloader:
                         successful_download = False
                         if action >= self.DOWNLOAD_UPDATED_REQUESTS:
                             self.log_info(("DL: " + file['link'] + " -> " + display_path))
-                            successful_download = CloudDownloader.get(file['link'], path)
+                            successful_download = CloudDownloader.get(file['link'], os.path.join(dir_path, file_name))
                         if successful_download:
-                            self.log_info("[CLOUD OK] " + path)
+                            self.log_info("[CLOUD OK] " + display_path)
                         else:
                             self.log_info("[CLOUD FAIL] " + display_path)
                             self.log_link("%s -> %s" % (file['link'], display_path))
@@ -148,8 +143,15 @@ class Downloader:
                     else:
                         file_ext = '.jpg'
                         is_img = True
+
+                if prev_name == name:
+                    counter += 1
+                    file_name += '-' + str(counter)
+                file_name += file_ext
+                path = os.path.join(dir_path, file_name)
                 file_url = 'http://' + parse.quote('%s.cosplay2.ru/uploads/%d/%d/%s' % (self.event_name, self.event_id,
                                                                                         request_id, src_filename))
+
                 if is_img:
                     file_url += '.jpg'  # Yes, it works this way
                 download_required = True
