@@ -11,7 +11,7 @@ from yaml import load, FullLoader
 from time import sleep
 
 
-RESET_NUMBERS_MODE = False
+RESET_NUMBERS_MODE = True
 num_row = 'num'
 voting_number_row = 'voting_number'
 
@@ -26,7 +26,7 @@ c2_password = config['admin_cs2_password'] if 'admin_cs2_password' in config els
 with sqlite3.connect(db_path, isolation_level=None) as db:
     c = db.cursor()
     c.execute('PRAGMA encoding = "UTF-8"')
-    c.execute("SELECT number, requests.id FROM list, requests WHERE list.id = topic_id AND default_duration > 0 AND status not in ('disapproved')")
+    c.execute("SELECT number, requests.id FROM list, requests WHERE list.id = topic_id AND card_code = 'A' AND status not in ('disapproved')")
     request_ids = {num: r_id for num, r_id in c.fetchall()}
 
 
@@ -52,7 +52,7 @@ if RESET_NUMBERS_MODE:
     for i, num in enumerate(request_ids.keys()):
         r_id = request_ids[num]
         print('[', i+1, '/', len(request_ids), ']', end=" ")
-        set_number(r, r_id, "")
+        set_number(r, r_id, str(num))
 else:
     for i, (num, v_num) in enumerate(voting_numbers.items()):
         r_id = request_ids[num]
