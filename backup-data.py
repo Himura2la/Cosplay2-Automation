@@ -22,6 +22,7 @@ if __name__ == '__main__':
         if 'backups_path' in config and config['backups_path'] != "." \
         else script_dir
     report_path = config['report_path'] if 'report_path' in config else None
+    latest_backup_symlink = config['latest_backup_symlink'] if 'latest_backup_symlink' in config else None
 
     if not os.path.isdir(backup_dir):
         os.makedirs(backup_dir)
@@ -38,6 +39,13 @@ if __name__ == '__main__':
 
     db_path = os.path.join(backup_dir, datetime.now().strftime('%y-%m-%d_%H-%M-%S.db'))
     MakeDB(db_path, f.data)
+
+    if latest_backup_symlink:
+        os.remove(latest_backup_symlink) if os.path.exists(latest_backup_symlink) else None
+        try:
+            os.symlink(db_path, latest_backup_symlink)
+        except OSError:
+            print('[WARNING] Failed to create a latest_backup_symlink!')
 
     if report_path:
         print('Validating...')

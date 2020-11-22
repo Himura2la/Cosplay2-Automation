@@ -58,7 +58,8 @@ backups_path: 'backups'
 # Путь к отчету валидатора (не указывайте, если заявки не нужно валидировать)
 report_path: 'report.html'
 
-
+# Путь к символьной ссылке с последним бэкапом
+latest_backup_symlink: 'backups/latest.db'
 
 
 ### mktex.py ###
