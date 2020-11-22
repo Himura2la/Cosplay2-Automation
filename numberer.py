@@ -32,8 +32,8 @@ c2_password = config['admin_cs2_password'] if 'admin_cs2_password' in config els
 with sqlite3.connect(db_path, isolation_level=None) as db:
     c = db.cursor()
     c.execute('PRAGMA encoding = "UTF-8"')
-    c.execute("SELECT number, requests.id FROM list, requests WHERE list.id = topic_id AND status not in ('disapproved')")
-    request_ids = {num: r_id for num, r_id in c.fetchall()}
+    c.execute("SELECT number, requests.id, voting_number FROM list, requests WHERE list.id = topic_id AND status not in ('disapproved')")
+    requests = {num: {"id": r_id, "voting_number": voting_number} for num, r_id, voting_number in c.fetchall()}
 
 
 if not RESET_NUMBERS_MODE:
@@ -43,9 +43,12 @@ if not RESET_NUMBERS_MODE:
         voting_numbers = {int(row[head.index(num_row)]): int(row[head.index(voting_number_row)]) for row in reader if row[head.index(voting_number_row)]}
 
 
-def set_number(r, request_id, voting_number):
-    print('https://%s.cosplay2.ru/orgs/requests/request/%s' % (event_name, request_id), '->', voting_number)
-    r.request(api.save_data_POST, {"field": "voting_number", "request_id": request_id, "data": voting_number})
+def set_number(r, request, target_voting_number):
+    already_ok = request['voting_number'] == int(target_voting_number)
+    if not already_ok:
+        r.request(api.save_data_POST, {"field": "voting_number", "request_id": request['id'], "data": target_voting_number})
+    action_symbol = '==' if already_ok else '->'
+    print('https://%s.cosplay2.ru/orgs/requests/request/%s' % (event_name, request['id']), action_symbol, target_voting_number)
 
 
 a = Authenticator(event_name, c2_login, c2_password)
@@ -55,12 +58,12 @@ r = Requester(a.cookie)
 
 
 if RESET_NUMBERS_MODE:
-    for i, num in enumerate(request_ids.keys()):
-        r_id = request_ids[num]
-        print('[', i+1, '/', len(request_ids), ']', end=" ")
-        set_number(r, r_id, str(num))
+    for i, num in enumerate(requests.keys()):
+        req = requests[num]
+        print('[', i+1, '/', len(requests), ']', end=" ")
+        set_number(r, req, str(num))
 else:
     for i, (num, v_num) in enumerate(voting_numbers.items()):
-        r_id = request_ids[num]
+        req = requests[num]
         print('[', i+1, '/', len(voting_numbers), ']', end=" ")
-        set_number(r, r_id, v_num)
+        set_number(r, req, v_num)
