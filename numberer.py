@@ -45,10 +45,10 @@ if not RESET_NUMBERS_MODE:
 
 def set_number(r, request, target_voting_number):
     already_ok = request['voting_number'] == int(target_voting_number)
-    if not already_ok:
-        r.request(api.save_data_POST, {"field": "voting_number", "request_id": request['id'], "data": target_voting_number})
     action_symbol = '==' if already_ok else '->'
     print('https://%s.cosplay2.ru/orgs/requests/request/%s' % (event_name, request['id']), action_symbol, target_voting_number)
+    if not already_ok:
+        r.request(api.save_data_POST, {"field": "voting_number", "request_id": request['id'], "data": target_voting_number})
 
 
 a = Authenticator(event_name, c2_login, c2_password)
