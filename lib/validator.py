@@ -6,11 +6,21 @@ import sqlite3
 
 
 class Validator(object):
-    participant_fields = {'Ваши данные', 'Остальные участники', 'Авторы', 'Представители', 'Члены команды'}
     participant_number_fields = {'Количество участников', 'Количество представителей', 'Количество представителей (кроме помощников)'}
-    capital_fields = {'Фамилия', 'Имя', 'Отчество', 'Город'}
+    capital_fields = {'Фамилия', 'Имя', 'Город'}
     required_participant_fields = capital_fields | {'Ник', 'Транскрипция ника (для ведущих)'}
     invalid_city_names = {'Орел', 'Щекино', 'Могилев', 'Королев'}
+
+    members_sections = {'author', 'author_cosplay', 'members', 'members_cosplay', 'members_role'}
+    optional_sections = members_sections | {'helpers'}
+
+    def find_topic_section_ids(self, details, search_for):
+        def check_section(s):
+            if search_for == 'required':
+                return '(необязательно' not in s['title'] and s['internal_name'] not in self.optional_sections
+            if search_for == 'participants':
+                return s['internal_name'] in self.members_sections
+        return {s['id'] for s in details['sections'] if check_section(s)}
 
     def validate_participants(self, request, fields, details):
         errors = []
@@ -19,17 +29,17 @@ class Validator(object):
                 lambda f: f['title'] in self.participant_number_fields, fields).__next__()['value']
             expected_participants = int(expected_participants)
         except StopIteration:
-            expected_participants = 1
+            expected_participants = None
         except ValueError:
             errors.append('Не указано количество участников')
             expected_participants = None
-        participants_data = list(filter(lambda f: f['section_title'] in self.participant_fields, fields))
-        participant_sections = set(p['request_section_id'] for p in participants_data)
-        if expected_participants is not None and expected_participants != len(participant_sections):
+        participant_topic_section_ids = self.find_topic_section_ids(details, 'participants')
+        participant_request_section_ids = {int(rs['id']) for rs in details['reqsections'] if rs['topic_section_id'] in participant_topic_section_ids}
+        if expected_participants is not None and expected_participants != len(participant_request_section_ids):
             errors.append('*Несоответствие количества участников*: заявлено: %d, добавлено: %d' %
-                          (expected_participants, len(participant_sections)))
+                          (expected_participants, len(participant_request_section_ids)))
         unique_participants = set()
-        for i, sec_id in enumerate(sorted(list(participant_sections))):
+        for i, sec_id in enumerate(sorted(list(participant_request_section_ids))):
             p_data = list(filter(lambda f: f['request_section_id'] == sec_id, fields))
             participant_basic_info = tuple(f['value'] for f in sorted(filter(lambda f: f['title'] in self.capital_fields, p_data), key=lambda f: f['title']))
             if participant_basic_info in unique_participants:
@@ -59,7 +69,7 @@ class Validator(object):
             if re.match(r'^[а-я].*', f):
                 errors.append('%s *с маленькой буквы*: %s' % (t, f))
 
-        required_sections = {s['id'] for s in details['sections'] if '(необязательно' not in s['title'] and s['internal_name'] not in ('members_cosplay', 'helpers')}
+        required_sections = self.find_topic_section_ids(details, 'required')
         provided_sections = {rs['topic_section_id'] for rs in details['reqsections']}
         missing_sections = required_sections - provided_sections
         section_id_to_title = {f['id']: f['title'] for f in details['sections']}
@@ -125,6 +135,7 @@ class Validator(object):
                 'review':      '<span title="Рассмотрена">👌</span>',
                 'approved':    '<span title="Принята">✔️</span>',
                 'disapproved': '<span title="Отклонена">❌</span>'}[status]
+
 
 if __name__ == '__main__':
     import os
