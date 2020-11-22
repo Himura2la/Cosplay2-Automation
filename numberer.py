@@ -44,7 +44,7 @@ if not RESET_NUMBERS_MODE:
 
 
 def set_number(r, request_id, voting_number):
-    print(f'https://{event_name}.cosplay2.ru/orgs/requests/request/{request_id}', '->', voting_number)
+    print('https://%s.cosplay2.ru/orgs/requests/request/%s' % (event_name, request_id), '->', voting_number)
     r.request(api.save_data_POST, {"field": "voting_number", "request_id": request_id, "data": voting_number})
 
 
