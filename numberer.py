@@ -11,6 +11,12 @@ from yaml import load, FullLoader
 from time import sleep
 
 
+# -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+# WARNING: AUTO-NUMBERER IS ENABLED FOR tulafest !!!!
+#      Disable it before meaningful numbering
+# -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+
+
 RESET_NUMBERS_MODE = True
 num_row = 'num'
 voting_number_row = 'voting_number'
@@ -26,7 +32,7 @@ c2_password = config['admin_cs2_password'] if 'admin_cs2_password' in config els
 with sqlite3.connect(db_path, isolation_level=None) as db:
     c = db.cursor()
     c.execute('PRAGMA encoding = "UTF-8"')
-    c.execute("SELECT number, requests.id FROM list, requests WHERE list.id = topic_id AND card_code = 'A' AND status not in ('disapproved')")
+    c.execute("SELECT number, requests.id FROM list, requests WHERE list.id = topic_id AND status not in ('disapproved')")
     request_ids = {num: r_id for num, r_id in c.fetchall()}
 
 
