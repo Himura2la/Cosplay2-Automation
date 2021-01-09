@@ -33,7 +33,7 @@ with sqlite3.connect(db_path, isolation_level=None) as db:
     c = db.cursor()
     c.execute('PRAGMA encoding = "UTF-8"')
     c.execute("SELECT number, requests.id, voting_number FROM list, requests WHERE list.id = topic_id AND status not in ('disapproved')")
-    requests = {num: {"id": r_id, "voting_number": voting_number} for num, r_id, voting_number in c.fetchall()}
+    requests = {num: {"id": r_id, "voting_number": '' if voting_number is None else str(voting_number)} for num, r_id, voting_number in c.fetchall()}
 
 
 if not RESET_NUMBERS_MODE:
@@ -43,10 +43,10 @@ if not RESET_NUMBERS_MODE:
         voting_numbers = {int(row[head.index(num_row)]): int(row[head.index(voting_number_row)]) for row in reader if row[head.index(voting_number_row)]}
 
 
-def set_number(r, request, target_voting_number):
-    already_ok = request['voting_number'] == int(target_voting_number)
+def set_number(r, request, target_voting_number, force=False):
+    already_ok = not force and request['voting_number'] == target_voting_number
     action_symbol = '==' if already_ok else '->'
-    print('https://%s.cosplay2.ru/orgs/requests/request/%s | %d %s %s' % (event_name, request['id'], request['voting_number'], action_symbol, target_voting_number))
+    print('https://%s.cosplay2.ru/orgs/requests/request/%s | %s %s %s' % (event_name, request['id'], request['voting_number'], action_symbol, target_voting_number))
     if not already_ok:
         r.request(api.save_data_POST, {"field": "voting_number", "request_id": request['id'], "data": target_voting_number})
 
@@ -59,9 +59,12 @@ r = Requester(a.cookie)
 
 if RESET_NUMBERS_MODE:
     for i, num in enumerate(requests.keys()):
+        print('[', i+1, '/', len(requests), ']', end=" ")
+        set_number(r, requests[num], '', True)
+    for i, num in enumerate(requests.keys()):
         req = requests[num]
         print('[', i+1, '/', len(requests), ']', end=" ")
-        set_number(r, req, str(num))
+        set_number(r, req, str(num), True)
 else:
     for i, (num, v_num) in enumerate(voting_numbers.items()):
         req = requests[num]
