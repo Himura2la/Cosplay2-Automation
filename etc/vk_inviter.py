@@ -1,5 +1,5 @@
 import vk              # pip install --upgrade vk
-from PIL import Image  # pip install --upgrade Pillow
+from PIL import Image,ImageTk  # pip install --upgrade Pillow
 import urllib.request
 from io import BytesIO
 import tkinter as tk
@@ -15,15 +15,32 @@ class Application(tk.Frame):
         super().__init__(master)
         self.master = master
         self.pack()
+        self.canvas = tk.Canvas(master, width=130, height=50) 
+        self.canvas.pack()
+
+        self.captcha_code = tk.Entry(master)
+        self.captcha_code.pack()
+
+        self.captcha_submitted = tk.BooleanVar()
+        self.master.bind('<Return>', self.submit_captcha)
+        self.master.bind('<KP_Enter>', self.submit_captcha)
 
         self.inv = Inviter(self.token)
         self.inv.collect_members(None, True)
         self.inv.invite_all(self.target_group, self.input_captcha)
 
     def input_captcha(self, img):
-        
-        return ""
+        tk_image = ImageTk.PhotoImage(img)
+        image_on_canvas = self.canvas.create_image(0, 0, anchor=tk.NW, image=tk_image)
+        self.canvas.itemconfig(image_on_canvas, image=tk_image)
+        self.captcha_code.delete(0, 'end')
+        self.captcha_code.focus()
+        self.wait_variable(self.captcha_submitted)
+        self.captcha_submitted.set(False)
+        return self.captcha_code.get()
 
+    def submit_captcha(self, _):
+        self.captcha_submitted.set(True)
 
 class Inviter(object):
     vk_api_v = '5.126'
@@ -53,6 +70,7 @@ class Inviter(object):
                 else:
                     print(invite_response)
             except vk.exceptions.VkAPIError as e:
+                print(e.message)
                 if e.code == e.CAPTCHA_NEEDED:
                     with urllib.request.urlopen(e.captcha_img) as f:
                         img_bytes = f.read()
@@ -60,11 +78,10 @@ class Inviter(object):
                     captcha_code = input_captcha(img)
                     pass # todo
                 if e.code == 6:  # Too many requests per second
-                    print(e.message)
-                    sleep(0.5)
+                    sleep(1)
                     self.invite_member(i, user, target_group, retry_count + 1)
                 else:
-                    print(e.message)
+                    pass
 
     def collect_members(self, source_group, add_friends=True):
         self.members_to_invite = []
