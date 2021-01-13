@@ -6,10 +6,13 @@ import tkinter as tk
 from time import sleep
 
 class Application(tk.Frame):
-    # https://oauth.vk.com/authorize?v=5.126&response_type=token&display=page&redirect_uri=https://oauth.vk.com/blank.html&scope=friends,groups&client_id=6707298
+    vk_api_v = '5.126'
+    # https://oauth.vk.com/authorize?v=5.126&response_type=token&display=page&redirect_uri=https://oauth.vk.com/blank.html&scope=friends,groups&client_id=7727805
     token = ""
     source_group = "tulaanimefest"
     target_group = "yuki_no_odori_10"
+    add_friends = False
+    start_at = 0
 
     def __init__(self, master=None):
         super().__init__(master)
@@ -25,9 +28,10 @@ class Application(tk.Frame):
         self.master.bind('<Return>', self.submit_captcha)
         self.master.bind('<KP_Enter>', self.submit_captcha)
 
-        self.inv = Inviter(self.token)
-        self.inv.collect_members(None, True)
-        self.inv.invite_all(self.target_group, self.input_captcha)
+        self.inv = Inviter(self.vk_api_v, self.token)
+        self.inv.collect_members(self.source_group, self.add_friends)
+        self.inv.invite_all(self.target_group, self.input_captcha, self.start_at)
+        self.master.destroy()
 
     def input_captcha(self, img):
         tk_image = ImageTk.PhotoImage(img)
@@ -43,28 +47,27 @@ class Application(tk.Frame):
         self.captcha_submitted.set(True)
 
 class Inviter(object):
-    vk_api_v = '5.126'
-
-    def __init__(self, access_token):
+    def __init__(self, vk_api_v, access_token):
         self.VK = vk.API(vk.Session(access_token=access_token))
+        self.vk_api_v = vk_api_v
 
-    def invite_all(self, target_group, input_captcha, skip_first=0):
+    def invite_all(self, target_group, input_captcha, start_at=0):
         target_group = self.VK.groups.getById(v=self.vk_api_v, group_id=target_group, fields='id')[0]
 
         for i, user in enumerate(self.members_to_invite.items()):
-            if i < skip_first:
+            if i < start_at:
                 continue
             self.invite_member(i, user, target_group, input_captcha)
-            #sleep(0.3)
+            sleep(0.34)
 
-    def invite_member(self, i, user, target_group, input_captcha, retry_count=0):
+    def invite_member(self, i, user, target_group, input_captcha, retry_count=0, captcha_sid=None, captcha_key=None):
             user_id, user_info = user
-            print(f'[ {i}/{len(self.members_to_invite)} | {user_info["first_name"]} {user_info["last_name"]} ]', end=' ', flush=True)
-            if retry_count > 2:
+            print(f'[ {i}/{len(self.members_to_invite) - 1} | {user_info["first_name"]} {user_info["last_name"]} ]', end=' ', flush=True)
+            if retry_count > 3:
                 print('Too many retries, giving up')
                 return False
             try:
-                invite_response = self.VK.groups.invite(v=self.vk_api_v, group_id=target_group['id'], user_id=user_id)
+                invite_response = self.VK.groups.invite(v=self.vk_api_v, group_id=target_group['id'], user_id=user_id, captcha_sid=captcha_sid, captcha_key=captcha_key)
                 if invite_response == 1:
                     print(f'Invited to "{target_group["name"]}"')
                 else:
@@ -75,11 +78,11 @@ class Inviter(object):
                     with urllib.request.urlopen(e.captcha_img) as f:
                         img_bytes = f.read()
                     img = Image.open(BytesIO(img_bytes))
-                    captcha_code = input_captcha(img)
-                    pass # todo
+                    captcha_key = input_captcha(img)
+                    self.invite_member(i, user, target_group, input_captcha, retry_count + 1, e.captcha_sid, captcha_key)
                 if e.code == 6:  # Too many requests per second
                     sleep(1)
-                    self.invite_member(i, user, target_group, retry_count + 1)
+                    self.invite_member(i, user, target_group, input_captcha, retry_count + 1)
                 else:
                     pass
 
@@ -103,9 +106,5 @@ class Inviter(object):
                 break
         return accumulator
 
-
 app = Application(master=tk.Tk())
 app.mainloop()
-
-
-
