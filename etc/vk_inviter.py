@@ -1,4 +1,7 @@
-import vk              # pip install --upgrade vk
+#!/usr/bin/env python3
+# Author: Himura Kazuto <himura@tulafest.ru>
+
+import vk                      # pip install --upgrade vk
 from PIL import Image,ImageTk  # pip install --upgrade Pillow
 import urllib.request
 from io import BytesIO
@@ -16,8 +19,8 @@ class Application(tk.Frame):
 
     def __init__(self, master=None):
         super().__init__(master)
-        self.master = master
         self.pack()
+
         self.canvas = tk.Canvas(master, width=130, height=50) 
         self.canvas.pack()
 
@@ -25,15 +28,16 @@ class Application(tk.Frame):
         self.captcha_code.pack()
 
         self.captcha_submitted = tk.BooleanVar()
-        self.master.bind('<Return>', self.submit_captcha)
-        self.master.bind('<KP_Enter>', self.submit_captcha)
+        master.bind('<Return>', self.submit_captcha)
+        master.bind('<KP_Enter>', self.submit_captcha)
 
-        self.inv = Inviter(self.vk_api_v, self.token)
-        self.inv.collect_members(self.source_group, self.add_friends)
-        self.inv.invite_all_members(self.target_group, self.input_captcha, self.start_at)
-        self.master.destroy()
+        inv = Inviter(self.vk_api_v, self.token, self.solve_captcha)
+        inv.collect_members(self.source_group, self.add_friends)
+        inv.invite_all_members(self.target_group, self.start_at)
 
-    def input_captcha(self, img):
+        master.destroy()
+
+    def solve_captcha(self, img):
         tk_image = ImageTk.PhotoImage(img)
         image_on_canvas = self.canvas.create_image(0, 0, anchor=tk.NW, image=tk_image)
         self.canvas.itemconfig(image_on_canvas, image=tk_image)
@@ -48,9 +52,10 @@ class Application(tk.Frame):
 
 
 class Inviter(object):
-    def __init__(self, vk_api_v, access_token):
+    def __init__(self, vk_api_v, access_token, solve_captcha_function):
         self.VK = vk.API(vk.Session(access_token=access_token))
         self.vk_api_v = vk_api_v
+        self.solve_captcha_function = solve_captcha_function
 
     def collect_members(self, source_group, add_friends=True):
         self.members_to_invite = []
@@ -67,23 +72,16 @@ class Inviter(object):
         self.members_to_invite = sorted(self.members_to_invite, key=lambda x: x['id'])
         self.members_to_invite = {user_info['id']: user_info for user_info in self.members_to_invite}
 
-    def invite_all_members(self, target_group, solve_captcha_function, start_at=0):
+    def invite_all_members(self, target_group, start_at=0):
         target_group = self.VK.groups.getById(v=self.vk_api_v, group_id=target_group, fields='id')[0]
 
         for i, user in enumerate(self.members_to_invite.items()):
             if i < start_at:
                 continue
-            self.__invite_member(i, user, target_group, solve_captcha_function)
+            self.__invite_member(i, user, target_group)
             sleep(0.34)
 
-    def __invite_member(self,
-                        i,
-                        user,
-                        target_group,
-                        solve_captcha_function,
-                        retry_count=0,
-                        captcha_sid=None,
-                        captcha_key=None):
+    def __invite_member(self, i, user, target_group, retry_count=0, captcha_sid=None, captcha_key=None):
             user_id, user_info = user
             print(f'[ {i}/{len(self.members_to_invite) - 1} | {user_info["first_name"]} {user_info["last_name"]} ]', end=' ', flush=True)
             if retry_count > 3:
@@ -104,11 +102,11 @@ class Inviter(object):
                 if e.code == e.CAPTCHA_NEEDED:
                     with urllib.request.urlopen(e.captcha_img) as f:
                         img_bytes = f.read()
-                    captcha_key = solve_captcha_function(Image.open(BytesIO(img_bytes)))
-                    self.__invite_member(i, user, target_group, solve_captcha_function, retry_count + 1, e.captcha_sid, captcha_key)
+                    captcha_key = self.solve_captcha_function(Image.open(BytesIO(img_bytes)))
+                    self.__invite_member(i, user, target_group, retry_count + 1, e.captcha_sid, captcha_key)
                 if e.code == 6:  # Too many requests per second
                     sleep(1)
-                    self.__invite_member(i, user, target_group, solve_captcha_function, retry_count + 1)
+                    self.__invite_member(i, user, target_group, retry_count + 1)
                 else:
                     pass
 
