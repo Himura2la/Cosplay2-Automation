@@ -1,54 +1,23 @@
 #!/usr/bin/env python3
 # Author: Himura Kazuto <himura@tulafest.ru>
 
-import vk                      # pip install --upgrade vk
-from PIL import Image,ImageTk  # pip install --upgrade Pillow
-import urllib.request
-from io import BytesIO
-import tkinter as tk
 from time import sleep
+from io import BytesIO
+from urllib.request import urlopen
+from PIL import Image, ImageTk  # pip install --upgrade Pillow
+import vk                       # pip install --upgrade vk
+import tkinter as tk
 
-class Application(tk.Frame):
-    vk_api_v = '5.126'
-    # https://oauth.vk.com/authorize?v=5.126&response_type=token&display=page&redirect_uri=https://oauth.vk.com/blank.html&scope=friends,groups&client_id=7727805
-    token = ""
-    source_group = "tulaanimefest"
-    target_group = "yuki_no_odori_10"
-    add_friends = False
-    start_at = 0
 
-    def __init__(self, master=None):
-        super().__init__(master)
-        self.pack()
+vk_api_v = '5.126'
+# https://oauth.vk.com/authorize?v=5.126&response_type=token&display=page&redirect_uri=https://oauth.vk.com/blank.html&scope=friends,groups&client_id=7728992
+# Never commit your token!!!
+token = ""
 
-        self.canvas = tk.Canvas(master, width=130, height=50) 
-        self.canvas.pack()
-
-        self.captcha_code = tk.Entry(master)
-        self.captcha_code.pack()
-
-        self.captcha_submitted = tk.BooleanVar()
-        master.bind('<Return>', self.submit_captcha)
-        master.bind('<KP_Enter>', self.submit_captcha)
-
-        inv = Inviter(self.vk_api_v, self.token, self.solve_captcha)
-        inv.collect_members(self.source_group, self.add_friends)
-        inv.invite_all_members(self.target_group, self.start_at)
-
-        master.destroy()
-
-    def solve_captcha(self, img):
-        tk_image = ImageTk.PhotoImage(img)
-        image_on_canvas = self.canvas.create_image(0, 0, anchor=tk.NW, image=tk_image)
-        self.canvas.itemconfig(image_on_canvas, image=tk_image)
-        self.captcha_code.delete(0, 'end')
-        self.captcha_code.focus()
-        self.wait_variable(self.captcha_submitted)
-        self.captcha_submitted.set(False)
-        return self.captcha_code.get()
-
-    def submit_captcha(self, _):
-        self.captcha_submitted.set(True)
+source_group = "tulaanimefest"
+target_group = "yuki_no_odori_10"
+add_friends = True
+start_at = 0
 
 
 class Inviter(object):
@@ -98,17 +67,15 @@ class Inviter(object):
                 else:
                     print(invite_response)
             except vk.exceptions.VkAPIError as e:
-                print(e.message)
+                print(f'{e.message} (code {e.code})')
                 if e.code == e.CAPTCHA_NEEDED:
-                    with urllib.request.urlopen(e.captcha_img) as f:
+                    with urlopen(e.captcha_img) as f:
                         img_bytes = f.read()
                     captcha_key = self.solve_captcha_function(Image.open(BytesIO(img_bytes)))
                     self.__invite_member(i, user, target_group, retry_count + 1, e.captcha_sid, captcha_key)
                 if e.code == 6:  # Too many requests per second
                     sleep(1)
                     self.__invite_member(i, user, target_group, retry_count + 1)
-                else:
-                    pass
 
     @staticmethod
     def __massive_collect(api_function, **params):
@@ -120,4 +87,38 @@ class Inviter(object):
                 break
         return accumulator
 
-Application(master=tk.Tk()).mainloop()
+
+class CaptchaManualSolver(tk.Frame):
+    def __init__(self, master):
+        super().__init__(master)
+        self.pack()
+
+        self.canvas = tk.Canvas(master, width=130, height=50) 
+        self.canvas.pack()
+
+        self.key_input = tk.Entry(master)
+        self.key_input.pack()
+
+        self.captcha_submitted = tk.BooleanVar()
+        master.bind('<Return>', self.__submit_captcha)
+        master.bind('<KP_Enter>', self.__submit_captcha)
+
+    def solve_captcha(self, img):
+        tk_image = ImageTk.PhotoImage(img)
+        image_on_canvas = self.canvas.create_image(0, 0, anchor=tk.NW, image=tk_image)
+        self.canvas.itemconfig(image_on_canvas, image=tk_image)
+        self.key_input.delete(0, 'end')
+        self.key_input.focus()
+        self.wait_variable(self.captcha_submitted)
+        self.captcha_submitted.set(False)
+        return self.key_input.get()
+
+    def __submit_captcha(self, _):
+        self.captcha_submitted.set(True)
+
+
+manual_solver = CaptchaManualSolver(master=tk.Tk())
+inviter = Inviter(vk_api_v, token, manual_solver.solve_captcha)
+inviter.collect_members(source_group, add_friends)
+inviter.invite_all_members(target_group, start_at)
+print("Done!")
