@@ -5,8 +5,8 @@ comment = """
 Вашей заявке присвоен номер {} по программе (выступление в блоке {})! Конечный вариант программы фестиваля уже ВК!
 """.strip()  # --------------------------------------------- 1 SMS ->|      --------- 2 SMS with "YnO9, заявка 000: " ->|
 target = "status = 'approved' and default_duration > 0"
-email = True
-sms = True
+email = False
+sms = False
 
 
 from lib.authenticator import Authenticator
@@ -28,7 +28,7 @@ with sqlite3.connect(db_path, isolation_level=None) as db:
     c.execute(f"""
         SELECT DISTINCT
             requests.id,
-	        '[' || status || '] ' || IFNULL(list.card_code || ' ' || voting_number, '№ ' || requests.number) || IFNULL('. ' || voting_title, user_title) AS details,
+	        '[' || status || '] ' || IFNULL(list.card_code || ' ' || voting_number, '№ ' || requests.number) || IFNULL('. ' || voting_title, user_title) AS details
         FROM requests, list, [values]
         WHERE topic_id = list.id
           AND request_id = requests.id
@@ -53,7 +53,8 @@ try:
     for request_id, details in target_requests:
         voting_number = details.split('] ', 1)[1].split('. ', 1)[0]
         ready_comment = comment.format(voting_number, voting_number.split(' ', 1)[1][0])
-        if not r.request(api.add_comment_POST, {"request_id": request_id, "comment": ready_comment, "email": email, "sms": sms}):
+        data = {"request_id": request_id, "comment": ready_comment, "email": email, "sms": sms}
+        if not r.request(api.add_comment_POST, data):
             raise Exception("Maybe you ran out of SMS money...")
         print(f'✔️ {details} ({api.request_url(request_id)})')
         print(ready_comment)
