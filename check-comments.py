@@ -42,6 +42,8 @@ for request_id, details in target_requests:
     response = r.request(api.get_comments_POST, {"request_id": request_id})
     try:
         comments = response['comments']
+        if (len(comments) == 0):
+            continue
         last_comment = comments[-1]
         if int(last_comment['user_id']) in org_user_ids:
             if show_org_comments:
