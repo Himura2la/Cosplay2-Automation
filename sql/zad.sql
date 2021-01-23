@@ -1,12 +1,11 @@
 SELECT 
     number as '№',
 	card_code ||' '|| voting_number as num,
-	IFNULL(list.title||' / '||nom, list.title) as nom,
-	IFNULL(team||': '||nicks, nicks) as 'Участник',
+	ifnull(list.title||' / '||nom, list.title) as nom,
+	CASE ifnull(length(team),0) WHEN 0 THEN nicks ELSE 'Косбэнд '||team||': '||nicks END as 'Участник',
 	fandom as 'Фэндом/OST',
 	cahrs as 'Персоонажи/Исполнитель',
 	item_title as 'Название',
-	cahrs||' - '||item_title as track,
 	cities
 
 FROM list, requests

@@ -73,7 +73,7 @@ for target_dir in target_dirs:
 
         req_code = f'{card_code}~{voting_number}'
         authors = f'{nicks}~({"косбэнд " if not re.search("косб[эе]нд", team, re.I) else ""}{team})' if team else nicks
-        authors += f'~({cities})'
+        authors += f'.~{cities}' if team else f'~({cities})'
         if other_authors_nicks or other_authors_teams:
             authors += f'. Фотограф{"ы" if "," in other_authors_nicks or other_authors_teams else ""}:~'
             authors += f'{other_authors_nicks}~(команда~{other_authors_teams})' if other_authors_teams else other_authors_nicks
@@ -91,12 +91,14 @@ for target_dir in target_dirs:
                             .replace(r'&', r'\&')\
                             .replace(r'_', r'\_')\
                             .replace(r'^', r'\^{}')
+                            .replace(r"'", r'\textquotesingle')
         else:
             texcode_landscape += '\n\\imglandscape' + '\n    '
             texcode_landscape += chunk.replace('\\', ' \\textbackslash ')\
                             .replace(r'&', r'\&')\
                             .replace(r'_', r'\_')\
                             .replace(r'^', r'\^{}')
+                            .replace(r"'", r'\textquotesingle')
 
 open(tex_path + '-landscape.tex', 'w', encoding='utf-8').write(texcode_landscape)
 open(tex_path + '-portrait.tex', 'w', encoding='utf-8').write(texcode_portrait)
