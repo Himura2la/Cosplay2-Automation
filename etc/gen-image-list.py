@@ -3,14 +3,14 @@ import csv
 import re
 import shutil
 
-csv_path = r"C:\Users\himura\Desktop\zad_alpha.csv"
+csv_path = r"D:\Clouds\YandexDisk\Fests\Yuki no Odori 10\design\Zad\zad_data.csv"
 num_row = '№'
-target_csv_path = r"C:\Users\himura\Desktop\zad_alpha_img.csv"
+target_csv_path = r"D:\Clouds\YandexDisk\Fests\Yuki no Odori 10\design\Zad\zad_data_img.csv"
 
 img_dir = r'D:\Events\Yuki no Odori 10\zad_img'
 id_regex = re.compile(r'№(\d{1,3})\.jpg')
 
-empty_img_path = r'D:\Events\Yuki no Odori 10\Yuno_2021.png'
+empty_img_path = r'D:\Clouds\YandexDisk\Fests\Yuki no Odori 10\design\Zad\Yuno_2021-small.png'
 empty_img_path = os.path.abspath(empty_img_path) if empty_img_path else ''
 
 move_used_to = 'used'
@@ -21,7 +21,7 @@ if move_used_to:
     if not os.path.isdir(used_dir):
         os.mkdir(used_dir)
 
-with open(csv_path, 'r', encoding='utf-8') as f:
+with open(csv_path, 'r', encoding='utf-16') as f:
     reader = csv.reader(f)
     head = reader.__next__()
     data = {int(row[head.index(num_row)]): row for row in reader}

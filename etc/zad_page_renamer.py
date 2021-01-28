@@ -5,21 +5,21 @@ import re
 import csv
 
 
-tracks_dir = r'D:\Clouds\YandexDisk\Fests\Yuki no Odori 9\Fest\Tracks'
+tracks_dir = r'D:\Clouds\YandexDisk\Fests\Yuki no Odori 10\Fest\Tracks'
 tracks_filenames_num_regex = r'№(\d{1,3})'
 
-pages_dir = r'D:\Clouds\YandexDisk\Fests\Yuki no Odori 9\Zad\zad'
+pages_dir = r'D:\Clouds\YandexDisk\Fests\Yuki no Odori 10\design\Zad\zad'
 pages_filenames_page_regex = r'(\d{1,3})$'
 
-page_to_num_csv = r"D:\Clouds\YandexDisk\Fests\Yuki no Odori 9\Zad\zad_rename.csv"
+page_to_num_csv = r"D:\Clouds\YandexDisk\Fests\Yuki no Odori 10\design\Zad\zad_data_img.csv"
 page_col, num_col = 'page', '№'
 
-no_op = bool(1)
+no_op = bool(0)
 
 src_files = os.listdir(tracks_dir)
 num_to_name = {re.search(tracks_filenames_num_regex, name).group(1): name.rsplit('.', 1)[0] for name in src_files if re.search(tracks_filenames_num_regex, name)}
 
-with open(page_to_num_csv, 'r', encoding='utf-8') as f:
+with open(page_to_num_csv, 'r', encoding='utf-16') as f:
     reader = csv.reader(f)
     head = reader.__next__()
     page_to_num = {row[head.index(page_col)]: row[head.index(num_col)] for row in reader if row}

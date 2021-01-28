@@ -55,7 +55,7 @@ LEFT JOIN (	SELECT request_id as it_rid, value as item_title FROM [values]
 WHERE
 	list.id = topic_id
 	AND status != 'disapproved'
-	AND default_duration > 0
+	AND (default_duration > 0 OR card_code IN ('V', 'VC'))
 
 GROUP BY voting_number
 ORDER BY voting_number
