@@ -3,14 +3,14 @@ import csv
 import re
 import shutil
 
-csv_path = r"D:\Clouds\YandexDisk\Fests\Yuki no Odori 9\Zad\zad_adapted_to_font.csv"
+csv_path = r"C:\Users\himura\Desktop\zad_alpha.csv"
 num_row = '№'
-target_csv_path = r'D:\Clouds\YandexDisk\Fests\Yuki no Odori 9\Zad\zad_img.csv'
+target_csv_path = r"C:\Users\himura\Desktop\zad_alpha_img.csv"
 
-img_dir = r'D:\Fests Local\Yuki no Odori 9\zad_img'
+img_dir = r'D:\Events\Yuki no Odori 10\zad_img'
 id_regex = re.compile(r'№(\d{1,3})\.jpg')
 
-empty_img_path = r'D:\Clouds\YandexDisk\Fests\Yuki no Odori 9\Zad\Yuno_2020_2_Tepl_Sv.png'
+empty_img_path = r'D:\Events\Yuki no Odori 10\Yuno_2021.png'
 empty_img_path = os.path.abspath(empty_img_path) if empty_img_path else ''
 
 move_used_to = 'used'

@@ -10,13 +10,6 @@ import sqlite3
 from yaml import load, FullLoader
 from time import sleep
 
-
-# -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
-# WARNING: AUTO-NUMBERER IS ENABLED FOR tulafest !!!!
-#      Disable it before meaningful numbering
-# -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
-
-
 RESET_NUMBERS_MODE = True
 num_row = 'num'
 voting_number_row = 'voting_number'
