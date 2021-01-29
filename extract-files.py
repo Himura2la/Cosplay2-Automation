@@ -23,7 +23,7 @@ num_title_splitter = '. '
 nums_in_filenames = False
 
 skip_card_codes = 'AND card_code NOT IN (%s)' % ','.join([f'"{cc}"' for cc in config['not_scene_card_codes']]) \
-                    if 'not_scene_card_codes' in config else 'AND default_duration > 0'
+                    if 'not_scene_card_codes' in config else "AND (default_duration > 0 OR card_code in ('V', 'VC'))"
 
 sql_queery = f"""
 SELECT 
@@ -136,6 +136,7 @@ for dirpath, dirnames, filenames in os.walk(input_dir):
             missing_files -= {num}
             new_filename = f"{code}. {name}.{ext}"
             if os.path.exists(os.path.join(output_dir, new_filename)):
+                continue
                 rep += 1
                 new_filename = f"{code}. {name} ({rep}).{ext}"
 
