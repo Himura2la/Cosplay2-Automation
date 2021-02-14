@@ -47,6 +47,15 @@
 мне очень мешало то, что я вспомнил про **JOIN** не сразу и по-началу городил **CREATE TEMP TABLE AS SELECT**...
 * Про остальное лень рассказывать, вам это скорее всего не нужно.
 
+
+# Virtual Environment
+
+```
+python3 -m venv .venv
+. .venv/bin/activate
+pip install --upgrade PyYAML tabulate youtube-dl vk
+```
+
 # Как запускать
 * Cкопировать `config.yml.example` в `config.yml` и отредактировать под себя. Там есть комментарии.
 * Создать папку `домен_фестиваля`, указать её в конфиге

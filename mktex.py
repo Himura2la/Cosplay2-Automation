@@ -4,11 +4,10 @@
 import os
 import re
 import sqlite3
-from yaml import load, FullLoader
+from lib.config import read_config
 from PIL import Image  # pip install Pillow
 
-config = load(
-    open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.yml'), 'r', encoding='utf-8').read(), Loader=FullLoader)
+config = read_config()
 db_path = config['db_path']
 tex_path = 'D:\\Git\\Cosplay2-Exhibition\\images'
 fest_path = 'D:\\Temp'

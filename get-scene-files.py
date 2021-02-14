@@ -3,10 +3,10 @@
 # Author: Himura Kazuto <himura@tulafest.ru>
 
 import os
-from yaml import load, FullLoader
+from lib.config import read_config
 from lib.downloader import Downloader
 
-config = load(open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.yml'), 'r', encoding='utf-8').read(), Loader=FullLoader)
+config = read_config()
 db_path = config['db_path']
 folder_path = config['folder_path']
 

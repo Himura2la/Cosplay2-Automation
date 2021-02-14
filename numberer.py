@@ -1,20 +1,20 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-from lib.authenticator import Authenticator
-from lib.api import Cosplay2API, Requester
-
 import os
 import csv
 import sqlite3
-from yaml import load, FullLoader
 from time import sleep
+
+from lib.authenticator import Authenticator
+from lib.api import Cosplay2API, Requester
+from lib.config import read_config
 
 RESET_NUMBERS_MODE = True
 num_row = 'num'
 voting_number_row = 'voting_number'
 
-config = load(open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.yml'), 'r', encoding='utf-8').read(), Loader=FullLoader)
+config = read_config()
 db_path = config['db_path']
 event_name = config["event_name"]
 api = Cosplay2API(event_name)

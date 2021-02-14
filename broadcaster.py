@@ -15,9 +15,9 @@ import os
 import csv
 import sqlite3
 from time import sleep
-from yaml import load, FullLoader
+from lib.config import read_config
 
-config = load(open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.yml'), 'r', encoding='utf-8').read(), Loader=FullLoader)
+config = read_config()
 db_path, event_name = config['db_path'], config['event_name']
 c2_login, c2_password = config['admin_cs2_name'], config['admin_cs2_password'] if 'admin_cs2_password' in config else None
 api = Cosplay2API(event_name)

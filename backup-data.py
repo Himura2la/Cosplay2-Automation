@@ -4,17 +4,15 @@
 
 from datetime import datetime
 import os
-from yaml import load, FullLoader  # pip install pyyaml
 
+from lib.config import read_config
 from lib.authenticator import Authenticator
 from lib.fetcher import Fetcher
 from lib.make_db import MakeDB
 from lib.validator import Validator
 
 if __name__ == '__main__':
-    script_dir = os.path.dirname(os.path.realpath(__file__))
-    config = load(open(os.path.join(script_dir, 'config.yml'), 'r', encoding='utf-8').read(), Loader=FullLoader)
-
+    config = read_config()
     event_name = config['event_name']
     c2_login = config['admin_cs2_name']
     c2_password = config['admin_cs2_password'] if 'admin_cs2_password' in config else None
