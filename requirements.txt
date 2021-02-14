@@ -4,3 +4,4 @@ youtube-dl
 Pillow
 vk
 Send2Trash
+matplotlib

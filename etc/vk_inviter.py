@@ -6,18 +6,6 @@ from io import BytesIO
 from urllib.request import urlopen
 from PIL import Image, ImageTk  # pip install --upgrade Pillow
 import vk                       # pip install --upgrade vk
-import tkinter as tk
-
-
-vk_api_v = '5.126'
-# https://oauth.vk.com/authorize?v=5.126&response_type=token&display=page&redirect_uri=https://oauth.vk.com/blank.html&scope=friends,groups&client_id=7728992
-# Never commit your token!!!
-token = ""
-
-source_group = "tulaanimefest"
-target_group = "yuki_no_odori_10"
-add_friends = True
-start_at = 0
 
 
 class Inviter(object):
@@ -117,8 +105,26 @@ class CaptchaManualSolver(tk.Frame):
         self.captcha_submitted.set(True)
 
 
-manual_solver = CaptchaManualSolver(master=tk.Tk())
-inviter = Inviter(vk_api_v, token, manual_solver.solve_captcha)
-inviter.collect_members(source_group, add_friends)
-inviter.invite_all_members(target_group, start_at)
-print("Done!")
+
+if __name__ == '__main__':
+    import os
+    from yaml import load, FullLoader
+    import tkinter as tk
+
+    root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+    config = load(
+        open(os.path.join(root_dir, 'config.yml'), 'r', encoding='utf-8').read(),
+        Loader=FullLoader)
+    vk_token = config['vk_token']
+    vk_api_v = config['vk_api_v']
+
+    source_group = config['inviter_source_group']
+    target_group = config['inviter_target_group']
+    add_friends = config['inviter_add_friends']
+    start_at = config['inviter_start_at']
+
+    manual_solver = CaptchaManualSolver(master=tk.Tk())
+    inviter = Inviter(vk_api_v, vk_token, manual_solver.solve_captcha)
+    inviter.collect_members(source_group, add_friends)
+    inviter.invite_all_members(target_group, start_at)
+    print("Done!")

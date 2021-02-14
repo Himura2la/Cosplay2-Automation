@@ -1,3 +1,5 @@
+from yaml import load, FullLoader
+import os
 import vk
 
 request = """
@@ -31,8 +33,13 @@ portrait_thumb_size = 'o'
 landscape_thumb_size = 'p'
 full_size = 'w'
 
-# https://oauth.vk.com/authorize?v=5.85&response_type=token&display=page&redirect_uri=https://oauth.vk.com/blank.html&scope=friends,groups,photos&client_id=6707298
-session = vk.Session(access_token='82e0c904abee2984ba77c971e8ab9a5b259823c8e1486c48b01123d9e47be59c99588f9622513a535885b')
+root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+config = load(
+    open(os.path.join(root_dir, 'config.yml'), 'r', encoding='utf-8').read(),
+    Loader=FullLoader)
+vk_token = config['vk_token']
+
+session = vk.Session(access_token=vk_token)
 VK = vk.API(session)
 photos = ",".join(request.replace('https://vk.com/photo', '').split())
 response = VK.photos.getById(v='5.85', photos=photos)
