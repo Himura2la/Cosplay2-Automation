@@ -19,7 +19,7 @@ if __name__ == '__main__':
     db_path = config['db_path']
     sql = config['sql_after_get'].strip() if 'sql_after_get' in config else None
 
-    all_data = True # len(sys.argv) > 1 and sys.argv[1] == '-a'
+    all_data = len(sys.argv) > 1 and sys.argv[1] == '-a'
 
     a = Authenticator(event_name, c2_login, c2_password)
     if not a.sign_in():
