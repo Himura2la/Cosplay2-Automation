@@ -1,23 +1,17 @@
 import os
 import re
-from random import randrange
+
+path = r"/media/data/Temp/AnyWayFest/zad_img"
+reqs = {'66': '301','64': '304','65': '307','63': '310','22': '313','35': '316','49': '319','67': '322','75': '325','17': '328','05': '331','20': '334','33': '337','53': '340','54': '343','57': '346','58': '349','01': '352','76': '355','02': '358','03': '361','06': '364','04': '367','10': '370','12': '373','14': '376','13': '379','16': '382','26': '385','07': '388','29': '391','28': '394','30': '397','32': '400','42': '403','71': '406','72': '409','38': '412','36': '415','60': '418','69': '421','40': '424','43': '427','51': '430','52': '433','78': '436','74': '439','55': '442','24': '445','25': '448','47': '451','15': '454','31': '457','68': '460','21': '463','34': '466','37': '469','56': '472','59': '475','70': '478','50': '481','45': '484','44': '487','41': '490','27': '493','11': '496','39': '499','46': '502','48': '505','77': '508','61': '511','08': '514','09': '517','23': '520','73': '523','18': '526','19': '529','62': '532'}
+pattern = re.compile(r"^(\d{2})(\. .+)")
 
 def replacer(match):
-    return match.string.replace(f"{match[1]}.", f"{139 + int(match[2])}.")
+    return reqs[match[1]] + match[2]
 
 
-for dirpath, dirnames, filenames in os.walk(r"/media/data/Events/Gakko 12/Gakko_Выступающие/135. №0-10 (Сценка (с микрофонами) КВН)"):
-    for filename in filenames:
-        old_filename = filename
-        print(filename)
-        # filename = re.sub(r"^(\d{1}\.)", r"00\1", filename)
-        # filename = re.sub(r"^(\d{2}\.)", r"0\1", filename)
-
-        # filename = re.sub(r"^0(\d{2})", r"\1", filename)
-        # filename = '%03d. %s' % (randrange(100), filename)
-
-        filename = re.sub(r"^(\d{3}).*Трек (\d{3}).*", replacer, filename)
-
-        print(filename + '\n')
-
-        os.rename(os.path.join(dirpath, old_filename), os.path.join(dirpath, filename))
+for dirpath, dirnames, filenames in os.walk(path):
+    for old_filename in filenames:
+        print(old_filename)
+        new_filename = re.sub(pattern, replacer, old_filename)
+        print(new_filename + '\n')
+        os.rename(os.path.join(dirpath, old_filename), os.path.join(dirpath, new_filename))
