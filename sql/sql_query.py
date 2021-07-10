@@ -8,7 +8,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("sql", help='Path to an SQL request to run')
 parser.add_argument("-o", help='File to save the result into')
-parser.add_argument("--format", help='Output format. Possible values: "long" (default)', default='long')
+parser.add_argument("--format", help='Output format. Possible values: "long" (default), "short"', default='long')
 args = parser.parse_args()
 
 long_col = 'text'
@@ -36,27 +36,24 @@ with sqlite3.connect(db_path, isolation_level=None) as db:
 
 result_txt = ""
 
-if args.format == 'long':
-    long_i = headers.index(long_col) if long_col in headers else None
-    for record in result:
-        if not record[1]:
-            continue
-        if long_i:
-            result_txt += f"{os.linesep}{os.linesep}## "
-            for i, field in enumerate(headers):
-                if i != long_i:
-                    fmt = field_format[field] if field in field_format \
-                                                else last_field_format if i >= len(headers) - 2 \
-                                                else default_field_format
-                    result_txt += fmt % record[i]
-            result_txt += f"{os.linesep}{record[long_i]}"
-        else:
-            for i, field in enumerate(headers):
-                result_txt += f"{field}: {record[i]}{os.linesep}"
-        result_txt = result_txt.replace('\\n', os.linesep)
-        result_txt += os.linesep
-
-# if args.format == 'TODO':
+long_i = headers.index(long_col) if long_col in headers else None
+for record in result:
+    if not record[1]:
+        continue
+    if long_i:
+        result_txt += f"{os.linesep}{os.linesep}## "
+        for i, field in enumerate(headers):
+            if i != long_i:
+                fmt = field_format[field] if field in field_format \
+                                            else last_field_format if i >= len(headers) - 2 \
+                                            else default_field_format
+                result_txt += fmt % record[i]
+        result_txt += f"{os.linesep}{record[long_i]}"
+    else:
+        for i, field in enumerate(headers):
+            result_txt += f"{(field + ': ') if args.format == 'long' else ''}{record[i]}{os.linesep}"
+    result_txt = result_txt.replace('\\n', os.linesep)
+    result_txt += os.linesep
 
 print(result_txt)
 
