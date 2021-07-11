@@ -4,8 +4,7 @@ SELECT
 	ifnull(list.title||' / '||nom, list.title) as nom,
 	CASE ifnull(length(team),0) WHEN 0 THEN nicks ELSE 'Косбэнд '||team||': '||nicks END as 'Участник',
 	fandom as 'Фэндом/OST',
-	cahrs as 'Персоонажи/Исполнитель',
-	item_title as 'Название',
+	chars || ifnull(' - '||item_title,'') as 'Персонажи/Название',
 	cities
 
 FROM list, requests
@@ -34,7 +33,7 @@ LEFT JOIN (	SELECT request_id as f_rid, value as fandom FROM [values]
 			WHERE title LIKE 'Фэндом%' OR title = 'OST (необязательно)')
 	ON f_rid = requests.id
 
-LEFT JOIN (	SELECT request_id as ch_rid, REPLACE(GROUP_CONCAT(DISTINCT value), ',', ', ') as cahrs FROM [values] 
+LEFT JOIN (	SELECT request_id as ch_rid, REPLACE(GROUP_CONCAT(DISTINCT value), ',', ', ') as chars FROM [values] 
 			WHERE (title in ('Имя персонажа','Персонаж') OR title LIKE 'Исполнитель%')
 			  AND section_title NOT LIKE 'Изображени%'
 			  AND section_title NOT LIKE 'Фотографии%'
