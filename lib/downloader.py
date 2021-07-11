@@ -202,6 +202,8 @@ class Downloader:
 
     @staticmethod
     def to_filename(string):
+        if not string:
+            return string
         filename = string.replace('й', '<икраткое>').replace('Й', '<ИКРАТКОЕ>')\
                          .replace('ё', '<ио>')      .replace('Ё', '<ИО>')
         filename = unicodedata.normalize('NFD', filename).encode('cp1251', 'replace').decode('cp1251')

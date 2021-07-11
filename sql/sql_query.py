@@ -51,7 +51,8 @@ for record in result:
         result_txt += f"{os.linesep}{record[long_i]}"
     else:
         for i, field in enumerate(headers):
-            result_txt += f"{(field + ': ') if args.format == 'long' else ''}{record[i]}{os.linesep}"
+            if record[i]:
+                result_txt += f"{(field + ': ') if args.format == 'long' else ''}{record[i]}{os.linesep}"
     result_txt = result_txt.replace('\\n', os.linesep)
     result_txt += os.linesep
 

@@ -10,7 +10,7 @@ from lib.authenticator import Authenticator
 from lib.api import Cosplay2API, Requester
 from lib.config import read_config
 
-RESET_NUMBERS_MODE = True
+RESET_NUMBERS_MODE = False
 num_row = 'num'
 voting_number_row = 'voting_number'
 
@@ -42,7 +42,7 @@ def set_number(r, request, target_voting_number, force=False):
     print('https://%s.cosplay2.ru/orgs/requests/request/%s | %s %s %s' % (event_name, request['id'], request['voting_number'], action_symbol, target_voting_number))
     if not already_ok:
         r.request(api.save_data_POST, {"field": "voting_number", "request_id": request['id'], "data": target_voting_number})
-
+        pass
 
 a = Authenticator(event_name, c2_login, c2_password)
 if not a.sign_in():
@@ -59,6 +59,10 @@ if RESET_NUMBERS_MODE:
         print('[', i+1, '/', len(requests), ']', end=" ")
         set_number(r, req, str(num), True)
 else:
+    for i, (num, v_num) in enumerate(voting_numbers.items()):
+        req = requests[num]
+        print('[', i+1, '/', len(voting_numbers), ']', end=" ")
+        set_number(r, req, '', True)
     for i, (num, v_num) in enumerate(voting_numbers.items()):
         req = requests[num]
         print('[', i+1, '/', len(voting_numbers), ']', end=" ")
