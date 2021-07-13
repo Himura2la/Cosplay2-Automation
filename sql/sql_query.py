@@ -38,8 +38,7 @@ result_txt = ""
 
 long_i = headers.index(long_col) if long_col in headers else None
 for record in result:
-    if not record[1]:
-        continue
+
     if long_i:
         result_txt += f"{os.linesep}{os.linesep}## "
         for i, field in enumerate(headers):
