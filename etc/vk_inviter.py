@@ -4,6 +4,8 @@
 from time import sleep
 from io import BytesIO
 from urllib.request import urlopen
+
+import tkinter as tk            # sudo apt install python3-tk
 from PIL import Image, ImageTk  # pip install --upgrade Pillow
 import vk                       # pip install --upgrade vk
 
@@ -109,7 +111,6 @@ class CaptchaManualSolver(tk.Frame):
 if __name__ == '__main__':
     import os
     from yaml import load, FullLoader
-    import tkinter as tk
 
     root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
     config = load(
