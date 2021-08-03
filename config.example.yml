@@ -121,7 +121,6 @@ numberer_table_path: 'C:\Users\glago\Desktop\voting_numbers.csv'
 
 # https://oauth.vk.com/authorize?v=5.126&response_type=token&display=page&redirect_uri=https://oauth.vk.com/blank.html&scope=friends,groups&client_id=7728992
 vk_token: ''
-vk_api_v: 5.126
 
 inviter_source_group: 'tulaanimefest'
 inviter_target_group: 'yuki_no_odori_10'

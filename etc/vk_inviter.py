@@ -6,14 +6,14 @@ from io import BytesIO
 from urllib.request import urlopen
 
 import tkinter as tk            # sudo apt install python3-tk
-from PIL import Image, ImageTk  # pip install --upgrade Pillow
-import vk                       # pip install --upgrade vk
+from PIL import Image, ImageTk  # pip install --user --upgrade Pillow
+import vk                       # pip install --user --upgrade vk
 
 
 class Inviter(object):
-    def __init__(self, vk_api_v, access_token, solve_captcha_function):
+    def __init__(self, access_token, solve_captcha_function):
         self.VK = vk.API(vk.Session(access_token=access_token))
-        self.vk_api_v = vk_api_v
+        self.vk_api_v = 5.126
         self.solve_captcha_function = solve_captcha_function
 
     def collect_members(self, source_group, add_friends=True):
@@ -117,7 +117,6 @@ if __name__ == '__main__':
         open(os.path.join(root_dir, 'config.yml'), 'r', encoding='utf-8').read(),
         Loader=FullLoader)
     vk_token = config['vk_token']
-    vk_api_v = config['vk_api_v']
 
     source_group = config['inviter_source_group']
     target_group = config['inviter_target_group']
@@ -125,7 +124,7 @@ if __name__ == '__main__':
     start_at = config['inviter_start_at']
 
     manual_solver = CaptchaManualSolver(master=tk.Tk())
-    inviter = Inviter(vk_api_v, vk_token, manual_solver.solve_captcha)
+    inviter = Inviter(vk_token, manual_solver.solve_captcha)
     inviter.collect_members(source_group, add_friends)
     inviter.invite_all_members(target_group, start_at)
     print("Done!")
