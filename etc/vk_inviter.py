@@ -13,7 +13,7 @@ import vk                       # pip install --user --upgrade vk
 class Inviter(object):
     def __init__(self, access_token, solve_captcha_function):
         self.VK = vk.API(vk.Session(access_token=access_token))
-        self.vk_api_v = 5.126
+        self.vk_api_v = '5.126'
         self.solve_captcha_function = solve_captcha_function
 
     def collect_members(self, source_group, add_friends=True):
