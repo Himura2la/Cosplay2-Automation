@@ -5,9 +5,11 @@ from time import sleep
 from io import BytesIO
 from urllib.request import urlopen
 
-import tkinter as tk            # sudo apt install python3-tk
-from PIL import Image, ImageTk  # pip install --user --upgrade Pillow
-import vk                       # pip install --user --upgrade vk
+# sudo apt install python3-tk
+# pip install --user --upgrade PyYAML Pillow vk
+import tkinter as tk
+from PIL import Image, ImageTk
+import vk
 
 
 class Inviter(object):
