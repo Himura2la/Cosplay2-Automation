@@ -1,11 +1,13 @@
+import base64
 import os
 import sys
 import shutil
 from argparse import ArgumentParser
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
+from base64 import b64decode
 
-cookie_var = 'NUCLINO_AUTH_COOKIE'
+cookie_var = 'NUCLINO_AUTH_COOKIE_BASE64'
 
 
 def get_backup(cookie, workspace_id, zip_path):
@@ -32,4 +34,4 @@ if __name__ == "__main__":
         print(f'error: the {cookie_var} environment variable is required.', file=sys.stderr)
         exit(1)
     
-    get_backup(os.environ[cookie_var], args.workspace_id, args.out_path)
+    get_backup(b64decode(os.environ[cookie_var]).decode(), args.workspace_id, args.out_path)

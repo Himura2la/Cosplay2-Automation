@@ -3,6 +3,7 @@ from getpass import getpass
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 from json import dumps
+from base64 import b64encode
 
 
 def get_cookie(email):
@@ -22,4 +23,4 @@ def get_cookie(email):
         return None
 
 
-print(get_cookie(input('email: ')))
+print(b64encode(get_cookie(input('email: ')).encode()).decode())
