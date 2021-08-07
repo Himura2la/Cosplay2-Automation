@@ -26,8 +26,8 @@ def get_backup(cookie, workspace_id, zip_path):
 
 if __name__ == "__main__":
     parser = ArgumentParser(description='Nuclino workspace downloader')
-    parser.add_argument('workspace-id', help='UUID from the EXPORT WORKSPACE link.')
-    parser.add_argument('out-path', help='Path where to save the downloaded zip.')
+    parser.add_argument('workspace_id', help='UUID from the EXPORT WORKSPACE link.')
+    parser.add_argument('out_path', help='Path where to save the downloaded zip.')
     args = parser.parse_args(sys.argv[1:])
 
     if cookie_var not in os.environ:
