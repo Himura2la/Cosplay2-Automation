@@ -81,11 +81,12 @@ class Inviter(object):
 
 
 class CaptchaManualSolver(tk.Frame):
-    def __init__(self, master):
+    def __init__(self, master, img_size):
         super().__init__(master)
         self.pack()
 
-        self.canvas = tk.Canvas(master, width=130, height=50) 
+        self.img_size = img_size
+        self.canvas = tk.Canvas(master, width=img_size[0], height=img_size[1]) 
         self.canvas.pack()
 
         self.key_input = tk.Entry(master)
@@ -95,7 +96,8 @@ class CaptchaManualSolver(tk.Frame):
         master.bind('<Return>', self.__submit_captcha)
         master.bind('<KP_Enter>', self.__submit_captcha)
 
-    def solve_captcha(self, img):
+    def solve_captcha(self, img: Image):
+        img = img.resize(self.img_size, Image.ANTIALIAS)
         tk_image = ImageTk.PhotoImage(img)
         image_on_canvas = self.canvas.create_image(0, 0, anchor=tk.NW, image=tk_image)
         self.canvas.itemconfig(image_on_canvas, image=tk_image)
@@ -120,12 +122,14 @@ if __name__ == '__main__':
         Loader=FullLoader)
     vk_token = config['vk_token']
 
+    captcha_scale_factor = 3
     source_group = config['inviter_source_group']
     target_group = config['inviter_target_group']
     add_friends = config['inviter_add_friends']
     start_at = config['inviter_start_at']
 
-    manual_solver = CaptchaManualSolver(master=tk.Tk())
+    captcha_size = (130*captcha_scale_factor, 50*captcha_scale_factor)
+    manual_solver = CaptchaManualSolver(tk.Tk(), captcha_size)
     inviter = Inviter(vk_token, manual_solver.solve_captcha)
     inviter.collect_members(source_group, add_friends)
     inviter.invite_all_members(target_group, start_at)
