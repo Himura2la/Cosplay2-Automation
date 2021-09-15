@@ -13,10 +13,13 @@ import vk
 
 
 class Inviter(object):
-    def __init__(self, access_token, solve_captcha_function):
+    def __init__(self, access_token, solve_captcha_function, captchas_dir=None):
         self.VK = vk.API(vk.Session(access_token=access_token))
-        self.vk_api_v = '5.126'
         self.solve_captcha_function = solve_captcha_function
+        self.captchas_dir = captchas_dir
+
+        self.vk_api_v = '5.126'
+        self.members_to_invite = dict()
 
     def collect_members(self, source_group, add_friends=True):
         self.members_to_invite = []
@@ -36,35 +39,50 @@ class Inviter(object):
     def invite_all_members(self, target_group, start_at=0):
         target_group = self.VK.groups.getById(v=self.vk_api_v, group_id=target_group, fields='id')[0]
 
+        if self.captchas_dir:
+            os.makedirs(self.captchas_dir, exist_ok=True)
+
         for i, user in enumerate(self.members_to_invite.items()):
             if i < start_at:
                 continue
             self.__invite_member(i, user, target_group)
             sleep(0.34)
 
-    def __invite_member(self, i, user, target_group, retry_count=0, captcha_sid=None, captcha_key=None):
+    def __dump(self, captcha):
+        captcha['img'].save(os.path.join(self.captchas_dir, captcha['key'] + '.jpg'))
+
+    def __invite_member(self, i, user, target_group, retry_count=0, captcha=None):
             user_id, user_info = user
             print(f'[ {i}/{len(self.members_to_invite) - 1} | {user_info["first_name"]} {user_info["last_name"]} ]', end=' ', flush=True)
             if retry_count > 3:
                 print(f'Too many retries ({retry_count}), giving up')
                 return False
             try:
-                invite_response = self.VK.groups.invite(v=self.vk_api_v,
-                                                        group_id=target_group['id'],
-                                                        user_id=user_id,
-                                                        captcha_sid=captcha_sid,
-                                                        captcha_key=captcha_key)
-                if invite_response == 1:
-                    print(f'Invited to "{target_group["name"]}"')
-                else:
-                    print(invite_response)
+                try:
+                    invite_response = self.VK.groups.invite(v=self.vk_api_v,
+                                                            group_id=target_group['id'],
+                                                            user_id=user_id,
+                                                            captcha_sid=captcha['sid'] if captcha else None,
+                                                            captcha_key=captcha['key'] if captcha else None)
+                    if captcha:
+                        self.__dump(captcha)
+                    if invite_response == 1:
+                        print(f'Invited to "{target_group["name"]}"')
+                    else:
+                        print(invite_response)
+                except vk.exceptions.VkAPIError as e:
+                    if captcha and e.code != e.CAPTCHA_NEEDED:
+                        self.__dump(captcha)
+                    raise e
             except vk.exceptions.VkAPIError as e:
                 print(f'{e.message} (code {e.code})')
                 if e.code == e.CAPTCHA_NEEDED:
                     with urlopen(e.captcha_img) as f:
                         img_bytes = f.read()
-                    captcha_key = self.solve_captcha_function(Image.open(BytesIO(img_bytes)))
-                    self.__invite_member(i, user, target_group, retry_count + 1, e.captcha_sid, captcha_key)
+                    captcha_img = Image.open(BytesIO(img_bytes))
+                    captcha_key = self.solve_captcha_function(captcha_img)
+                    captcha = {'sid': e.captcha_sid, 'img': captcha_img, 'key': captcha_key}
+                    self.__invite_member(i, user, target_group, retry_count + 1, captcha)
                 if e.code == 6:  # Too many requests per second
                     sleep(1)
                     self.__invite_member(i, user, target_group, retry_count + 1)
@@ -128,9 +146,24 @@ if __name__ == '__main__':
     add_friends = config['inviter_add_friends']
     start_at = config['inviter_start_at']
 
+    captchas_dir_name = 'vk_captchas'
+    if os.name == 'posix':
+        home_dir = os.path.expanduser('~')
+        home_dir_desc = f'в "{home_dir}"'
+    else:
+        home_dir = os.path.join(os.environ['USERPROFILE'], 'Desktop') 
+        home_dir_desc = 'на рабочий стол'
+    captchas_dir = os.path.join(home_dir, captchas_dir_name)
+
     captcha_size = (130*captcha_scale_factor, 50*captcha_scale_factor)
     manual_solver = CaptchaManualSolver(tk.Tk(), captcha_size)
-    inviter = Inviter(vk_token, manual_solver.solve_captcha)
+    inviter = Inviter(vk_token, manual_solver.solve_captcha, captchas_dir)
     inviter.collect_members(source_group, add_friends)
     inviter.invite_all_members(target_group, start_at)
-    print("Done!")
+
+    print('\nГотово! Мы сохранили все введённые Вами капчи ' +
+         f'{home_dir_desc} в папку "{captchas_dir_name}". ' + 
+          'Если Вы хотите поспособствовать разработке автоматического ' + 
+          'распознавателя капчи, заархивируйте эту папку и скиньте Химуре ' +
+          '(например, в телегу: https://t.me/Himura_Kazuto). ' + 
+          'Если нет, то можно просто её удалить :(')
