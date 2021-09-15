@@ -3,12 +3,12 @@ import csv
 import re
 import shutil
 
-csv_path = r"D:\Clouds\YandexDisk\Fests\Yuki no Odori 10\design\Zad\zad_data.csv"
-num_row = '№'
-target_csv_path = r"D:\Clouds\YandexDisk\Fests\Yuki no Odori 10\design\Zad\zad_data_img.csv"
+csv_path = r"C:\Users\himura\Desktop\zad-data.csv"
+num_row = 'file'
+target_csv_path = r"C:\Users\himura\Desktop\zad-data-img.csv"
 
-img_dir = r'D:\Events\Yuki no Odori 10\zad_img'
-id_regex = re.compile(r'№(\d{1,3})\.jpg')
+img_dir = r'C:\Users\himura\Desktop\Fest\Images'
+id_regex = re.compile(r'^(\d{1,3})')
 
 empty_img_path = r'D:\Clouds\YandexDisk\Fests\Yuki no Odori 10\design\Zad\Yuno_2021-small.png'
 empty_img_path = os.path.abspath(empty_img_path) if empty_img_path else ''
@@ -21,7 +21,7 @@ if move_used_to:
     if not os.path.isdir(used_dir):
         os.mkdir(used_dir)
 
-with open(csv_path, 'r', encoding='utf-16') as f:
+with open(csv_path, 'r', encoding='utf-8') as f:
     reader = csv.reader(f)
     head = reader.__next__()
     data = {int(row[head.index(num_row)]): row for row in reader}
@@ -70,7 +70,7 @@ for row in data:
 # from tabulate import tabulate
 # print(tabulate(data))
 
-with open(target_csv_path, 'w', encoding='utf-16', newline='') as f:
+with open(target_csv_path, 'w', encoding='utf-8', newline='') as f:
     w = csv.writer(f, delimiter=',', quotechar='"')
     w.writerow(head + ["@img%d-path" % (i+1) for i in range(rows_added)] + ["no-img-warning"])
     w.writerows(data)
