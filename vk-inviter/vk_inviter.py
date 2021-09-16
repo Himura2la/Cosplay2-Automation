@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 # Author: Himura Kazuto <himura@tulafest.ru>
 
 from time import sleep
@@ -54,8 +55,8 @@ class Inviter(object):
     def __invite_member(self, i, user, target_group, retry_count=0, captcha=None):
             user_id, user_info = user
             print(f'[ {i}/{len(self.members_to_invite) - 1} | {user_info["first_name"]} {user_info["last_name"]} ]', end=' ', flush=True)
-            if retry_count > 3:
-                print(f'Too many retries ({retry_count}), giving up')
+            if retry_count > 4:
+                print(f'Слишком много попыток ({retry_count}), забиваем и идём дальше...')
                 return False
             try:
                 try:
@@ -67,7 +68,7 @@ class Inviter(object):
                     if captcha:
                         self.__dump(captcha)
                     if invite_response == 1:
-                        print(f'Invited to "{target_group["name"]}"')
+                        print(f'Приглашён в "{target_group["name"]}"')
                     else:
                         print(invite_response)
                 except vk.exceptions.VkAPIError as e:
@@ -75,7 +76,7 @@ class Inviter(object):
                         self.__dump(captcha)
                     raise e
             except vk.exceptions.VkAPIError as e:
-                print(f'{e.message} (code {e.code})')
+                print(f'{e.message} (ошибка {e.code})')
                 if e.code == e.CAPTCHA_NEEDED:
                     with urlopen(e.captcha_img) as f:
                         img_bytes = f.read()
