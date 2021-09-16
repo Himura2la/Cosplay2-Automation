@@ -26,7 +26,7 @@ if ($Clean) {
 if ($Compile) {
     & py -m PyInstaller --specpath ./build ./vk_inviter.py
     Remove-Item -Recurse -Force ./build, ./__pycache__
-    '"%~dp0vk_inviter\vk_inviter.exe"' | Out-File "Приглашатор.bat" -Encoding Ascii
+    "@echo off`r`n`"%~dp0vk_inviter\vk_inviter.exe`"" | Out-File "./dist/Приглашатор.bat" -Encoding Ascii
     $didSomething = $true
 }
 
