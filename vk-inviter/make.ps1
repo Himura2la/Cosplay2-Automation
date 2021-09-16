@@ -20,13 +20,17 @@ if ($InstallPyInstaller) {
     $didSomething = $true
 }
 if ($Clean) {
-    Remove-Item -Recurse -Force ./dist
+    Remove-Item -Recurse -ErrorAction Ignore ./dist
     $didSomething = $true
 }
 if ($Compile) {
     & py -m PyInstaller --specpath ./build ./vk_inviter.py
-    Remove-Item -Recurse -Force ./build, ./__pycache__
-    "@echo off`r`n`"%~dp0vk_inviter\vk_inviter.exe`"" | Out-File "./dist/Приглашатор.bat" -Encoding Ascii
+    Remove-Item -Recurse -ErrorAction Ignore ./build, ./__pycache__
+    Remove-Item './dist/vk_inviter/MSVCP140.dll', `
+                './dist/vk_inviter/VCRUNTIME140.dll', `
+                './dist/vk_inviter/api-ms-*'
+    "@echo off`r`n`"%~dp0vk_inviter\vk_inviter.exe`"" | Out-File ./dist/Приглашатор.bat -Encoding Ascii
+    Compress-Archive ./dist/* "./dist/vk_inviter-win64-$(Get-Date -Format 'yyMMddHHmm').zip"
     $didSomething = $true
 }
 
