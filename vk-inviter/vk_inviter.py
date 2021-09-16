@@ -6,8 +6,6 @@ from time import sleep
 from io import BytesIO
 from urllib.request import urlopen
 
-# sudo apt install python3-tk
-# pip install --user --upgrade PyYAML Pillow vk
 import tkinter as tk
 from PIL import Image, ImageTk
 import vk
