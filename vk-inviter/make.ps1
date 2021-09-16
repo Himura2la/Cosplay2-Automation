@@ -1,6 +1,7 @@
 param (
     [switch] $InstallRequirements,
     [switch] $InstallPyInstaller,
+    [switch] $Clean,
     [switch] $Compile
 )
 Set-Location $PSScriptRoot
@@ -18,9 +19,14 @@ if ($InstallPyInstaller) {
     & py -m pip install --user --upgrade pyinstaller
     $didSomething = $true
 }
+if ($Clean) {
+    Remove-Item -Recurse -Force ./dist
+    $didSomething = $true
+}
 if ($Compile) {
-    & py -m PyInstaller --onefile --specpath ./build ./vk_inviter.py
-    Remove-Item -Recurse ./build, ./__pycache__
+    & py -m PyInstaller --specpath ./build ./vk_inviter.py
+    Remove-Item -Recurse -Force ./build, ./__pycache__
+    '"%~dp0vk_inviter\vk_inviter.exe"' | Out-File "Приглашатор.bat" -Encoding Ascii
     $didSomething = $true
 }
 

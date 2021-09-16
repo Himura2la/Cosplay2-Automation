@@ -126,3 +126,4 @@ inviter_source_group: 'tulaanimefest'
 inviter_target_group: 'yuki_no_odori_10'
 inviter_add_friends: True
 inviter_start_at: 0
+inviter_captcha_scale_factor: 3
