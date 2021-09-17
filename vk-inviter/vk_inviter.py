@@ -5,6 +5,8 @@
 from time import sleep
 from io import BytesIO
 from urllib.request import urlopen
+from traceback import print_exc
+from requests.exceptions import RequestException
 
 import tkinter as tk
 from PIL import Image, ImageTk
@@ -63,8 +65,6 @@ class Inviter(object):
                                                             user_id=user_id,
                                                             captcha_sid=captcha['sid'] if captcha else None,
                                                             captcha_key=captcha['key'] if captcha else None)
-                    if captcha:
-                        self.__dump(captcha)
                     if invite_response == 1:
                         print(f'Приглашён в "{target_group["name"]}"')
                     else:
@@ -73,6 +73,8 @@ class Inviter(object):
                     if captcha and e.code != e.CAPTCHA_NEEDED:
                         self.__dump(captcha)
                     raise e
+                if captcha:
+                    self.__dump(captcha)
             except vk.exceptions.VkAPIError as e:
                 print(f'{e.message} (ошибка {e.code})')
                 if e.code == e.CAPTCHA_NEEDED:
@@ -85,6 +87,12 @@ class Inviter(object):
                 if e.code == 6:  # Too many requests per second
                     sleep(1)
                     self.__invite_member(i, user, target_group, retry_count + 1)
+            except RequestException as e:
+                print_exc()
+                input("\nКакие-то проблемы с Интернетом!\n" +
+                      "Проверьте, что Интернет работает и нажмите Enter для продолжения...\n")
+                self.__invite_member(i, user, target_group, retry_count + 1)
+
 
     @staticmethod
     def __massive_collect(api_function, **params):
@@ -194,7 +202,7 @@ inviter_captcha_scale_factor: 3
                 f'вот здесь:\n\n{config_path}\n\nСейчас файл настроек должен был открыться ' +
                 'рядом в программе Блокнот.\n\nПожалуйста,\nотредактируйте файл настроек,\n' + 
                 'сохраните его,\nзакройте блокнот (это окно закроется вместе с ним),\n' + 
-                'и запустите Приглашатор ещё раз.')
+                'и запустите Приглашатор ещё раз.\n')
             call(['notepad', config_path])
             exit(1)
 
@@ -226,7 +234,7 @@ inviter_captcha_scale_factor: 3
                 f'{e.message} (ошибка {e.code})\n\n' +
                 'Пожалуйста,\nзамените vk_token в открытом файле настроек,\n' +
                 'сохраните его,\nзакройте блокнот (это окно закроется вместе с ним),\n' +
-                'и запустите Приглашатор ещё раз.')
+                'и запустите Приглашатор ещё раз.\n')
             call(['notepad', config['__file_path']])
             exit(1)
 
@@ -239,10 +247,16 @@ inviter_captcha_scale_factor: 3
             '(например, в телегу: https://t.me/Himura_Kazuto).\n' + 
             'Если нет, то можно просто её удалить :(')
 
+except RequestException as e:
+    print_exc()
+    input("\nКакие-то проблемы с Интернетом!\n" +
+          "Проверьте, что Интернет работает и попробуйте ещё раз...\n")
+    exit(1)
+
 except Exception as e:
-    import traceback
-    print("К сожалению, произошла неведомая фигня.\nВот немного технических деталей...\n" +
-          "пожалуйста, свяжитесь с Химурой (например, в телеге: https://t.me/Himura_Kazuto), " + 
-          "и покажите ему это..\n")
-    traceback.print_exc()
-    input("\nПрограмма закроется, если нажать Enter. Больше она уже ничего не умеет...")
+    print_exc()
+    input("\nК сожалению, произошла неведомая фигня. Выше есть немного технических деталей...\n" +
+          "Пожалуйста, свяжитесь с Химурой (например, в телеге: https://t.me/Himura_Kazuto), " + 
+          "и покажите ему это...\n" +
+          "Программа закроется, если нажать Enter. Больше она уже ничего не умеет...\n")
+    exit(1)
