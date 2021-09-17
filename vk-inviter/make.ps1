@@ -1,30 +1,27 @@
 param (
-    [switch] $InstallRequirements,
-    [switch] $InstallPyInstaller,
+    [switch] $Init,
     [switch] $Clean,
     [switch] $Compile
 )
 Set-Location $PSScriptRoot
 $didSomething = $false
 
-if ($InstallRequirements -or $InstallPyInstaller) {
-    & py -m pip install --user --upgrade pip
-}
-if ($InstallRequirements) {
-    & py -m pip install --user --upgrade -r ./requirements.txt
-    # The 'python3-tk' package is also required on Linux.
+if ($Init) {
+    & py -m venv ./.venv
+    . ./.venv/Scripts/Activate.ps1
+
+    & ./.venv/Scripts/python -m pip install --upgrade pip
+    & ./.venv/Scripts/python -m pip install --upgrade -r ./requirements.txt
+    & ./.venv/Scripts/python -m pip install --upgrade pyinstaller
     $didSomething = $true
 }
-if ($InstallPyInstaller) {
-    & py -m pip install --user --upgrade pyinstaller
-    $didSomething = $true
-}
+
 if ($Clean) {
     Remove-Item -Recurse -ErrorAction Ignore ./dist
     $didSomething = $true
 }
 if ($Compile) {
-    & py -m PyInstaller --specpath ./build ./vk_inviter.py
+    & ./.venv/Scripts/pyinstaller --specpath ./build ./vk_inviter.py
     Remove-Item -Recurse -ErrorAction Ignore ./build, ./__pycache__
     Remove-Item './dist/vk_inviter/MSVCP140.dll', `
                 './dist/vk_inviter/VCRUNTIME140.dll', `
