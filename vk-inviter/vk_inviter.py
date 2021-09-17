@@ -135,14 +135,21 @@ class CaptchaManualSolver(tk.Frame):
     def __submit_captcha(self, _):
         self.captcha_submitted.set(True)
 
-try:
-    if __name__ == '__main__':
+
+if __name__ == '__main__':
+    try:
         import os
         from sys import exit
         from subprocess import call
         from yaml import load, FullLoader
 
-        base_config = """
+
+        def get_captchas_path():
+            home_dir = os.path.expanduser('~') if os.name == 'posix' \
+                            else os.path.join(os.environ['USERPROFILE'], 'Desktop')
+            return os.path.join(home_dir, 'vk_captchas')
+
+        base_config = f"""
 # Это настройки Приглашатора.
 # Данный файл можно открывать и редактировать программой "Блокнот".
 
@@ -182,6 +189,12 @@ inviter_start_at: 0
 # В процессе рассылки, Вам придётся много вводить капчу. Капча очень маленькая,
 # и для удобства будет увеличиваться в указанное здесь число раз.
 inviter_captcha_scale_factor: 3
+
+# Мы сохраним все введённые Вами капчи в эту папку.
+# Если Вы хотите поспособствовать разработке автоматического распознавателя капчи,
+# заархивируйте эту папку и скиньте Химуре (например, в телегу: https://t.me/Himura_Kazuto).
+# Если нет, то можно просто её удалить :(
+inviter_solved_captchas_path: "{get_captchas_path()}"
 """
 
         def load_config():
@@ -200,9 +213,9 @@ inviter_captcha_scale_factor: 3
             config_path = os.path.realpath(config_path)
             print('Добро пожаловать в Приглашатор! Мы не нашли файл с настройками и создали его ' + 
                 f'вот здесь:\n\n{config_path}\n\nСейчас файл настроек должен был открыться ' +
-                'рядом в программе Блокнот.\n\nПожалуйста,\nотредактируйте файл настроек,\n' + 
-                'сохраните его,\nзакройте блокнот (это окно закроется вместе с ним),\n' + 
-                'и запустите Приглашатор ещё раз.\n')
+                'рядом в программе Блокнот.\n\nПожалуйста,\n  отредактируйте файл настроек,\n' + 
+                '  сохраните его,\n  закройте блокнот (это окно закроется вместе с ним),\n' + 
+                '  и запустите Приглашатор ещё раз.\n')
             call(['notepad', config_path])
             exit(1)
 
@@ -214,15 +227,8 @@ inviter_captcha_scale_factor: 3
         add_friends = config['inviter_add_friends']
         start_at = config['inviter_start_at']
         captcha_scale_factor = config['inviter_captcha_scale_factor']
+        captchas_dir = config['inviter_solved_captchas_path']
 
-        captchas_dir_name = 'vk_captchas'
-        if os.name == 'posix':
-            home_dir = os.path.expanduser('~')
-            home_dir_desc = f'в "{home_dir}"'
-        else:
-            home_dir = os.path.join(os.environ['USERPROFILE'], 'Desktop') 
-            home_dir_desc = 'на рабочий стол'
-        captchas_dir = os.path.join(home_dir, captchas_dir_name)
 
         captcha_size = (130*captcha_scale_factor, 50*captcha_scale_factor)
         manual_solver = CaptchaManualSolver(tk.Tk(), captcha_size)
@@ -230,33 +236,33 @@ inviter_captcha_scale_factor: 3
         try:
             inviter.collect_members(source_group, add_friends)
         except vk.exceptions.VkAPIError as e:
-            print('Похоже, что токен не работает... Вот, что про него говорит ВК:\n\n' + 
+            print('Похоже, токен не работает... Вот что про него говорит ВК:\n\n' + 
                 f'{e.message} (ошибка {e.code})\n\n' +
-                'Пожалуйста,\nзамените vk_token в открытом файле настроек,\n' +
-                'сохраните его,\nзакройте блокнот (это окно закроется вместе с ним),\n' +
-                'и запустите Приглашатор ещё раз.\n')
+                'Пожалуйста,\n  замените vk_token в открытом файле настроек,\n' +
+                '  сохраните его,\n  закройте блокнот (это окно закроется вместе с ним),\n' +
+                '  и запустите Приглашатор ещё раз.\n')
             call(['notepad', config['__file_path']])
             exit(1)
 
         inviter.invite_all_members(target_group, start_at)
 
         print('\nГотово! Мы сохранили все введённые Вами капчи ' +
-            f'{home_dir_desc} в папку "{captchas_dir_name}".\n\n' + 
+            f'в папку "{captchas_dir}".\n\n' + 
             'Если Вы хотите поспособствовать разработке автоматического ' + 
             'распознавателя капчи, заархивируйте эту папку и скиньте Химуре ' +
             '(например, в телегу: https://t.me/Himura_Kazuto).\n' + 
             'Если нет, то можно просто её удалить :(')
 
-except RequestException as e:
-    print_exc()
-    input("\nКакие-то проблемы с Интернетом!\n" +
-          "Проверьте, что Интернет работает и попробуйте ещё раз...\n")
-    exit(1)
+    except RequestException as e:
+        print_exc()
+        input("\nКакие-то проблемы с Интернетом!\n" +
+            "Проверьте, что Интернет работает и попробуйте ещё раз...\n")
+        exit(1)
 
-except Exception as e:
-    print_exc()
-    input("\nК сожалению, произошла неведомая фигня. Выше есть немного технических деталей...\n" +
-          "Пожалуйста, свяжитесь с Химурой (например, в телеге: https://t.me/Himura_Kazuto), " + 
-          "и покажите ему это...\n" +
-          "Программа закроется, если нажать Enter. Больше она уже ничего не умеет...\n")
-    exit(1)
+    except Exception as e:
+        print_exc()
+        input("\nК сожалению, произошла неведомая фигня. Выше есть немного технических деталей...\n" +
+            "Пожалуйста, свяжитесь с Химурой (например, в телеге: https://t.me/Himura_Kazuto), " + 
+            "и покажите ему это...\n" +
+            "Программа закроется, если нажать Enter. Больше она уже ничего не умеет...\n")
+        exit(1)
