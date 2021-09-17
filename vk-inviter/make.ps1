@@ -20,7 +20,9 @@ if ($Clean) {
     Remove-Item -Recurse -ErrorAction Ignore ./dist
     $didSomething = $true
 }
+
 if ($Compile) {
+    . ./.venv/Scripts/Activate.ps1
     & ./.venv/Scripts/pyinstaller --specpath ./build ./vk_inviter.py
     Remove-Item -Recurse -ErrorAction Ignore ./build, ./__pycache__
     Remove-Item './dist/vk_inviter/MSVCP140.dll', `
