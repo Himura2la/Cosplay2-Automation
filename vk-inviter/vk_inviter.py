@@ -109,6 +109,7 @@ class CaptchaManualSolver(tk.Frame):
     def __init__(self, master, img_size):
         super().__init__(master)
         self.pack()
+        self.master = master
 
         self.img_size = img_size
         self.canvas = tk.Canvas(master, width=img_size[0], height=img_size[1]) 
@@ -120,6 +121,8 @@ class CaptchaManualSolver(tk.Frame):
         self.captcha_submitted = tk.BooleanVar()
         master.bind('<Return>', self.__submit_captcha)
         master.bind('<KP_Enter>', self.__submit_captcha)
+        master.withdraw()
+        
 
     def solve_captcha(self, img: Image):
         img = img.resize(self.img_size, Image.ANTIALIAS)
@@ -127,7 +130,12 @@ class CaptchaManualSolver(tk.Frame):
         image_on_canvas = self.canvas.create_image(0, 0, anchor=tk.NW, image=tk_image)
         self.canvas.itemconfig(image_on_canvas, image=tk_image)
         self.key_input.delete(0, 'end')
+        
+        self.master.deiconify()
+        self.master.lift()
+        self.master.focus_force()
         self.key_input.focus()
+        
         self.wait_variable(self.captcha_submitted)
         self.captcha_submitted.set(False)
         return self.key_input.get()
