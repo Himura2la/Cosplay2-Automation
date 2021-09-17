@@ -121,6 +121,8 @@ class CaptchaManualSolver(tk.Frame):
         self.captcha_submitted = tk.BooleanVar()
         master.bind('<Return>', self.__submit_captcha)
         master.bind('<KP_Enter>', self.__submit_captcha)
+
+        master.attributes('-topmost', True)
         master.withdraw()
         
 
@@ -132,7 +134,6 @@ class CaptchaManualSolver(tk.Frame):
         self.key_input.delete(0, 'end')
         
         self.master.deiconify()
-        self.master.lift()
         self.master.focus_force()
         self.key_input.focus()
         
