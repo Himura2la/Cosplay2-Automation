@@ -1,21 +1,27 @@
 from yaml import load, FullLoader
 import os
 import vk
+from urllib import request
+from tempfile import mkdtemp
+import webbrowser
 
-request = """
-https://vk.com/photo-20362122_456247361
-https://vk.com/photo-20362122_456247227
-https://vk.com/photo-20362122_456247327
+# https://tulafest11.cosplay2.ru/orgs/setup/design
+fest_id = 695
 
-https://vk.com/photo-20362122_456247659
-https://vk.com/photo341040003_456241782
-https://vk.com/photo-20362122_456246755
+photos = """
+https://vk.com/photo-20362122_457250238
+https://vk.com/photo-20362122_457248898
+https://vk.com/photo-20362122_456247664
 
-https://vk.com/photo-20362122_456246414
-https://vk.com/photo-20362122_456247281
+https://vk.com/photo-20362122_456240113
+https://vk.com/photo-20362122_457248700
+https://vk.com/photo-20362122_456244737
 
-https://vk.com/photo-20362122_456247630
-https://vk.com/photo-20362122_456246396
+https://vk.com/photo-20362122_456239614
+https://vk.com/photo-20362122_457250237
+
+https://vk.com/photo-20362122_456240089
+https://vk.com/photo-20362122_457249979
 """
 
 # m: 87 x 130
@@ -41,11 +47,13 @@ vk_token = config['vk_token']
 
 session = vk.Session(access_token=vk_token)
 VK = vk.API(session)
-photos = ",".join(request.replace('https://vk.com/photo', '').split())
+photos = ",".join(photos.replace('https://vk.com/photo', '').split())
 response = VK.photos.getById(v='5.85', photos=photos)
 
 portrait_count, landscape_count = 0, 0
 result_html = '<div class="gallery"><div class="gallery-block">\n'
+
+img_dir = mkdtemp()
 
 for i, photo in enumerate(response):
     try:
@@ -60,8 +68,13 @@ for i, photo in enumerate(response):
         thumb_size = portrait_thumb_size
         portrait_count += 1
     thumb = filter(lambda size: size['type'] == thumb_size, photo['sizes']).__next__()
-    html = f'<a href="{full["url"]}" data-lightbox="roadtrip">' \
-           f'<img class="gallery-image-{thumb_size}" src="{thumb["url"]}"></a>'
+
+    request.urlretrieve(full["url"], os.path.join(img_dir, f"gallery_full_{i}.jpg"))
+    request.urlretrieve(thumb["url"], os.path.join(img_dir, f"gallery_thumb_{i}.jpg"))
+
+    html = f'<a href="/files/{fest_id}/gallery_full_{i}.jpg" data-lightbox="roadtrip">' \
+           f'<img class="gallery-image-{thumb_size}" src="/files/{fest_id}/gallery_thumb_{i}.jpg"></a>'
+
     result_html += html
     if i != len(response) - 1:
         if landscape_count >= 2:
@@ -73,6 +86,7 @@ for i, photo in enumerate(response):
 result_html += '\n</div></div>'
 
 print(result_html)
+webbrowser.open(img_dir)
 
 
 # .gallery {
