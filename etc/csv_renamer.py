@@ -5,17 +5,17 @@ import re
 import csv
 import unicodedata
 
-csv_path = r"D:\Clouds\YandexDisk\Fests\2019 Steven Fest\StevenFest2018.csv"
-id_row = 'num'
+csv_path = r"C:\Users\himura\Desktop\AtomCosCon 21 - Заявки.csv"
+id_row = 'id'
 
-folder_paths = [r"D:\Clouds\YandexDisk\Fests\2019 Steven Fest\Pics"]
+folder_paths = [r"D:\Events\Атом 2021\Files"]
 id_regex_filename = r"^(?P<id>\d{3})"
 
-no_op = bool(1)
+no_op = bool(0)
 
 
 def make_name(d, r_id):
-    return f"{r_id}. {d['nick']} - {d['fandom']} - {d['char']}"
+    return f"{d['num']}. {d['start']}. {d['name']}"
 
 
 with open(csv_path, 'r', encoding='utf-8') as f:
