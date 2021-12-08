@@ -1,13 +1,14 @@
 param (
     [switch] $Init,
     [switch] $Clean,
-    [switch] $Compile
+    [switch] $Compile,
+    [string] $PythonCommand = "python"
 )
 Set-Location $PSScriptRoot
 $didSomething = $false
 
 if ($Init) {
-    & py -m venv ./.venv
+    & $PythonCommand -m venv ./.venv
     . ./.venv/Scripts/Activate.ps1
 
     & ./.venv/Scripts/python -m pip install --upgrade pip
