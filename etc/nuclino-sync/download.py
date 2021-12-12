@@ -33,7 +33,7 @@ if __name__ == "__main__":
     if cookie_var not in os.environ:
         print(f'error: the {cookie_var} environment variable is required.', file=sys.stderr)
         exit(1)
-    
+
     success = get_backup(b64decode(os.environ[cookie_var]).decode(), args.workspace_id, args.out_path)
 
     exit(0 if success else 2)
