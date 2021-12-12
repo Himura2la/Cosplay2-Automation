@@ -44,7 +44,7 @@ def logout(cookie):
                      'Content-Type': 'application/json'}
         )
         with urlopen(req) as resp:
-            return resp
+            return f'{resp.status} {resp.msg}: {resp.read().decode()}'
     except HTTPError as e:
         print(e, file=sys.stderr)
         return None
@@ -68,8 +68,7 @@ if len(sys.argv) == 2:
     elif sys.argv[1] == 'logout':
         cookie = environ.get(cookie_var)
         cookie = b64decode(cookie).decode() if cookie else help()
-        resp = logout(cookie)
-        print(f'{resp.status} {resp.msg}: {resp.read().decode("utf-8")}')
+        print(logout(cookie))
     else:
         help()
 else:
