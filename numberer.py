@@ -10,7 +10,6 @@ from lib.authenticator import Authenticator
 from lib.api import Cosplay2API, Requester
 from lib.config import read_config
 
-RESET_NUMBERS_MODE = False
 num_row = 'num'
 voting_number_row = 'voting_number'
 
@@ -20,7 +19,8 @@ event_name = config["event_name"]
 api = Cosplay2API(event_name)
 c2_login = config['admin_cs2_name']
 c2_password = config['admin_cs2_password'] if 'admin_cs2_password' in config else None
-
+numberer_table_path = config['numberer_table_path'] if 'numberer_table_path' in config else None
+reset_numbers_mode = not numberer_table_path
 
 with sqlite3.connect(db_path, isolation_level=None) as db:
     c = db.cursor()
@@ -29,8 +29,8 @@ with sqlite3.connect(db_path, isolation_level=None) as db:
     requests = {num: {"id": r_id, "voting_number": '' if voting_number is None else str(voting_number)} for num, r_id, voting_number in c.fetchall()}
 
 
-if not RESET_NUMBERS_MODE:
-    with open(config['numberer_table_path'], 'r', encoding='utf-8') as f:
+if numberer_table_path:
+    with open(numberer_table_path, 'r', encoding='utf-8') as f:
         reader = csv.reader(f)
         head = reader.__next__()
         voting_numbers = {int(row[head.index(num_row)]): int(row[head.index(voting_number_row)]) for row in reader if row[head.index(voting_number_row)]}
@@ -50,7 +50,7 @@ if not a.sign_in():
 r = Requester(a.cookie)
 
 
-if RESET_NUMBERS_MODE:
+if reset_numbers_mode:
     for i, num in enumerate(requests.keys()):
         print('[', i+1, '/', len(requests), ']', end=" ")
         set_number(r, requests[num], '', True)
