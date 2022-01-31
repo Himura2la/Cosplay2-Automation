@@ -83,10 +83,14 @@ class Validator(object):
         required_fields -= char_name_in_image
         provided_fields = {rf['topic_field_id'] for rf in details['reqvalues']}
 
-        cosband_field = {f['id'] for f in details['fields'] if f['title'] == 'Название косбэнда (необязательно)'}
-        cosband_transcript_field = {f['id'] for f in details['fields'] if f['title'] == 'Транскрипция названия косбэнда (для ведущих)'}
-        if not cosband_field and not cosband_transcript_field:
-            required_fields -= cosband_transcript_field
+        cosband_fields, cosband_transcript_fields = {f['id'] for f in details['fields'] if f['title'] == 'Название косбэнда (необязательно)'}, \
+                                                    {f['id'] for f in details['fields'] if f['title'] == 'Транскрипция названия косбэнда (для ведущих)'}
+        if cosband_fields and cosband_transcript_fields:
+            cosband_field, cosband_transcript_field = cosband_fields.pop(), cosband_transcript_fields.pop()
+            cosband_field_value, cosband_transcript_field_value = {rf['value'] for rf in details['reqvalues'] if rf['topic_field_id'] == cosband_field}, \
+                                                                  {rf['value'] for rf in details['reqvalues'] if rf['topic_field_id'] == cosband_transcript_field }
+            if not cosband_field_value and not cosband_transcript_field_value:
+                required_fields -= { cosband_transcript_field }
 
         empty_fields = required_fields - provided_fields
         field_id_to_title = { f['id']: f['title'] for f in details['fields'] }
