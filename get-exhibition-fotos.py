@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Author: Himura Kazuto <himura@tulafest.ru>
 
-import os
+import re
 from lib.config import read_config
 from lib.downloader import Downloader
 
@@ -46,7 +46,8 @@ if __name__ == '__main__':
 
     def preprocess(num, dir_name, file_name):
         new_dir_name = ''  # No subdirectory for each file
-        new_file_name = str(num) + '. ' + dir_name.replace(' ', '-').replace('--', '-').replace('--', '-')
+        new_file_name = re.sub(r'[^\wа-яА-Я]+', '-', dir_name).strip('-')
+        new_file_name = str(num) + '. ' + new_file_name
         return False, new_dir_name, new_file_name
 
     d = Downloader(preprocess)
