@@ -2,47 +2,59 @@
 # coding:utf-8
 
 import csv
+from operator import contains
 import os
 import re
 import sqlite3
-from lib.config import read_config
+from yaml import load, FullLoader
 from PIL import Image  # pip install Pillow
+import qrcode
 
-config = read_config()
-db_path = config['db_path']
-out_dir = 'C:\\Events\\tulafest'
-fest_path = 'C:\\Events\\tulafest'
+
+fest_path = r'C:\Events\tulafest'
 target_dirs = [ 'yno11-fles' ]
-texcode = ''
 
+qr_dir = r'C:\Events\tulafest\qr'
+out_dir = r'C:\Events\tulafest\2'
+
+
+root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+config = load(
+    open(os.path.join(root_dir, 'config.yml'), 'r', encoding='utf-8').read(),
+    Loader=FullLoader)
+db_path = config['db_path']
 print('Connecting to %s...' % os.path.basename(db_path))
 db = sqlite3.connect(db_path, isolation_level=None)
 c = db.cursor()
-c.execute('PRAGMA encoding = "UTF-8"')
-c.execute("SELECT value FROM settings WHERE key='id'")
+c.execute("SELECT value FROM settings WHERE key='subdomain'")
+event_subdomain = c.fetchone()[0]
+qr_prefix = f'https://{event_subdomain}.cosplay2.ru/cards/card/'
 
 
 def get_field(req_num, titles, sections=None):
     titles = ','.join([f"'{t}'" for t in titles])
     sections_where = "AND section_title IN (%s)" % ','.join([f"'{s}'" for s in sections]) if sections else ''
     query = f"""
-        SELECT REPLACE(GROUP_CONCAT(DISTINCT value), ',', ', ') as value
+        SELECT REPLACE(GROUP_CONCAT(DISTINCT value), ',', ', ')
         FROM list, requests, `values`
         WHERE list.id = topic_id AND requests.id = request_id
           AND requests.number = ?
           AND `values`.title in ({titles})
+          AND IFNULL(value, '') != ''
           {sections_where}
     """
     c.execute(query, (req_num,))
     res = c.fetchone()[0]
     return res.replace('  ', ' ') if res else ''
 
+def format_team(team_value):
+    return team_value if "://" in team_value else f"команда {team_value}"
 
 with open(os.path.join(out_dir, 'landscape.csv'), 'w', newline='', encoding='utf=8') as vl:
     landscape_writer = csv.writer(vl)
     with open(os.path.join(out_dir, 'portrait.csv'), 'w', newline='', encoding='utf=8') as vp:
         portrait_writer = csv.writer(vp)
-        header = ['nom', 'req_code', 'title', 'authors', 'req_id', 'img_path']
+        header = ['nom', 'req_code', 'title', 'authors', 'img_path', 'qr']
         landscape_writer.writerow(header)
         portrait_writer.writerow(header)
 
@@ -71,16 +83,16 @@ with open(os.path.join(out_dir, 'landscape.csv'), 'w', newline='', encoding='utf
                 cities = get_field(num, config['city_fields'], config['authors_sections'])
                 title = get_field(num, config['title_fields'])
                 fandom = get_field(num, config['fandom_fields'])
-                team = get_field(num, config['team_fields'])
+                team = get_field(num, config['team_fields'], config['general_sections'])
                 other_authors_nicks = get_field(num, config['nick_fields'], config['other_authors_sections'])
                 other_authors_teams = get_field(num, config['team_fields'], config['other_authors_sections'])
 
                 req_code = f'{card_code} {voting_number}'
-                authors = f'{nicks} ({"косбэнд " if not re.search("косб[эе]нд", team, re.I) else ""}{team})' if team else nicks
+                authors = f'{nicks} ({"косбэнд " if not re.search("косб[эе]нд|cosband", team, re.I) else ""}{team})' if team else nicks
                 authors += f'. {cities}' if team else f' ({cities})'
                 if other_authors_nicks or other_authors_teams:
-                    authors += f'. Фотограф{"ы" if "," in other_authors_nicks or other_authors_teams else ""}: '
-                    authors += f'{other_authors_nicks} (команда {other_authors_teams})' if other_authors_teams else other_authors_nicks
+                    authors += f'. Фотограф{"ы" if "," in other_authors_nicks else ""}: '
+                    authors += f'{other_authors_nicks} ({format_team(other_authors_teams)})' if other_authors_teams else other_authors_nicks
                 authors = authors.replace("https://", "").replace("http://", "")
 
                 if fandom and fandom in title:
@@ -95,7 +107,11 @@ with open(os.path.join(out_dir, 'landscape.csv'), 'w', newline='', encoding='utf
                 elif fandom.strip():
                     title = fandom
 
-                row = (nom, req_code, title, authors, req_id, img_path)
+
+                qr_img_path = os.path.join(qr_dir, f'{req_id}.png')
+                qrcode.make(f'{qr_prefix}{req_id}').save(qr_img_path)
+                row = (nom, req_code, title, authors, img_path, qr_img_path)
+
                 if square or portrait:
                     portrait_writer.writerow(row)
                 else:

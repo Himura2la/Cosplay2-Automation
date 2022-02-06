@@ -5,3 +5,4 @@ Pillow
 vk
 Send2Trash
 matplotlib
+qrcode
