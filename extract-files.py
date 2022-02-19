@@ -17,7 +17,7 @@ input_dir = config['folder_path']
 output_dir = config['extracted_folder_path']
 
 if not os.path.isdir(output_dir):
-    os.makedirs(output_dir)
+    os.makedirs(os.path.join(output_dir, 'extra'))
 
 num_title_splitter = '. '
 nums_in_filenames = False
@@ -75,12 +75,11 @@ def make_filename(data, num, dl_title=None):
     sound_start = 'Неизвестно'
     if req_data['sound_start']:
         sound_start = {
-            'Трек начинается до выхода на сцену': 'Сразу',
-            'Трек начинается до выхода на сцену (выход из за кулис под музыку)': 'Сразу',
-            'Трек начинается после выхода на сцену (без реквизита)': 'С точки',
-            'Трек начинается после выхода на сцену (начало с точки)': 'С точки',
-            'Трек содержит превью (выход из за кулис во время превью танца)': 'Превью',
-            'Трек начинается после выноса реквизита и подготовки': 'Стафф'
+            'Трек запускается сразу после объявления (выход из за кулис под играющий трек)': 'Сразу',
+            'Трек запускается после выхода на сцену (с точки, без реквизита)': 'С точки',
+            'Трек запускается сразу после выноса реквизита (когда на сцене никого)': 'Стафф,Сразу',
+            'Трек запускается после выноса реквизита и выхода на точку': 'Стафф,ТЧК',
+            'Трек содержит превью (выход из за кулис во время превью танца)': 'Превью'
         }[req_data['sound_start']]
     elif req_data['card_code'][0] == 'V':  # Videos
             sound_start = 'Сразу'
@@ -136,9 +135,9 @@ for dirpath, dirnames, filenames in os.walk(input_dir):
             missing_files -= {num}
             new_filename = f"{code}. {name}.{ext}"
             if os.path.exists(os.path.join(output_dir, new_filename)):
-                continue
+
                 rep += 1
-                new_filename = f"{code}. {name} ({rep}).{ext}"
+                new_filename = f"extra\\{code}. {name} ({rep}).{ext}"
 
             msg = f"{dir_name} | {filename} -> {new_filename}"
             processed_log += msg + '\n'

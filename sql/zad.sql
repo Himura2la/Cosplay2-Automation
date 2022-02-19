@@ -3,6 +3,7 @@ SELECT
 	card_code ||' '|| voting_number as num,
 	ifnull(list.title||' / '||nom, list.title) as nom,
 	CASE ifnull(length(team),0) WHEN 0 THEN nicks ELSE 'Косбэнд '||team||': '||nicks END as 'Участник',
+	voting_title,
 	fandom as 'Фэндом/OST',
 	chars || ifnull(' - '||item_title,'') as 'Персонажи/Название',
 	cities
@@ -13,7 +14,8 @@ LEFT JOIN (	SELECT request_id as nc_rid, REPLACE(GROUP_CONCAT(DISTINCT value), '
 			FROM [values]
 				LEFT JOIN (SELECT request_section_id as r_rsid, value as [role] FROM [values] WHERE title = 'Роль') 
 				ON r_rsid = request_section_id
-			WHERE title LIKE 'Ник%' AND ([role] = 'Участник' OR [role] IS NULL)
+			-- TODO: Improve
+			WHERE title LIKE 'Ник%' AND ([role] LIKE 'Участник%' OR [role] LIKE '%Скрипка%' OR [role] LIKE 'Пев%' OR [role] IS NULL)
 			GROUP BY request_id)
 	ON nc_rid = requests.id
 
@@ -21,7 +23,8 @@ LEFT JOIN (	SELECT request_id as ct_rid, REPLACE(GROUP_CONCAT(DISTINCT value), '
 			FROM [values]
 				LEFT JOIN (SELECT request_section_id as r_rsid, value as [role] FROM [values] WHERE title = 'Роль') 
 				ON r_rsid = request_section_id
-			WHERE title = 'Город' AND ([role] = 'Участник' OR [role] IS NULL)
+			-- TODO: Improve
+			WHERE title = 'Город' AND ([role] LIKE 'Участник%' OR [role] LIKE '%Скрипка%' OR [role] LIKE 'Пев%' OR [role] IS NULL)
 			GROUP BY request_id)
 	ON ct_rid = requests.id
 				

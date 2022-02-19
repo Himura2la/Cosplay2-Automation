@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 
 comment = """
-Вашей заявке присвоен номер {} по программе (выступление в блоке {})! Конечный вариант программы фестиваля уже ВК!
+Вашей заявке присвоен номер {} по программе ({} блок)!
 """.strip()  # --------------------------------------------- 1 SMS ->|      --------- 2 SMS with "YnO9, заявка 000: " ->|
-target = "status = 'approved' and default_duration > 0"
-email = False
-sms = False
+target = "status = 'approved' and default_duration > 0 and card_code not like 'V%' and request_id not in (156786,159544,157975,158566,158565,159897,159968) "
+email = True
+sms = True
 
 
 from lib.authenticator import Authenticator
@@ -54,7 +54,7 @@ try:
         voting_number = details.split('] ', 1)[1].split('. ', 1)[0]
         ready_comment = comment.format(voting_number, voting_number.split(' ', 1)[1][0])
         data = {"request_id": request_id, "comment": ready_comment, "email": email, "sms": sms}
-        if not r.request(api.add_comment_POST, data):
+        if not r.request(api.add_comment_POST, data, False):
             raise Exception("Maybe you ran out of SMS money...")
         print(f'✔️ {details} ({api.request_url(request_id)})')
         print(ready_comment)

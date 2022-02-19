@@ -1,7 +1,7 @@
 SELECT
 	REPLACE(group_concat(distinct card_code || ' ' || voting_number), ',', ', ') as nums,
 	group_concat(distinct nick) as nick,
-	last_name || ' ' || first_name || ' ' || middle_name as full_name,
+	ifnull(last_name, '') || ' ' || ifnull(first_name, '') || ' ' || ifnull(middle_name, '') as full_name,
 	city,
 	group_concat(distinct section_title) as section_titles,
 	group_concat(distinct details),
@@ -37,7 +37,7 @@ LEFT JOIN ( SELECT request_section_id as сt_rsid, value as city
 
 LEFT JOIN ( SELECT request_id as det_rid, value as details
 			FROM [values] 
-			WHERE title in ('Название', 'Команда (необязательно)', 'Название мероприятия'))
+			WHERE title in ('Название', 'Команда (необязательно)', 'Название мероприятия', 'Волонтёрское объединение (необязательно)'))
 	ON det_rid = request_id
 	
 LEFT JOIN ( SELECT request_section_id as w_rsid, value as will_be
@@ -51,6 +51,6 @@ WHERE
 	AND	[values].title = 'Имя'  -- only sections with name
 	AND NOT (list.card_code in ('ART', 'FC', 'VC', 'V') and (will_be IS NULL or will_be = 'Нет'))
 
-GROUP BY full_name
+GROUP BY full_name, city
 
 order by section_title

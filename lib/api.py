@@ -36,14 +36,16 @@ class Requester(object):
         self.__cookie = cookie
         self.__wid = wid if wid else binascii.b2a_hex(os.urandom(8)).decode()
 
-    def request(self, url, params=None):
+    def request(self, url, params=None, json_response=True):
         if params:
             params['wid'] = self.__wid
             params = json.dumps(params).encode('ascii')
         req = Request(url, params, {'Cookie': self.__cookie})
         try:
             with urlopen(req) as r:
-                response = json.loads(r.read().decode('utf-8-sig'))
+                response = r.read().decode('utf-8-sig')
+                if json_response:
+                    response = json.loads(response)
             return response
         except HTTPError as e:
             print("Request failed:", e)

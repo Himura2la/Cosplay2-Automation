@@ -5,14 +5,14 @@ import re
 import csv
 
 
-tracks_dir = r'C:\Users\himura\Desktop\Fest\Tracks'
-tracks_filenames_num_regex = r'^(.+?)\. '
+tracks_dir = r'C:\Events\tulafest\Fest'
+tracks_filenames_num_regex = r'№(\d+)'
 
-pages_dir = r'C:\Users\himura\Desktop\Fest\zad-pages'
+pages_dir = r"C:\Events\tulafest\zad\zads"
 pages_filenames_page_regex = r'(\d{1,3})$'
 
-page_to_num_csv = r"C:\Users\himura\Desktop\zad-data-img.csv"
-page_col, num_col = 'page', 'num'
+page_to_num_csv = r"C:\Events\tulafest\zad\zad-imaged.csv"
+page_col, num_col = 'page', '№'
 
 no_op = bool(0)
 

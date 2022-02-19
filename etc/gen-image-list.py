@@ -3,17 +3,17 @@ import csv
 import re
 import shutil
 
-csv_path = r"C:\Users\himura\Desktop\zad-data.csv"
-num_row = 'file'
-target_csv_path = r"C:\Users\himura\Desktop\zad-data-img.csv"
+csv_path = r"C:\Events\tulafest\zad\zad.csv"
+num_row = '№'
+target_csv_path = r"C:\Events\tulafest\zad\zad-imaged.csv"
 
-img_dir = r'C:\Users\himura\Desktop\Fest\Images'
-id_regex = re.compile(r'^(\d{1,3})')
+img_dir = r"C:\Events\tulafest\zad-imgs"
+id_regex = re.compile(r'№(\d{1,3})')
 
-empty_img_path = r'D:\Clouds\YandexDisk\Fests\Yuki no Odori 10\design\Zad\Yuno_2021-small.png'
+empty_img_path = r'C:\Events\tulafest\YunO_Tsvet_022_10_f_-1.png'
 empty_img_path = os.path.abspath(empty_img_path) if empty_img_path else ''
 
-move_used_to = 'used'
+move_used_to = False
 no_img_warning = 'Юно не является изображением персонажа'
 
 if move_used_to:
