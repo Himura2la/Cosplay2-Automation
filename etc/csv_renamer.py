@@ -3,19 +3,20 @@
 import os
 import re
 import csv
+import shutil
 import unicodedata
 
-csv_path = r"C:\Users\himura\Desktop\AtomCosCon 21 - Заявки.csv"
-id_row = 'id'
+csv_path = r"C:\Users\glago\Desktop\AtomCosCon 22 - Заявки.csv"
+id_row = '№'
 
-folder_paths = [r"D:\Events\Атом 2021\Files"]
+folder_paths = [r"C:\Temp\AtomCosCon 2022\Files"]
 id_regex_filename = r"^(?P<id>\d{3})"
 
 no_op = bool(0)
 
 
 def make_name(d, r_id):
-    return f"{d['num']}. {d['start']}. {d['name']}"
+    return f"{d['#']}. {d['Начало']}. {d['Категория']}. {d['Название номера']}"
 
 
 with open(csv_path, 'r', encoding='utf-8') as f:
@@ -42,32 +43,31 @@ def to_filename(string):
 for folder_path in folder_paths:
     processed_nums = set()
     print("\n" + folder_path + ":")
-    for file_name in os.listdir(folder_path):
-        if not os.path.isfile(os.path.join(folder_path, file_name)):
-            continue
-        name, ext = file_name.rsplit('.', 1)
-        ext = '.' + ext
+    for dir_name in os.listdir(folder_path):
         try:
-            r_id = re.search(id_regex_filename, name).group("id")
+            r_id = str(int(re.search(id_regex_filename, dir_name).group("id")))
             name_data = data[r_id]
         except KeyError:
-            print('[NOT FOUND IN CSV]', file_name)
+            print('[NOT FOUND IN CSV]', dir_name)
             continue
         except AttributeError:
-            print('[DOES NOT MATCH]', file_name)
+            print('[DOES NOT MATCH]', dir_name)
             continue
 
-        name = to_filename(make_name(name_data, r_id))
+        new_name = to_filename(make_name(name_data, r_id))
 
-        src = os.path.join(folder_path, file_name)
-        dst = os.path.join(folder_path, name + ext)
-        if src != dst:
-            print(src + " -> \n" + dst + '\n')
-            if not no_op:
-                try:
-                    os.rename(src, dst)
-                except Exception as e:
-                    print("FAILED TO RENAME:", e)
+        for file_name in os.listdir(os.path.join(folder_path, dir_name)):
+            name, ext = file_name.rsplit('.', 1)
+            ext = '.' + ext
+            src = os.path.join(folder_path, dir_name, file_name)
+            dst = os.path.join(folder_path, new_name + ext)
+            if src != dst:
+                print(src + " -> \n" + dst + '\n')
+                if not no_op:
+                    try:
+                        shutil.copy(src, dst)
+                    except Exception as e:
+                        print("FAILED TO RENAME:", e)
         processed_nums.add(r_id)
 
     lost_files = set(data.keys()) - processed_nums
