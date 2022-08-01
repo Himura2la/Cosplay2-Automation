@@ -2,9 +2,9 @@ import os
 import json
 import binascii
 from urllib.error import HTTPError
-from urllib.request import urlopen, Request
+from urllib.request import urlopen
 
-from .api import Cosplay2API
+from .api import Cosplay2API, Requester
 
 
 class Fetcher(object):
@@ -17,7 +17,7 @@ class Fetcher(object):
     def fetch_data(self):
         for url in self.__api.data_GET_URLs:
             name = url.split('_')[-1]
-            req = Request(url, None, {'Cookie': self.__cookie})
+            req = Requester.raw_request(url, headers={'Cookie': self.__cookie})
             try:
                 with urlopen(req) as r:
                     response = json.loads(r.read().decode('utf-8-sig'))
@@ -36,7 +36,7 @@ class Fetcher(object):
     def fetch_details(self):
         self.data['details'] = []
         for request_id in [d['id'] for d in self.data['requests']]:
-            req = Request(self.__api.request_details_POST, json.dumps({'request_id': request_id}).encode('ascii'), {'Cookie': self.__cookie})
+            req = Requester.raw_request(self.__api.request_details_POST, json.dumps({'request_id': request_id}).encode('ascii'), {'Cookie': self.__cookie})
             try:
                 with urlopen(req) as r:
                     response = json.loads(r.read().decode('utf-8-sig'))
@@ -53,7 +53,7 @@ class Fetcher(object):
         return True
 
     def fetch_etickets(self):
-        req = Request(self.__api.etickets_GET, None, {'Cookie': self.__cookie})
+        req = Requester.raw_request(self.__api.etickets_GET, headers={'Cookie': self.__cookie})
         try:
             with urlopen(req) as r:
                 response = json.loads(r.read().decode('utf-8-sig'))

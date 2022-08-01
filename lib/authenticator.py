@@ -1,9 +1,9 @@
 import os
 from getpass import getpass
-from .api import Cosplay2API
+from .api import Cosplay2API, Requester
 from urllib.error import HTTPError
 from urllib.parse import urlencode
-from urllib.request import urlopen, Request
+from urllib.request import urlopen
 
 
 class Authenticator(object):
@@ -37,8 +37,7 @@ class Authenticator(object):
             with open(self.__cookie_path, 'r') as f:
                 self.cookie = f.read()
             print('Checking the cookie from ' + self.__cookie_path + ' file.')
-
-            req = Request(self.__api.settings_GET, None, {'Cookie': self.cookie})
+            req = Requester.raw_request(self.__api.settings_GET, headers={'Cookie': self.cookie})
             try:
                 with urlopen(req) as r:
                     response = r.read().decode('utf-8-sig')
@@ -61,7 +60,8 @@ class Authenticator(object):
             login_info = urlencode({'name':     self.login,
                                     'password': self.password}).encode('ascii')
             try:
-                with urlopen(self.__api.login_POST, login_info) as r:
+                req = Requester.raw_request(self.__api.login_POST, data=login_info)
+                with urlopen(req) as r:
                     cookie = r.getheader('Set-Cookie')
                     with open(self.__cookie_path, 'w') as f:
                         f.write(cookie)

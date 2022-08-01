@@ -36,11 +36,16 @@ class Requester(object):
         self.__cookie = cookie
         self.__wid = wid if wid else binascii.b2a_hex(os.urandom(8)).decode()
 
+    @staticmethod
+    def raw_request(url, data=None, headers={}):
+        headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:104.0) Gecko/20100101 Firefox/104.0'
+        return Request(url, data, headers)
+
     def request(self, url, params=None, json_response=True):
         if params:
             params['wid'] = self.__wid
             params = json.dumps(params).encode('ascii')
-        req = Request(url, params, {'Cookie': self.__cookie})
+        req = Requester.raw_request(url, params, {'Cookie': self.__cookie})
         try:
             with urlopen(req) as r:
                 response = r.read().decode('utf-8-sig')
