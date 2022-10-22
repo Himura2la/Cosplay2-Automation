@@ -7,11 +7,12 @@ import time
 import sqlite3
 import unicodedata
 
-from urllib import request
 from urllib import parse
+from urllib.request import urlopen, HTTPError, Request
+from shutil import copyfileobj
 
 from lib.cloud_downloader import CloudDownloader
-
+from lib.api import Requester
 
 class Downloader:
     SKIP_DOWNLOAD = 0
@@ -177,12 +178,23 @@ class Downloader:
                     if action >= self.DOWNLOAD_UPDATED_REQUESTS:
                         if not os.path.isdir(dir_path):
                             os.makedirs(dir_path)
-                        request.urlretrieve(file_url, path)
-                        self.log_info(' [OK]', head=False)
+                        attempts = 0
+                        while attempts > 0:
+                            try:
+                                req = Requester.raw_request(file_url)
+                                with urlopen(req, timeout=1) as in_stream, open(path, 'wb') as out_file:
+                                    copyfileobj(in_stream, out_file)
+                            except Exception as e:
+                                attempts -= 1
+                                self.log_error(f'retry')
+                        if attempts > 0:
+                            self.log_info(' [OK]', head=False)
+                        else:
+                            self.log_error("\ndownload_me " + file_url + " -> " + path)
                     else:
                         self.log_info(' [READY]', head=False)
-            except (TypeError, AttributeError, request.HTTPError) as e:
-                print("[FAIL]", name + ":", e)
+            except (TypeError, AttributeError, HTTPError) as e:
+                self.log_error(name + ":" + e)
 
         if not os.path.isdir(folder):
             os.makedirs(folder)
