@@ -10,6 +10,7 @@ import unicodedata
 from urllib import request
 from urllib import parse
 
+from lib.api import Requester
 from lib.cloud_downloader import CloudDownloader
 
 
@@ -23,6 +24,10 @@ class Downloader:
         def preprocess_sample(num, dir_name, file_name):
             skip = False
             return skip, dir_name, file_name
+
+        opener = request.build_opener()
+        opener.addheaders = [('User-Agent', Requester.user_agent)]
+        request.install_opener(opener)
 
         self.preprocess = preprocess_func if preprocess_func else preprocess_sample
         self.data = None

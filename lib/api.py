@@ -32,13 +32,15 @@ class Cosplay2API(object):
 
 
 class Requester(object):
+    user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:104.0) Gecko/20100101 Firefox/104.0'
+
     def __init__(self, cookie, wid=None):
         self.__cookie = cookie
         self.__wid = wid if wid else binascii.b2a_hex(os.urandom(8)).decode()
 
     @staticmethod
     def raw_request(url, data=None, headers={}):
-        headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:104.0) Gecko/20100101 Firefox/104.0'
+        headers['User-Agent'] = Requester.user_agent
         return Request(url, data, headers)
 
     def request(self, url, params=None, json_response=True):
