@@ -1,11 +1,12 @@
 SELECT	card_code as "Код",
 		"№ " || requests.number as "№",
-		'=HYPERLINK("http://tulafest.cosplay2.ru/orgs/requests/request/'||requests.id||'", "'||REPLACE(IFNULL(voting_title,'[Заявка без названия]'),'"',"'")||'")' as "Заявка",
-		contest as "Конкурс",
+		'=HYPERLINK("https://tulafest.cosplay2.ru/orgs/requests/request/'||requests.id||'", "'||REPLACE(IFNULL(voting_title,'[Заявка без названия]'),'"',"'")||'")' as "Заявка",
+		"" as "Статус",
 		duration as "Длит. (мин)",
 		IFNULL(bodies, 1) as "Тел",
 		cities as "Города",
-		wish as "Пожелание по блоку"
+		wish as "Пожелание по блоку",
+		REPLACE(IFNULL(contest,'Не указано'),'В конкурсе','') as "Конкурс"
 
 FROM list, requests
 
@@ -38,5 +39,6 @@ LEFT JOIN ( SELECT request_id as b_rid, value as bodies
 WHERE	list.id = topic_id
 		AND status != 'disapproved'
 		AND default_duration > 0
+		AND card_code NOT LIKE 'V%'
 
 ORDER BY card_code, requests.number

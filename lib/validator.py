@@ -9,7 +9,7 @@ class Validator(object):
     participant_number_fields = {'Количество участников', 'Количество представителей', 'Количество представителей (кроме помощников)'}
     capital_fields = {'Фамилия', 'Имя', 'Город'}
     required_participant_fields = capital_fields | {'Ник', 'Транскрипция ника (для ведущих)'}
-    invalid_city_names = {'Орел', 'Щекино', 'Могилев', 'Королев'}
+    invalid_city_names = {'Орел', 'Щекино', 'Могилев', 'Королев', 'Щелково'}
 
     members_sections = {'author', 'author_cosplay', 'members', 'members_cosplay', 'members_role'}
     optional_sections = members_sections | {'helpers'}
