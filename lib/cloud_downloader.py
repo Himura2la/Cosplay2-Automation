@@ -17,7 +17,7 @@ class CloudDownloader(object):
         print(f'Downloading {url} to {target}...')
         ext = None
         try:
-            if '://yadi.sk/' in url:
+            if '://yadi.sk/' in url or '://disk.yandex.ru' in url:
                 print('Trying to download from Yandex Disk...')
                 url, ext = CloudDownloader.get_link_yadisk(url)
             elif '://cloud.mail.ru/' in url:
