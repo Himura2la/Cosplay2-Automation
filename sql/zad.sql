@@ -2,29 +2,44 @@ SELECT
     number as '№',
 	card_code ||' '|| voting_number as num,
 	ifnull(list.title||' / '||nom, list.title) as nom,
-	CASE ifnull(length(team),0) WHEN 0 THEN nicks ELSE 'Косбэнд '||team||': '||nicks END as 'Участник',
+	
+	CASE ifnull(length(team),0)
+		WHEN 0 THEN nicks
+		ELSE IIF(card_code LIKE 'D%', 'Косбэнд ', 'Команда ')||team||': '||nicks
+	END as 'Участник',
+	
 	voting_title,
-	fandom as 'Фэндом/OST',
-	chars || ifnull(' - '||item_title,'') as 'Персонажи/Название',
+	
+	CASE WHEN value1 IS NULL THEN NULL
+		 WHEN card_code IN ('K', 'KA', 'T', 'INS', 'AI', 'AK', 'AT') THEN 'Исполнитель'
+		 ELSE 'Фэндом'
+	END as title1,
+	value1,
+	
+	CASE WHEN value2  IS NULL AND value3 IS NULL THEN NULL
+		 WHEN value2 IS NULL THEN 'Название'
+		 WHEN card_code IN ('K', 'KA', 'INS', 'AI', 'AK') THEN 'OST'
+		 WHEN value2 LIKE '%,%' THEN 'Персонажи'
+		 ELSE 'Персонаж'
+	END as title2,
+	
+	IIF(value2 IS NULL, value3, value2) as value2,
+	IIF(value2 IS NULL, NULL, value3) as 'Название',
 	cities
 
 FROM list, requests
 
 LEFT JOIN (	SELECT request_id as nc_rid, REPLACE(GROUP_CONCAT(DISTINCT value), ',', ', ') as nicks
 			FROM [values]
-				LEFT JOIN (SELECT request_section_id as r_rsid, value as [role] FROM [values] WHERE title = 'Роль') 
-				ON r_rsid = request_section_id
-			-- TODO: Improve
-			WHERE title LIKE 'Ник%' AND ([role] LIKE 'Участник%' OR [role] LIKE '%Скрипка%' OR [role] LIKE 'Пев%' OR [role] IS NULL)
+			WHERE title LIKE 'Ник%'
+			  AND section_title NOT LIKE 'Помощник%'
 			GROUP BY request_id)
 	ON nc_rid = requests.id
 
 LEFT JOIN (	SELECT request_id as ct_rid, REPLACE(GROUP_CONCAT(DISTINCT value), ',', ', ') as cities
 			FROM [values]
-				LEFT JOIN (SELECT request_section_id as r_rsid, value as [role] FROM [values] WHERE title = 'Роль') 
-				ON r_rsid = request_section_id
-			-- TODO: Improve
-			WHERE title = 'Город' AND ([role] LIKE 'Участник%' OR [role] LIKE '%Скрипка%' OR [role] LIKE 'Пев%' OR [role] IS NULL)
+			WHERE title = 'Город'
+			  AND section_title NOT LIKE 'Помощник%'
 			GROUP BY request_id)
 	ON ct_rid = requests.id
 				
@@ -32,27 +47,33 @@ LEFT JOIN (	SELECT request_id as n_rid, value as nom FROM [values]
 			WHERE title = 'Подноминация')
 	ON n_rid = requests.id
 				 
-LEFT JOIN (	SELECT request_id as f_rid, value as fandom FROM [values] 
-			WHERE title LIKE 'Фэндом%' OR title = 'OST (необязательно)')
+LEFT JOIN (	SELECT request_id as f_rid, value as value1 FROM [values] 
+			WHERE title LIKE 'Фэндом%'
+			   OR title LIKE 'Исполнитель%')
 	ON f_rid = requests.id
 
-LEFT JOIN (	SELECT request_id as ch_rid, REPLACE(GROUP_CONCAT(DISTINCT value), ',', ', ') as chars FROM [values] 
-			WHERE (title in ('Имя персонажа','Персонаж') OR title LIKE 'Исполнитель%')
+LEFT JOIN (	SELECT request_id as ch_rid, REPLACE(GROUP_CONCAT(DISTINCT value), ',', ', ') as value2 FROM [values] 
+			WHERE (title in ('Имя персонажа','Персонаж','OST (необязательно)'))
 			  AND section_title NOT LIKE 'Изображени%'
 			  AND section_title NOT LIKE 'Фотографии%'
 			GROUP BY request_id)
 	ON ch_rid = requests.id
+	
+
+LEFT JOIN (	SELECT request_id as ti_rid, REPLACE(GROUP_CONCAT(DISTINCT value), ',', ', ') as value3 FROM [values] 
+			WHERE title LIKE 'Название%'
+			  AND title NOT LIKE '%косб%'
+			  AND title NOT LIKE '%команд%'
+			GROUP BY request_id)
+	ON ti_rid = requests.id
 
 
-LEFT JOIN (	SELECT request_id as tm_rid, value as team FROM [values] 
+LEFT JOIN (	SELECT request_id as tm_rid, value as team FROM [values]
 			WHERE	title LIKE 'Название косб%' OR
 					title = 'Команда (необязательно)' OR
 					title = 'Название команды (необязательно)')
 	ON tm_rid = requests.id
 
-LEFT JOIN (	SELECT request_id as it_rid, value as item_title FROM [values] 
-			WHERE title IN ('Название номера (необязательно)','Название работы','Название сценки','Название композиции'))
-	ON it_rid = requests.id
 
 WHERE
 	list.id = topic_id
