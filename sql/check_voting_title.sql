@@ -6,9 +6,8 @@ LEFT JOIN ( SELECT request_section_id as nc_rsid, request_id as nc_rid, value as
 			WHERE title LIKE 'Ник%')
 	ON nc_rid = requests.id
 	
-LEFT JOIN ( SELECT request_section_id as rl_rsid, request_id as rl_rid, value as role
-			FROM [values] 
-			WHERE title = 'Роль')
+LEFT JOIN ( SELECT request_section_id as rl_rsid, request_id as rl_rid, section_title as role
+			FROM [values])
 	ON rl_rsid = nc_rsid
 
 LEFT JOIN ( SELECT request_id as f_rid, value as fandom
@@ -29,7 +28,9 @@ LEFT JOIN ( SELECT request_id as rt_rid, GROUP_CONCAT(distinct value) as r_title
 	ON rt_rid = requests.id
 
 
-WHERE
-list.id = topic_id AND
-role = 'Участник'
+WHERE list.id = topic_id
+  AND role NOT LIKE 'Помощник%'
+  AND (default_duration > 0 AND card_code NOT IN ('V', 'VC', 'DA')) 
+  AND status = 'approved'
+
 GROUP BY requests.id
