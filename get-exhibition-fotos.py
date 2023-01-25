@@ -23,7 +23,7 @@ if __name__ == '__main__':
                         WHERE title = '{print_photo_title}' )
             ON m_rsid = request_section_id
         """
-        main_foto_where = "AND main_foto == 'YES'"
+        main_foto_where = "AND (main_foto == 'YES' OR card_code != 'FC')"
     query = f"""
         SELECT request_id,
                update_time,

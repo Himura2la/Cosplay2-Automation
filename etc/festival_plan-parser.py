@@ -47,7 +47,7 @@ for row in plan[2:]:  # Отрезаем День и Место
         raise Exception("Unexpected tag in cell: <%s>" % tag)
 
 open(os.path.join(out_dir, 'human_plan.txt'), 'w', encoding='utf-8').write(human_plan)
-with open(os.path.join(out_dir, 'technical_plan.csv'), 'w', newline='', encoding='utf=8') as f:
+with open(os.path.join(out_dir, 'technical_plan.csv'), 'w', newline='', encoding='utf-8') as f:
     writer = csv.writer(f)
     writer.writerow(['info', 'time', 'code', 'num', 'voting_title'])
     writer.writerows(technical_plan)

@@ -69,10 +69,6 @@ latest_backup_symlink: 'backups/latest.db'
 
 tex_path: 'cr2018/images.tex'
 
-print_noms:
-    - 'Арт'
-    - 'Фотокосплей'
-
 nom_fields: ['Номинация']
 title_fields: ['Название работы']
 fandom_fields: ['Фэндом(ы)']

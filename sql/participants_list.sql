@@ -46,6 +46,7 @@ WHERE
 list.id = topic_id AND requests.id = request_id
     AND status != 'disapproved'
     AND [values].title = 'Имя'  -- use sections with name
-	AND (default_duration > 0 or card_code in ('VOL','ACG','AA','AFV','AGR','SY'))
+	AND card_code not in ('FC','ART','MEM','V','VC','AT','AK','AI')
+	AND default_duration > 0
 
 GROUP BY last_name, first_name, mid_name

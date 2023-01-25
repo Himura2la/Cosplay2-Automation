@@ -78,7 +78,7 @@ LEFT JOIN (	SELECT request_id as tm_rid, value as team FROM [values]
 WHERE
 	list.id = topic_id
 	AND status != 'disapproved'
-	AND (default_duration > 0 OR card_code IN ('V', 'VC'))
+	AND default_duration > 0
 
 GROUP BY voting_number
 ORDER BY voting_number

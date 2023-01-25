@@ -1,9 +1,11 @@
 SELECT DISTINCT
-	list.title AS 'Номинация',
-	card_code AS 'Код',
+	COALESCE(
+		REPLACE(REPLACE(sub_nom, 'Традиционный ', ''), 'Digital ', ''),
+		list.title
+	) AS nom,
+	card_code AS nom_code,
 	[number] AS '№', 
-	'=HYPERLINK("http://tulafest.cosplay2.ru/orgs/requests/request/'||requests.id||'"; "'||REPLACE(IFNULL(voting_title,'[Заявка без названия]'),'"',"'")||'")' AS "Заявка",
-	sub_nom AS 'Подноминация'
+	'=HYPERLINK("https://tulafest.cosplay2.ru/cards/card/'||requests.id||'"; "'||REPLACE(IFNULL(voting_title,'[Заявка без названия]'),'"',"'")||'")' AS "Заявка"
 
 FROM requests, list, [values]
 
@@ -25,4 +27,5 @@ WHERE topic_id = list.id AND
 	  [status] = 'approved' AND
 	  competition = 'В конкурсе'
 --order by list.title, voting_title
-ORDER BY list.title, sub_nom, [number]
+
+ORDER BY nom
