@@ -3,14 +3,14 @@ import csv
 import re
 import shutil
 
-csv_path = r"C:\Events\tulafest\zad\zad.csv"
+csv_path = r"C:\Users\glago\YandexDisk\Fests\Yuki no Odori 12\zad\z.csv"
 num_row = '№'
-target_csv_path = r"C:\Events\tulafest\zad\zad-imaged.csv"
+target_csv_path = r"C:\Users\glago\YandexDisk\Fests\Yuki no Odori 12\zad\zad-imaged.csv"
 
-img_dir = r"C:\Events\tulafest\zad-imgs"
+img_dir = r"C:\Events\tulafest\Fest"
 id_regex = re.compile(r'№(\d{1,3})')
 
-empty_img_path = r'C:\Events\tulafest\YunO_Tsvet_022_10_f_-1.png'
+empty_img_path = r'C:\Users\glago\YandexDisk\Fests\Yuki no Odori 12\zad\yuno_12_Yuno.png'
 empty_img_path = os.path.abspath(empty_img_path) if empty_img_path else ''
 
 move_used_to = False
@@ -72,5 +72,5 @@ for row in data:
 
 with open(target_csv_path, 'w', encoding='utf-8', newline='') as f:
     w = csv.writer(f, delimiter=',', quotechar='"')
-    w.writerow(head + ["@img%d-path" % (i+1) for i in range(rows_added)] + ["no-img-warning"])
+    w.writerow(head + ["img%d-path" % (i+1) for i in range(rows_added)] + ["no-img-warning"])
     w.writerows(data)

@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 comment = """
-Вашей заявке присвоен номер {} по программе ({} блок)!
+Вашей заявке присвоен номер {} по программе ({} блок)! Ждём 28.01 с 8 утра на входе участников Тульского Городского Концертного Зала (справа от главного, напротив парковки). Репетиция с 8:30 до 11:30.
 """.strip()  # --------------------------------------------- 1 SMS ->|      --------- 2 SMS with "YnO9, заявка 000: " ->|
-target = "status = 'approved' and default_duration > 0 and card_code not like 'V%' and request_id not in (156786,159544,157975,158566,158565,159897,159968) "
+target = "status = 'approved' and default_duration > 0 and card_code not like 'V%' and card_code not like 'A%'"  # AND requests.id NOT IN ()"
 email = True
 sms = True
 
@@ -54,12 +54,15 @@ try:
         voting_number = details.split('] ', 1)[1].split('. ', 1)[0]
         ready_comment = comment.format(voting_number, voting_number.split(' ', 1)[1][0])
         data = {"request_id": request_id, "comment": ready_comment, "email": email, "sms": sms}
-        if not r.request(api.add_comment_POST, data, False):
-            raise Exception("Maybe you ran out of SMS money...")
+        sent = False
+        while not sent:
+            sleep(5)
+            print("try")
+            sent = r.request(api.add_comment_POST, data, False)
+
         print(f'✔️ {details} ({api.request_url(request_id)})')
         print(ready_comment)
         done_requests.add(str(request_id))
-        sleep(1)
 except Exception as e:
     print(type(e).__name__, e)
 finally:

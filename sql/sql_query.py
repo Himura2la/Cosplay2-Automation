@@ -8,7 +8,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("sql", help='Path to an SQL request to run')
 parser.add_argument("-o", help='File to save the result into')
-parser.add_argument("--format", help='Output format. Possible values: "long" (default), "short"', default='long')
+parser.add_argument("--format", help='Output format. Possible values: "long", "short" (default)', default='short')
 args = parser.parse_args()
 
 long_col = 'text'

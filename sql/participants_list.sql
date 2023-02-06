@@ -1,16 +1,16 @@
 
 SELECT DISTINCT
-    last_name, first_name, mid_name, city,
     group_concat(distinct nick) as 'Ник',
-	group_concat(distinct pron) as 'Транскрипция',
+	'' as g, '' as c,
+    last_name, first_name, mid_name, city,
     ''''||group_concat(distinct phone) as 'Телефон',
-	replace(group_concat(distinct card_code ||' '|| voting_number),',',', ') as 'Номера',
-	replace(group_concat(distinct '№ '|| number),',',', ') as 'Заявки',
+	group_concat(distinct '№ '|| number) as 'Заявки',
 	group_concat(distinct list.title) as 'Разделы', group_concat(distinct section_title) as 'Секции',
     group_concat(distinct fandom) as 'Фэндомы',
-    ifnull(group_concat(distinct chars), single_char) as 'Персонажи'
-FROM list, requests, [values]
+    ifnull(group_concat(distinct chars), single_char) as 'Персонажи',
+	group_concat(distinct card_code ||' '|| voting_number) as 'Номера'
 
+FROM list, requests, [values]
 LEFT JOIN ( SELECT request_section_id as ln_rsid, value as last_name
             FROM [values] WHERE title = 'Фамилия')
     ON ln_rsid = request_section_id
@@ -27,9 +27,6 @@ LEFT JOIN ( SELECT request_section_id as сt_rsid, value as city
 LEFT JOIN ( SELECT request_section_id as n_rsid, value as nick
             FROM [values] WHERE title LIKE 'Ник%')
     ON n_rsid = request_section_id
-LEFT JOIN ( SELECT request_section_id as pr_rsid, value as pron
-            FROM [values] WHERE title LIKE 'Транскрипция ника (для ведущих)')
-    ON pr_rsid = request_section_id
 LEFT JOIN ( SELECT request_section_id as ch_rsid, value as chars
             FROM [values] WHERE title = 'Имя персонажа' OR title = 'Откуда персонаж')
     ON ch_rsid = request_section_id
@@ -42,11 +39,13 @@ LEFT JOIN ( SELECT request_id as fn_rid, value as fandom
 LEFT JOIN ( SELECT request_section_id as r_rsid, value as phone
             FROM [values] WHERE title LIKE 'Мобильный телефон%')
     ON r_rsid = request_section_id
-WHERE 
-list.id = topic_id AND requests.id = request_id
+
+WHERE
+    list.id = topic_id AND requests.id = request_id
     AND status != 'disapproved'
     AND [values].title = 'Имя'  -- use sections with name
-	AND card_code not in ('FC','ART','MEM','V','VC','AT','AK','AI')
+	AND NOT (list.card_code in ('V', 'VC', 'FC', 'ART', 'MEM', 'AT', 'AK', 'AI'))
 	AND default_duration > 0
 
-GROUP BY last_name, first_name, mid_name
+GROUP BY last_name, first_name, mid_name, city
+

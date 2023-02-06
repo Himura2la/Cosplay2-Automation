@@ -8,7 +8,7 @@ import sys
 import csv
 from xml.etree import ElementTree
 
-festival_plan_xls = "festival_plan.xls" if len(sys.argv) < 2 else sys.argv[1]
+festival_plan_xls = os.path.expanduser(r"~\Desktop\festival_plan.xls") if len(sys.argv) < 2 else sys.argv[1]
 out_dir = os.path.split(festival_plan_xls)[0]
 
 
