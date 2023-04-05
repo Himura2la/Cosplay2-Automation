@@ -9,15 +9,19 @@ class Validator(object):
     participant_number_fields = {'Количество участников', 'Количество представителей', 'Количество представителей (кроме помощников)'}
     capital_fields = {'Фамилия', 'Имя', 'Город'}
     required_participant_fields = capital_fields | {'Ник', 'Транскрипция ника (для ведущих)'}
+    cosband_fields = ('Название косбэнда (необязательно)', 'Название команды (необязательно)')
+    cosband_transcript_fields = ('Транскрипция названия косбэнда (для ведущих)', 'Транскрипция названия команды (для ведущих)')
+
     invalid_city_names = {'Орел', 'Щекино', 'Могилев', 'Королев', 'Щелково'}
 
     members_sections = {'author', 'author_cosplay', 'members', 'members_cosplay', 'members_role'}
     optional_sections = members_sections | {'helpers'}
+    optional_markers = ('(необязательно', '(при необходимости)', '(при наличии)')
 
     def find_topic_section_ids(self, details, search_for):
         def check_section(s):
             if search_for == 'required':
-                return '(необязательно' not in s['title'] and s['internal_name'] not in self.optional_sections
+                return any([marker not in s['title'] for marker in self.optional_markers]) and s['internal_name'] not in self.optional_sections
             if search_for == 'participants':
                 return s['internal_name'] in self.members_sections
         return {s['id'] for s in details['sections'] if check_section(s)}
@@ -77,16 +81,18 @@ class Validator(object):
         if missing_section_titles:
             errors.append('*Нет ни одной секции*: %s' % str(missing_section_titles))
 
-        required_fields = {f['id'] for f in details['fields'] if '(необязательно' not in f['title'] and f['section_id'] in required_sections - missing_sections}
+        required_fields = {f['id'] for f in details['fields'] \
+                           if any([marker not in f['title'] for marker in self.optional_markers]) \
+                              and f['section_id'] in required_sections - missing_sections}
         image_sections = {s['id'] for s in details['sections'] if s['internal_name'] in ('image_main', 'files')}
         char_name_in_image = {f['id'] for f in details['fields'] if f['section_id'] in image_sections and f['type'] == 'text'}
         required_fields -= char_name_in_image
         provided_fields = {rf['topic_field_id'] for rf in details['reqvalues']}
 
-        cosband_fields, cosband_transcript_fields = {f['id'] for f in details['fields'] if f['title'] in ('Название косбэнда (необязательно)', 'Название команды (необязательно)')}, \
-                                                    {f['id'] for f in details['fields'] if f['title'] in ('Транскрипция названия косбэнда (для ведущих)', 'Транскрипция названия команды (для ведущих)')}
-        if cosband_fields and cosband_transcript_fields:
-            cosband_field, cosband_transcript_field = cosband_fields.pop(), cosband_transcript_fields.pop()
+        cosband_field_ids, cosband_transcript_field_ids = {f['id'] for f in details['fields'] if f['title'] in self.cosband_fields}, \
+                                                          {f['id'] for f in details['fields'] if f['title'] in self.cosband_transcript_fields}
+        if cosband_field_ids and cosband_transcript_field_ids:
+            cosband_field, cosband_transcript_field = cosband_field_ids.pop(), cosband_transcript_field_ids.pop()
             cosband_field_value, cosband_transcript_field_value = {rf['value'] for rf in details['reqvalues'] if rf['topic_field_id'] == cosband_field}, \
                                                                   {rf['value'] for rf in details['reqvalues'] if rf['topic_field_id'] == cosband_transcript_field }
             if not cosband_field_value and not cosband_transcript_field_value:
