@@ -6,11 +6,11 @@ import sqlite3
 
 
 class Validator(object):
-    participant_number_fields = {'Количество участников', 'Количество представителей', 'Количество представителей (кроме помощников)'}
-    capital_fields = {'Фамилия', 'Имя', 'Город'}
-    required_participant_fields = capital_fields | {'Ник', 'Транскрипция ника (для ведущих)'}
-    cosband_fields = ('Название косбэнда (необязательно)', 'Название команды (необязательно)')
-    cosband_transcript_fields = ('Транскрипция названия косбэнда (для ведущих)', 'Транскрипция названия команды (для ведущих)')
+    participant_number_fields = {'Количество участников', 'Количество представителей'}
+    basic_info_fields = {'Фамилия', 'Имя', 'Город'}
+    required_participant_fields = basic_info_fields | {'Ник', 'Транскрипция ника'}
+    cosband_fields = ('Название косбэнда', 'Название команды')
+    cosband_transcript_fields = ('Транскрипция названия косбэнда', 'Транскрипция названия команды')
 
     invalid_city_names = {'Орел', 'Щекино', 'Могилев', 'Королев', 'Щелково'}
 
@@ -30,7 +30,7 @@ class Validator(object):
         errors = []
         try:
             expected_participants = filter(
-                lambda f: f['title'] in self.participant_number_fields, fields).__next__()['value']
+                lambda f: self.strip_markers(f['title']) in self.participant_number_fields, fields).__next__()['value']
             expected_participants = int(expected_participants)
         except StopIteration:
             expected_participants = None
@@ -45,15 +45,15 @@ class Validator(object):
         unique_participants = set()
         for i, sec_id in enumerate(sorted(list(participant_request_section_ids))):
             p_data = list(filter(lambda f: f['request_section_id'] == sec_id, fields))
-            participant_basic_info = tuple(f['value'] for f in sorted(filter(lambda f: f['title'] in self.capital_fields, p_data), key=lambda f: f['title']))
+            participant_basic_info = tuple(f['value'] for f in sorted(filter(lambda f: self.strip_markers(f['title']) in self.basic_info_fields, p_data), key=lambda f: f['title']))
             if participant_basic_info in unique_participants:
                 errors.append('Участник %s упоминается в заявке несколько раз' % (participant_basic_info,))
             else:
                 unique_participants.add(participant_basic_info)
-            ok_fields = set(d['title'] for d in p_data if d['value']
+            ok_fields = set(self.strip_markers(d['title']) for d in p_data if d['value']
                                                           and (len(d['value']) > 1 or re.match(r'\w', d['value']))
                                                           and not d['value'].lower().startswith("нет"))
-            all_fields = {f['title'] for f in details['fields']}
+            all_fields = {self.strip_markers(f['title']) for f in details['fields']}
             not_applicable_fields = self.required_participant_fields - all_fields
             required_fields = self.required_participant_fields - not_applicable_fields
             empty_fields = required_fields - ok_fields
@@ -69,7 +69,7 @@ class Validator(object):
             if city in self.invalid_city_names:
                 errors.append('*Неправильное написание города*: %s' % city)
 
-        for t, f in set((r['title'], r['value']) for r in filter(lambda f: f['title'] in self.capital_fields, fields)):
+        for t, f in set((r['title'], r['value']) for r in filter(lambda f: self.strip_markers(f['title']) in self.basic_info_fields, fields)):
             if re.match(r'^[а-я].*', f):
                 errors.append('%s *с маленькой буквы*: %s' % (t, f))
 
@@ -89,8 +89,8 @@ class Validator(object):
         required_fields -= char_name_in_image
         provided_fields = {rf['topic_field_id'] for rf in details['reqvalues']}
 
-        cosband_field_ids, cosband_transcript_field_ids = {f['id'] for f in details['fields'] if f['title'] in self.cosband_fields}, \
-                                                          {f['id'] for f in details['fields'] if f['title'] in self.cosband_transcript_fields}
+        cosband_field_ids, cosband_transcript_field_ids = {f['id'] for f in details['fields'] if self.strip_markers(f['title']) in self.cosband_fields}, \
+                                                          {f['id'] for f in details['fields'] if self.strip_markers(f['title']) in self.cosband_transcript_fields}
         if cosband_field_ids and cosband_transcript_field_ids:
             cosband_field, cosband_transcript_field = cosband_field_ids.pop(), cosband_transcript_field_ids.pop()
             cosband_field_value, cosband_transcript_field_value = {rf['value'] for rf in details['reqvalues'] if rf['topic_field_id'] == cosband_field}, \
@@ -152,6 +152,9 @@ class Validator(object):
                 'approved':    '<span title="Принята">✔️</span>',
                 'disapproved': '<span title="Отклонена">❌</span>'}[status]
 
+    @staticmethod
+    def strip_markers(field_title):
+        return field_title.split('(')[0].strip()
 
 if __name__ == '__main__':
     import os
