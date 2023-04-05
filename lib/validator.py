@@ -21,7 +21,7 @@ class Validator(object):
     def find_topic_section_ids(self, details, search_for):
         def check_section(s):
             if search_for == 'required':
-                return any([marker not in s['title'] for marker in self.optional_markers]) and s['internal_name'] not in self.optional_sections
+                return not any([marker in s['title'] for marker in self.optional_markers]) and s['internal_name'] not in self.optional_sections
             if search_for == 'participants':
                 return s['internal_name'] in self.members_sections
         return {s['id'] for s in details['sections'] if check_section(s)}
@@ -82,7 +82,7 @@ class Validator(object):
             errors.append('*Нет ни одной секции*: %s' % str(missing_section_titles))
 
         required_fields = {f['id'] for f in details['fields'] \
-                           if any([marker not in f['title'] for marker in self.optional_markers]) \
+                           if not any([marker in f['title'] for marker in self.optional_markers]) \
                               and f['section_id'] in required_sections - missing_sections}
         image_sections = {s['id'] for s in details['sections'] if s['internal_name'] in ('image_main', 'files')}
         char_name_in_image = {f['id'] for f in details['fields'] if f['section_id'] in image_sections and f['type'] == 'text'}
