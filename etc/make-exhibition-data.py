@@ -9,13 +9,13 @@ import sqlite3
 from yaml import load, FullLoader
 from PIL import Image  # pip install Pillow
 import qrcode
+from itertools import groupby
 
+fest_path = r'C:\Events\atom23\exhibition'
+target_dirs = [ 'src' ]
 
-fest_path = r'C:\Events\tulafest'
-target_dirs = [ 'yno11-fles' ]
-
-qr_dir = r'C:\Events\tulafest\qr'
-out_dir = r'C:\Events\tulafest\2'
+qr_dir = r'C:\Events\atom23\exhibition\qr'
+out_dir = r'C:\Events\atom23\exhibition'
 
 
 root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
@@ -30,6 +30,28 @@ c.execute("SELECT value FROM settings WHERE key='subdomain'")
 event_subdomain = c.fetchone()[0]
 qr_prefix = f'https://{event_subdomain}.cosplay2.ru/cards/card/'
 
+def get_nicks(req_num):
+    titles = ','.join([f"'{s}'" for s in config['nick_fields'] + ['Имя персонажа'] + config['fandom_fields']])
+    sections = config['authors_sections']
+    
+    sections_where = "AND section_title IN (%s)" % ','.join([f"'{s}'" for s in sections]) if sections else ''
+    query = f"""
+        SELECT request_section_id, `values`.title, value
+        FROM list, requests, `values`
+        WHERE list.id = topic_id AND requests.id = request_id
+          AND requests.number = ?
+          AND `values`.title in ({titles})
+          AND IFNULL(value, '') != ''
+          {sections_where}
+    """
+    c.execute(query, (req_num,))
+    rows = c.fetchall()
+    participants = groupby(rows, lambda r: r[0])
+    nicks = []
+    for _, group in participants:
+        row = {c[1]: c[2] for c in group}
+        nicks += [f"{row['Ник']} ({row['Источник']} - {row['Имя персонажа']})"]
+    return ", ".join(nicks)
 
 def get_field(req_num, titles, sections=None):
     titles = ','.join([f"'{t}'" for t in titles])
@@ -79,33 +101,32 @@ with open(os.path.join(out_dir, 'landscape.csv'), 'w', newline='', encoding='utf
                 nom = get_field(num, config['nom_fields'])
                 if competition == "Вне конкурса":
                     nom = f'{nom} ({competition})'
-                nicks = get_field(num, config['nick_fields'], config['authors_sections'])
+                nicks = get_nicks(num)
                 cities = get_field(num, config['city_fields'], config['authors_sections'])
                 title = get_field(num, config['title_fields'])
-                fandom = get_field(num, config['fandom_fields'])
                 team = get_field(num, config['team_fields'], config['general_sections'])
                 other_authors_nicks = get_field(num, config['nick_fields'], config['other_authors_sections'])
                 other_authors_teams = get_field(num, config['team_fields'], config['other_authors_sections'])
 
                 req_code = f'{card_code} {voting_number}'
-                authors = f'{nicks} ({"косбэнд " if not re.search("косб[эе]нд|cosband", team, re.I) else ""}{team})' if team else nicks
-                authors += f'. {cities}' if team else f' ({cities})'
+                authors = nicks
+                #authors += f'. {cities}'
                 if other_authors_nicks or other_authors_teams:
-                    authors += f'. Фотограф{"ы" if "," in other_authors_nicks else ""}: '
+                    authors += f'. Фото, ретушь: '
                     authors += f'{other_authors_nicks} ({format_team(other_authors_teams)})' if other_authors_teams else other_authors_nicks
                 authors = authors.replace("https://", "").replace("http://", "")
 
-                if fandom and fandom in title:
-                    if fandom == title:
-                        fandom = ''
-                    else:
-                        title = re.sub(rf'^(.*)\W*{fandom}\W*(.*)$', r'\1\2', title)
+                # if fandom and fandom in title:
+                #     if fandom == title:
+                #         fandom = ''
+                #     else:
+                #         title = re.sub(rf'^(.*)\W*{fandom}\W*(.*)$', r'\1\2', title)
                 img_path = img_path.replace(os.sep, '/')
 
-                if fandom.strip() and title.strip():
-                    title = f'{fandom} - {title}'
-                elif fandom.strip():
-                    title = fandom
+                # if fandom.strip() and title.strip():
+                #     title = f'{fandom} - {title}'
+                # elif fandom.strip():
+                #     title = fandom
 
 
                 qr_img_path = os.path.join(qr_dir, f'{req_id}.png')

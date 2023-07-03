@@ -1,18 +1,13 @@
-SELECT	card_code as "Код",
-		"№ " || requests.number as "№",
-		'=HYPERLINK("https://tulafest.cosplay2.ru/orgs/requests/request/'||requests.id||'", "'||REPLACE(IFNULL(voting_title,'[Заявка без названия]'),'"',"'")||'")' as "Заявка",
-		"" as "Статус",
-		duration as "Длит. (мин)",
-		IFNULL(bodies, 1) as "Тел",
-		cities as "Города",
-		wish as "Пожелание по блоку",
-		REPLACE(IFNULL(contest,'Не указано'),'В конкурсе','') as "Конкурс"
+SELECT	wish as "Номинация",
+		"" as code,
+		requests.number as "№",
+		'=HYPERLINK("https://atom23.cosplay2.ru/orgs/requests/request/'||requests.id||'", "'||REPLACE(IFNULL(voting_title,'[Заявка без названия]'),'"',"'")||'")' as "Заявка"
 
 FROM list, requests
 
 LEFT JOIN ( SELECT request_id as con_rid, value as contest
 			FROM [values] 
-			WHERE title == 'Участие в конкурсе')
+			WHERE title == 'Приоритет заявки (необязательно)')
 	ON con_rid = requests.id
 
 LEFT JOIN ( SELECT request_id as t_rid, value as duration
@@ -28,7 +23,7 @@ LEFT JOIN ( SELECT request_id as с_rid, REPLACE(GROUP_CONCAT(DISTINCT value), '
 
 LEFT JOIN ( SELECT request_id as w_rid, value as wish
 			FROM [values] 
-			WHERE title == 'Пожелание по расположению номера в программе (необязательно)')
+			WHERE title == 'Номинация')
 	ON w_rid = requests.id
 
 LEFT JOIN ( SELECT request_id as b_rid, value as bodies
@@ -38,7 +33,7 @@ LEFT JOIN ( SELECT request_id as b_rid, value as bodies
 	
 WHERE	list.id = topic_id
 		AND status != 'disapproved'
-		AND default_duration > 0
-		AND card_code NOT LIKE 'V%'
+--		AND default_duration > 0
+		AND card_code LIKE 'FC'
 
-ORDER BY card_code, requests.number
+ORDER BY wish, card_code, requests.number
