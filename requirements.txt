@@ -6,3 +6,4 @@ vk
 Send2Trash
 matplotlib
 qrcode
+markdown
