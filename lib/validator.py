@@ -16,7 +16,7 @@ class Validator(object):
 
     members_sections = {'author', 'author_cosplay', 'members', 'members_cosplay', 'members_role'}
     optional_sections = members_sections | {'helpers'}
-    optional_markers = ('(необязательно', '(при необходимости)', '(при наличии)')
+    optional_markers = ('(необязательно', '(при необходимости)', '(при наличии)', '(если есть)')
 
     def find_topic_section_ids(self, details, search_for):
         def check_section(s):
@@ -71,7 +71,7 @@ class Validator(object):
 
         for t, f in set((r['title'], r['value']) for r in filter(lambda f: self.strip_markers(f['title']) in self.basic_info_fields, fields)):
             if re.match(r'^[а-я].*', f):
-                errors.append('%s *с маленькой буквы*: %s' % (t, f))
+                errors.append('%s *с маленькой буквы*' % t)
 
         required_sections = self.find_topic_section_ids(details, 'required')
         provided_sections = {rs['topic_section_id'] for rs in details['reqsections']}
@@ -96,7 +96,7 @@ class Validator(object):
             cosband_field_value, cosband_transcript_field_value = {rf['value'] for rf in details['reqvalues'] if rf['topic_field_id'] == cosband_field}, \
                                                                   {rf['value'] for rf in details['reqvalues'] if rf['topic_field_id'] == cosband_transcript_field }
             if not cosband_field_value and not cosband_transcript_field_value:
-                required_fields -= { cosband_transcript_field }
+                required_fields -= { cosband_field, cosband_transcript_field }
 
         empty_fields = required_fields - provided_fields
         field_id_to_title = { f['id']: f['title'] for f in details['fields'] }
