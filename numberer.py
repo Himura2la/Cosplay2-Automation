@@ -33,7 +33,7 @@ if numberer_table_path:
     with open(numberer_table_path, 'r', encoding='utf-8') as f:
         reader = csv.reader(f)
         head = reader.__next__()
-        voting_numbers = {int(row[head.index(num_row)]): int(row[head.index(voting_number_row)]) for row in reader if row[head.index(voting_number_row)]}
+        voting_numbers = {int(row[head.index(num_row)]): int(row[head.index(voting_number_row)]) for row in reader if row[head.index(num_row)] and row[head.index(voting_number_row)]}
 
 
 def set_number(r, request, target_voting_number, force=False):
