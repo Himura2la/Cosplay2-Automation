@@ -42,16 +42,18 @@ for request_id, details in target_requests:
     response = r.request(api.get_comments_POST, {"request_id": request_id})
     try:
         comments = response['comments']
+        head = f'{details} ({api.request_url(request_id)})'
+        print(head)
         if (len(comments) == 0):
             continue
-        last_comment = comments[-1]
-        if int(last_comment['user_id']) in org_user_ids:
-            if show_org_comments:
-                print(f'\n{details}\nLast comment is from {last_comment["user_title"]}: {last_comment["content"][:20]}...')
-        else:
-            print(f'\n{details} ({api.request_url(request_id)})')
-            print(f'--- NEW COMMENT from {last_comment["user_title"]} added {last_comment["creationtime"]} ---')
-            print(last_comment["content"])
-    except e as Exception:
+        with open('comments.txt', "a", encoding="utf-8") as f:
+            f.write(f'\n{head}\n')
+            if int(comments[-1]['user_id']) not in org_user_ids:
+                f.write(f'\n\n***********************************************')
+            for comment in comments:
+                f.write(f'{comment["user_title"]}: {comment["content"]} <{comment["creationtime"]}>\n')
+            if int(comments[-1]['user_id']) not in org_user_ids:
+                f.write(f'***********************************************\n\n')
+    except Exception as e:
         print(e)
         print(response['message'])
