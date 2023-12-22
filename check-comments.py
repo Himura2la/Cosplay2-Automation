@@ -49,7 +49,7 @@ for request_id, details in target_requests:
         with open('comments.txt', "a", encoding="utf-8") as f:
             f.write(f'\n{head}\n')
             if int(comments[-1]['user_id']) not in org_user_ids:
-                f.write(f'\n\n***********************************************')
+                f.write(f'***********************************************\n')
             for comment in comments:
                 f.write(f'{comment["user_title"]}: {comment["content"]} <{comment["creationtime"]}>\n')
             if int(comments[-1]['user_id']) not in org_user_ids:
