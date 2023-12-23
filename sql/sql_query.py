@@ -58,5 +58,13 @@ for record in result:
 print(result_txt)
 
 if args.o:
+    if args.o.endswith('.html'):
+        try:
+            import markdown
+        except ImportError:
+            pass
+        else:
+            result_txt = '<!DOCTYPE html><html><head><meta charset="utf-8"></head>' \
+                '<body>%s</body></html>' % markdown.markdown(result_txt)
     open(args.o, 'w', encoding='utf-8').write(result_txt)
     print("Saved to %s" % os.path.abspath(args.o))

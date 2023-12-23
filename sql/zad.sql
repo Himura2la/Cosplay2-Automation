@@ -70,8 +70,7 @@ LEFT JOIN (	SELECT request_id as ti_rid, REPLACE(GROUP_CONCAT(DISTINCT value), '
 
 LEFT JOIN (	SELECT request_id as tm_rid, value as team FROM [values]
             WHERE	title LIKE 'Название косб%' OR
-                    title = 'Команда (необязательно)' OR
-                    title = 'Название команды (необязательно)')
+                    title LIKE '%команд%' )
     ON tm_rid = requests.id
 
 
