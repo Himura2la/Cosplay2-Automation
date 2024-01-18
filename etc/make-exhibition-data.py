@@ -11,11 +11,11 @@ from PIL import Image  # pip install Pillow
 import qrcode
 
 
-fest_path = r'C:\Events\tulafest'
-target_dirs = [ 'yno11-fles' ]
+fest_path = r'C:\Events\yno13\Files'
+target_dirs = [ 'Фотокосплей', 'Арт', 'Анимемы' ]
 
-qr_dir = r'C:\Events\tulafest\qr'
-out_dir = r'C:\Events\tulafest\2'
+qr_dir = r'C:\Events\yno13\exhibition\qr'
+out_dir = r'C:\Events\yno13\exhibition'
 
 
 root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
