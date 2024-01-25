@@ -78,7 +78,7 @@ with open(os.path.join(out_dir, 'landscape.csv'), 'w', newline='', encoding='utf
                 competition = get_field(num, ["Участие в конкурсе"])
                 nom = get_field(num, config['nom_fields'])
                 if competition == "Вне конкурса":
-                    nom = f'{nom} ({competition})'
+                    nom = f'{nom} (вне конкурса)'
                 nicks = get_field(num, config['nick_fields'], config['authors_sections'])
                 cities = get_field(num, config['city_fields'], config['authors_sections'])
                 title = get_field(num, config['title_fields'])
