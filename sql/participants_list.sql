@@ -1,13 +1,16 @@
 
 SELECT DISTINCT
+	'' as 'Тут',
     group_concat(distinct nick) as 'Ник',
-	'' as g, '' as c,
+	'' as 'Роль',
+	'' as 'Гримёрка',
     last_name, first_name, mid_name, city,
     ''''||group_concat(distinct phone) as 'Телефон',
-	group_concat(distinct '№ '|| number) as 'Заявки',
 	group_concat(distinct list.title) as 'Разделы', group_concat(distinct section_title) as 'Секции',
     group_concat(distinct fandom) as 'Фэндомы',
     ifnull(group_concat(distinct chars), single_char) as 'Персонажи',
+	IIF(sum(default_duration) > 0, '1', '') as 'Участвует в программе',
+	group_concat(distinct '№ '|| number) as 'Заявки',
 	group_concat(distinct card_code ||' '|| voting_number) as 'Номера'
 
 FROM list, requests, [values]
@@ -44,8 +47,8 @@ WHERE
     list.id = topic_id AND requests.id = request_id
     AND status != 'disapproved'
     AND [values].title = 'Имя'  -- use sections with name
-	AND NOT (list.card_code in ('V', 'VC', 'FC', 'ART', 'MEM', 'AT', 'AK', 'AI'))
-	AND default_duration > 0
+	AND NOT (list.card_code in ('ART', 'FC', 'MEM', 'V', 'VC'))
+--	AND default_duration > 0
 
 GROUP BY last_name, first_name, mid_name, city
-
+ORDER BY last_name

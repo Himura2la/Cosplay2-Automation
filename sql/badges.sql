@@ -4,7 +4,7 @@ SELECT
 	ifnull(last_name, '') || ' ' || ifnull(first_name, '') || ' ' || ifnull(middle_name, '') as full_name,
 	city,
 	group_concat(distinct section_title) as section_titles,
-	group_concat(distinct details),
+	group_concat(distinct details) as details,
 	sum(default_duration) as scene,
 	group_concat(distinct card_code)
 
