@@ -1,12 +1,11 @@
-SELECT	card_code as "Код",
-		"№ " || requests.number as "№",
-		'=HYPERLINK("https://tulafest.cosplay2.ru/orgs/requests/request/'||requests.id||'", "'||REPLACE(IFNULL(voting_title,'[Заявка без названия]'),'"',"'")||'")' as "Заявка",
-		"" as "Статус",
+SELECT	card_code || " " || requests.number as "№",
+		fandom_type,
+		REPLACE(IFNULL(voting_title,'[Заявка без названия]'),'"',"'") as "Заявка",
 		duration as "Длит. (мин)",
 		IFNULL(bodies, 1) as "Тел",
-		cities as "Города",
-		wish as "Пожелание по блоку",
-		REPLACE(IFNULL(contest,'Не указано'),'В конкурсе','') as "Конкурс"
+		track_start,
+		track_end,
+		vol_help
 
 FROM list, requests
 
@@ -26,19 +25,37 @@ LEFT JOIN ( SELECT request_id as с_rid, REPLACE(GROUP_CONCAT(DISTINCT value), '
 			GROUP BY request_id)
 	ON с_rid = requests.id
 
-LEFT JOIN ( SELECT request_id as w_rid, value as wish
-			FROM [values] 
-			WHERE title == 'Пожелание по расположению номера в программе (необязательно)')
-	ON w_rid = requests.id
-
 LEFT JOIN ( SELECT request_id as b_rid, value as bodies
 			FROM [values] 
 			WHERE title == 'Количество участников')
 	ON b_rid = requests.id
+
 	
+LEFT JOIN ( SELECT request_id as ts_rid, value as track_start
+			FROM [values] 
+			WHERE title == 'Начало выступления')
+	ON ts_rid = requests.id
+
+	
+LEFT JOIN ( SELECT request_id as ft_rid, value as fandom_type
+			FROM [values] 
+			WHERE title == 'Тип источника')
+	ON ft_rid = requests.id
+
+LEFT JOIN ( SELECT request_id as te_rid, value as track_end
+			FROM [values] 
+			WHERE title == 'Наличие задержек после выступления')
+	ON te_rid = requests.id
+	
+LEFT JOIN ( SELECT request_id as vh_rid, value as vol_help
+			FROM [values] 
+			WHERE title == 'Помощь волонтеров, запрос оборудования и реквизита (при необходимости)')
+	ON vh_rid = requests.id
+
+
 WHERE	list.id = topic_id
 		AND status != 'disapproved'
 		AND default_duration > 0
 		AND card_code NOT LIKE 'V%'
 
-ORDER BY card_code, requests.number
+ORDER BY card_code, voting_number
