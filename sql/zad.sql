@@ -11,7 +11,7 @@ SELECT
     voting_title,
 
     CASE WHEN value1 IS NULL THEN NULL
-         WHEN card_code IN ('K', 'KA', 'T', 'INS', 'AI', 'AK', 'AT') THEN 'Исполнитель'
+         WHEN card_code IN ('K', 'KA', 'T', 'INS', 'AI', 'AK', 'AT') THEN 'Исполнитель оригинала'
          ELSE 'Фэндом'
     END as title1,
     value1,
@@ -77,7 +77,7 @@ LEFT JOIN (	SELECT request_id as tm_rid, value as team FROM [values]
 WHERE
     list.id = topic_id
     AND status != 'disapproved'
-    AND (default_duration > 0 OR card_code = 'AGR')
+    AND (default_duration > 0 OR card_code IN ('AGR', 'V', 'VC'))
 
 GROUP BY voting_number
 ORDER BY voting_number

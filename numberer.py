@@ -25,7 +25,7 @@ reset_numbers_mode = not numberer_table_path
 with sqlite3.connect(db_path, isolation_level=None) as db:
     c = db.cursor()
     c.execute('PRAGMA encoding = "UTF-8"')
-    c.execute("SELECT number, requests.id, voting_number FROM list, requests WHERE list.id = topic_id AND status not in ('disapproved')")
+    c.execute("SELECT number, requests.id, voting_number FROM list, requests WHERE list.id = topic_id")
     requests = {num: {"id": r_id, "voting_number": '' if voting_number is None else str(voting_number)} for num, r_id, voting_number in c.fetchall()}
 
 
@@ -59,10 +59,9 @@ if reset_numbers_mode:
         print('[', i+1, '/', len(requests), ']', end=" ")
         set_number(r, req, str(num), True)
 else:
-    for i, (num, v_num) in enumerate(voting_numbers.items()):
-        req = requests[num]
-        print('[', i+1, '/', len(voting_numbers), ']', end=" ")
-        set_number(r, req, '', True)
+    for i, num in enumerate(requests.keys()):
+        print('[', i+1, '/', len(requests), ']', end=" ")
+        set_number(r, requests[num], '', True)
     for i, (num, v_num) in enumerate(voting_numbers.items()):
         req = requests[num]
         print('[', i+1, '/', len(voting_numbers), ']', end=" ")

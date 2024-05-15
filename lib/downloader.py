@@ -217,5 +217,5 @@ class Downloader:
         filename = filename\
             .replace(':', ';').replace('|', ';').replace('/', ';').replace('\\', ';')\
             .replace('"', "'").replace('×', 'x')
-        filename = ''.join(i if i not in '*?<>' else '' for i in filename)
+        filename = ''.join(i if i not in '*?<>' else '' for i in filename).strip()
         return filename

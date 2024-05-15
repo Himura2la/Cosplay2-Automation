@@ -11,11 +11,11 @@ from PIL import Image  # pip install Pillow
 import qrcode
 
 
-fest_path = r'C:\Events\tulafest'
-target_dirs = [ 'yno11-fles' ]
+fest_path = r'C:\Events\yno13\Files'
+target_dirs = [ 'Фотокосплей', 'Арт', 'Анимемы' ]
 
-qr_dir = r'C:\Events\tulafest\qr'
-out_dir = r'C:\Events\tulafest\2'
+qr_dir = r'C:\Events\yno13\exhibition\qr'
+out_dir = r'C:\Events\yno13\exhibition'
 
 
 root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
@@ -78,7 +78,7 @@ with open(os.path.join(out_dir, 'landscape.csv'), 'w', newline='', encoding='utf
                 competition = get_field(num, ["Участие в конкурсе"])
                 nom = get_field(num, config['nom_fields'])
                 if competition == "Вне конкурса":
-                    nom = f'{nom} ({competition})'
+                    nom = f'{nom} (вне конкурса)'
                 nicks = get_field(num, config['nick_fields'], config['authors_sections'])
                 cities = get_field(num, config['city_fields'], config['authors_sections'])
                 title = get_field(num, config['title_fields'])

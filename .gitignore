@@ -145,3 +145,4 @@ c2_info\.txt
 
 *.cookie
 .venv*
+sync.ffs_db

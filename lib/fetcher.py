@@ -40,9 +40,10 @@ class Fetcher(object):
             try:
                 with urlopen(req) as r:
                     response = json.loads(r.read().decode('utf-8-sig'))
-                    announcement_title = response['request']['announcement_title']
                     request = filter(lambda a: a['id'] == request_id, self.data['requests']).__next__()
-                    request['announcement_title'] = announcement_title
+                    request['announcement_title'] = response['request']['announcement_title']
+                    request['win'] = response['request']['win']
+                    request['win_title'] = response['request']['win_title']
                     self.data['details'].append({'request_id': request_id,
                                                  'json': json.dumps(response, ensure_ascii=False)})
                 print("Details for request %s acquired successfully." % request_id)

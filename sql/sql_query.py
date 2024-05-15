@@ -40,19 +40,18 @@ long_i = headers.index(long_col) if long_col in headers else None
 for record in result:
 
     if long_i:
-        result_txt += f"{os.linesep}{os.linesep}## "
+        result_txt += f"\n\n## "
         for i, field in enumerate(headers):
             if i != long_i:
                 fmt = field_format[field] if field in field_format \
                                             else last_field_format if i >= len(headers) - 2 \
                                             else default_field_format
                 result_txt += fmt % record[i]
-        result_txt += f"{os.linesep}{record[long_i]}"
+        result_txt += f"\n{record[long_i]}"
     else:
         for i, field in enumerate(headers):
             if record[i]:
-                result_txt += f"{(field + ': ') if args.format == 'long' else ''}{record[i]}{os.linesep}"
-    result_txt = result_txt.replace('\\n', os.linesep)
+                result_txt += f"{(field + ': ') if args.format == 'long' else ''}{record[i]} \n"
     result_txt += os.linesep
 
 print(result_txt)

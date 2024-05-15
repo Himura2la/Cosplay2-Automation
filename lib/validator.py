@@ -12,7 +12,7 @@ class Validator(object):
     cosband_fields = ('Название косбэнда', 'Название команды')
     cosband_transcript_fields = ('Транскрипция названия косбэнда', 'Транскрипция названия команды')
 
-    invalid_city_names = {'Орел', 'Щекино', 'Могилев', 'Королев', 'Щелково'}
+    invalid_city_names = {'орел', 'щекино', 'могилев', 'королев', 'щелково', 'cпб', 'озеры', 'кишинев'}
 
     members_sections = {'author', 'author_cosplay', 'members', 'members_cosplay', 'members_role'}
     optional_sections = members_sections | {'helpers'}
@@ -66,7 +66,7 @@ class Validator(object):
     def validate_fields(self, request, fields, details):
         errors = []
         for city in set(r['value'] for r in filter(lambda f: f['title'] == 'Город', fields)):
-            if city in self.invalid_city_names:
+            if city.lower() in self.invalid_city_names:
                 errors.append('*Неправильное написание города*: %s' % city)
 
         for t, f in set((r['title'], r['value']) for r in filter(lambda f: self.strip_markers(f['title']) in self.basic_info_fields, fields)):

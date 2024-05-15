@@ -5,6 +5,7 @@
 from urllib import request
 import youtube_dl
 import json
+import os
 
 
 class CloudDownloader(object):
@@ -17,12 +18,14 @@ class CloudDownloader(object):
         print(f'Downloading {url} to {target}...')
         ext = None
         try:
+            if os.path.exists(f'{target}.{ext}'):
+                os.remove(f'{target}.{ext}')
             if '://yadi.sk/' in url or '://disk.yandex.ru' in url:
                 print('Trying to download from Yandex Disk...')
                 url, ext = CloudDownloader.get_link_yadisk(url)
-            elif '://cloud.mail.ru/' in url:
-                print('Trying to download from Mail.Ru Cloud...')
-                url, ext = CloudDownloader.get_link_mailru(url)
+            # elif '://cloud.mail.ru/' in url:
+            #     print('Trying to download from Mail.Ru Cloud...')
+            #     url, ext = CloudDownloader.get_link_mailru(url)
             if ext is not None:
                 print(f'Downloading the direct link: {url}')
                 request.urlretrieve(url, f'{target}.{ext}')

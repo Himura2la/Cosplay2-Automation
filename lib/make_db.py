@@ -53,7 +53,7 @@ class MakeDB(object):
             c.execute("""CREATE TABLE requests (
             id INTEGER PRIMARY KEY, voting_title TEXT, announcement_title TEXT, status TEXT, topic_id INTEGER,
             number INTEGER, comment_time TEXT, image_update_time TEXT, new_comments INTEGER, new_updates INTEGER,
-            update_time TEXT, user_id INTEGER, user_title TEXT, voting_number INTEGER)""")
+            update_time TEXT, user_id INTEGER, user_title TEXT, voting_number INTEGER, win INTEGER, win_title TEXT)""")
         elif key == 'values':
             c.execute("DROP TABLE IF EXISTS `values`")
             c.execute("""CREATE TABLE `values` (
