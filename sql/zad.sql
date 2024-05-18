@@ -5,7 +5,7 @@ SELECT
 
     CASE ifnull(length(team),0)
         WHEN 0 THEN nicks
-        ELSE IIF(card_code LIKE 'D%', 'Косбэнд ', 'Команда ')||team||': '||nicks
+        ELSE IIF(card_code LIKE 'D%', 'Косбэнд ', 'Команда ')||team||IIF(studio IS NULL, '', ' ('||studio||')')||': '||nicks
     END as 'Участник',
 
     voting_title,
@@ -73,6 +73,9 @@ LEFT JOIN (	SELECT request_id as tm_rid, value as team FROM [values]
                     title LIKE '%команд%' )
     ON tm_rid = requests.id
 
+LEFT JOIN (	SELECT request_id as ds_rid, value as studio FROM [values]
+            WHERE	title LIKE 'Танцевальная студия%')
+    ON ds_rid = requests.id
 
 WHERE
     list.id = topic_id
