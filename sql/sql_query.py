@@ -56,6 +56,25 @@ for record in result:
 
 print(result_txt)
 
+css = """
+    body {
+        font-family:  Inter, sans-serif;
+    }
+    h2 {
+        margin: 9pt 0 0 0;
+        font-size: 15pt;
+    }
+    h3 {
+        margin: 0 0 0 14pt;
+        font-size: 12pt;
+        font-style: italic;
+    }
+    p {
+        margin: 0 0 0 0;
+        font-size: 12pt;
+    }
+"""
+
 if args.o:
     if args.o.endswith('.html'):
         try:
@@ -63,7 +82,8 @@ if args.o:
         except ImportError:
             pass
         else:
-            result_txt = '<!DOCTYPE html><html><head><meta charset="utf-8"></head>' \
-                '<body>%s</body></html>' % markdown.markdown(result_txt)
+            result_txt = '<!DOCTYPE html><html>' \
+                '<head><meta charset="utf-8"><style>%s</style></head>' \
+                '<body>%s</body></html>' % (css, markdown.markdown(result_txt))
     open(args.o, 'w', encoding='utf-8').write(result_txt)
     print("Saved to %s" % os.path.abspath(args.o))
