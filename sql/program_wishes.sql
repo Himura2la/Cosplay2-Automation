@@ -1,7 +1,7 @@
-SELECT	card_code || " " || requests.number as "№",
+SELECT	card_code || " " || voting_number as "№",
 		fandom_type,
 		REPLACE(IFNULL(voting_title,'[Заявка без названия]'),'"',"'") as "Заявка",
-		duration as "Длит. (мин)",
+		CAST(round(duration * 60) as int) as "Длит. (сек)",
 		IFNULL(bodies, 1) as "Тел",
 		track_start,
 		track_end,
@@ -49,7 +49,7 @@ LEFT JOIN ( SELECT request_id as te_rid, value as track_end
 	
 LEFT JOIN ( SELECT request_id as vh_rid, value as vol_help
 			FROM [values] 
-			WHERE title == 'Помощь волонтеров, запрос оборудования и реквизита (при необходимости)')
+			WHERE title == 'Пожелания по сценическому свету')
 	ON vh_rid = requests.id
 
 
