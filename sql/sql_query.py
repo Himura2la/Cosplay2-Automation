@@ -52,7 +52,7 @@ for record in result:
         for i, field in enumerate(headers):
             if record[i]:
                 result_txt += f"{(field + ': ') if args.format == 'long' else ''}{record[i]} \n"
-    result_txt += os.linesep
+    result_txt += "\n"
 
 print(result_txt)
 
