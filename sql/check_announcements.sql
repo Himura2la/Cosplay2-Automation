@@ -5,7 +5,7 @@ FROM list, requests
 
 WHERE
 	list.id = topic_id
-	AND	status in ('approved', 'materials')
+	AND	status != 'disapproved'
 	AND default_duration > 0
 
 ORDER BY voting_number

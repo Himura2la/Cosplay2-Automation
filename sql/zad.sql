@@ -24,8 +24,7 @@ SELECT
     END as title2,
 
     IIF(value2 IS NULL, value3, value2) as value2,
-    IIF(value2 IS NULL, NULL, value3) as 'Название',
-    cities
+    IIF(value2 IS NULL, NULL, value3) as 'Название'
 
 FROM list, requests
 
