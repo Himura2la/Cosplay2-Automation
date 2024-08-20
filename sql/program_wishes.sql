@@ -5,7 +5,8 @@ SELECT	card_code || " " || voting_number as "№",
 		IFNULL(bodies, 1) as "Тел",
 		track_start,
 		track_end,
-		vol_help
+		vol_help,
+		descr
 
 FROM list, requests
 
@@ -49,8 +50,13 @@ LEFT JOIN ( SELECT request_id as te_rid, value as track_end
 	
 LEFT JOIN ( SELECT request_id as vh_rid, value as vol_help
 			FROM [values] 
-			WHERE title == 'Пожелания по сценическому свету')
+			WHERE title == 'Помощь волонтеров (при необходимости)')
 	ON vh_rid = requests.id
+	
+LEFT JOIN ( SELECT request_id as dr_rid, value as descr
+			FROM [values] 
+			WHERE title == 'Описание номера')
+	ON dr_rid = requests.id
 
 
 WHERE	list.id = topic_id
