@@ -8,14 +8,14 @@ SELECT
         ELSE IIF(card_code LIKE 'D%', 'Косбэнд ', 'Команда ')||team||IIF(studio IS NULL, '', ' ('||studio||')')||': '||nicks
     END as 'Участник',
 
-    voting_title,
 
     value1
 	||
     IIF(value2 IS NULL, '', ' - '||value2)
 	||
-	IIF(value3 IS NULL, '', ' - '||value3) as 'title'
+	IIF(value3 IS NULL, '', ' - '||value3) as 'title',
 	
+    voting_title
 
 FROM list, requests
 
