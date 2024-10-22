@@ -3,7 +3,7 @@ SELECT DISTINCT
 --    group_concat(distinct status),
     group_concat(distinct nick) as 'Ник',
     first_name,
-	group_concat(distinct team),
+	group_concat(distinct team) as team,
 	group_concat(distinct card_code||' '||voting_number) as 'Номера',
     group_concat(distinct tg)||IFNULL(','||group_concat(distinct phone),'') as 'Telegram',
 	group_concat(distinct '№ '|| number) as 'Заявки',
@@ -28,7 +28,7 @@ LEFT JOIN ( SELECT request_id as ch_rid, value as single_char
     ON ch_rid = request_id
 LEFT JOIN ( SELECT request_id as fn_rid, value as fandom
             FROM [values] WHERE title LIKE 'Фэндом%')
-    ON fn_rid = reqёuest_id
+    ON fn_rid = request_id
 LEFT JOIN ( SELECT request_id as t_rid, value as team
             FROM [values] WHERE (title LIKE '%студия%' OR title LIKE '%команд%' OR title LIKE '%косбэнд%') and title NOT LIKE '%ранскрипция%')
     ON t_rid = request_id
@@ -44,5 +44,5 @@ WHERE
     AND status != 'disapproved'
     AND [values].title = 'Имя'  -- use sections with name
 
-GROUP BY nick, first_name
+GROUP BY team
 
