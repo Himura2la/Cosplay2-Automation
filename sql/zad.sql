@@ -10,21 +10,12 @@ SELECT
 
     voting_title,
 
-    CASE WHEN value1 IS NULL THEN NULL
-         WHEN card_code IN ('K', 'KA', 'T', 'INS', 'AI', 'AK', 'AT') THEN 'Исполнитель оригинала'
-         ELSE 'Фэндом'
-    END as title1,
-    value1,
-
-    CASE WHEN value2  IS NULL AND value3 IS NULL THEN NULL
-         WHEN value2 IS NULL THEN 'Название'
-         WHEN card_code IN ('K', 'KA', 'INS', 'AI', 'AK') THEN 'OST'
-         WHEN value2 LIKE '%,%' THEN 'Персонажи'
-         ELSE 'Персонаж'
-    END as title2,
-
-    IIF(value2 IS NULL, value3, value2) as value2,
-    IIF(value2 IS NULL, NULL, value3) as 'Название'
+    value1
+	||
+    IIF(value2 IS NULL, '', ' - '||value2)
+	||
+	IIF(value3 IS NULL, '', ' - '||value3) as 'title'
+	
 
 FROM list, requests
 
