@@ -11,8 +11,9 @@ import os
 class CloudDownloader(object):
     @staticmethod
     def get(url, target):
+        format = '137+140/136+140' if url.startswith("https://youtu") else 'best'
         ydl_opts = {
-            'format': 'best',
+            'format': format,
             'outtmpl': f'{target}.%(ext)s'
         }
         print(f'Downloading {url} to {target}...')
