@@ -44,5 +44,5 @@ WHERE
     AND status != 'disapproved'
     AND [values].title = 'Имя'  -- use sections with name
 
-GROUP BY team
-
+GROUP BY first_name
+ORDER BY list.title, team, first_name
