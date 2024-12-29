@@ -116,7 +116,7 @@ for dirpath, dirnames, filenames in os.walk(input_dir):
         root, dir_name = os.path.split(dirpath)
         if dir_name.endswith('-not-extract'):
             continue
-        if any([filename.endswith(ext) for ext in target_exts]):
+        if any([filename.lower().endswith(ext) for ext in target_exts]):
             name = filename.rsplit('.', 1)[0] if nums_in_filenames else dir_name
             ext = filename.rsplit('.', 1)[1]
             if num_title_splitter:
