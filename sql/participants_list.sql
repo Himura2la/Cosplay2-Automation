@@ -45,4 +45,4 @@ WHERE
     AND [values].title = 'Имя'  -- use sections with name
 
 GROUP BY first_name
-ORDER BY list.title, team, first_name
+ORDER BY default_duration > 0 DESC, card_code, team, first_name
