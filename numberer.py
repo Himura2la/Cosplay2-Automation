@@ -25,8 +25,8 @@ reset_numbers_mode = not numberer_table_path
 with sqlite3.connect(db_path, isolation_level=None) as db:
     c = db.cursor()
     c.execute('PRAGMA encoding = "UTF-8"')
-    c.execute("SELECT number, requests.id, voting_number FROM list, requests WHERE list.id = topic_id")
-    requests = {num: {"id": r_id, "voting_number": '' if voting_number is None else str(voting_number)} for num, r_id, voting_number in c.fetchall()}
+    c.execute("SELECT number, requests.id, voting_number, default_duration FROM list, requests WHERE list.id = topic_id")
+    requests = {num: {"id": r_id, "voting_number": '' if voting_number is None else str(voting_number), "scene": default_duration > 0} for num, r_id, voting_number, default_duration in c.fetchall()}
 
 
 if numberer_table_path:
@@ -49,17 +49,20 @@ if not a.sign_in():
     exit()
 r = Requester(a.cookie)
 
+known_requests = [num for (num, req) in requests.items() if reset_numbers_mode or req["scene"]]
 
 if reset_numbers_mode:
-    for i, num in enumerate(requests.keys()):
+    print("resetting voting_number in all requesrs (scene + offline)")
+    for i, num in known_requests:
         print('[', i+1, '/', len(requests), ']', end=" ")
         set_number(r, requests[num], '', True)
-    for i, num in enumerate(requests.keys()):
+    for i, num in known_requests:
         req = requests[num]
         print('[', i+1, '/', len(requests), ']', end=" ")
         set_number(r, req, str(num), True)
 else:
-    for i, num in enumerate(requests.keys()):
+    print("setting voting_number only in scene requesrs")
+    for i, num in known_requests:
         print('[', i+1, '/', len(requests), ']', end=" ")
         set_number(r, requests[num], '', True)
     for i, (num, v_num) in enumerate(voting_numbers.items()):
