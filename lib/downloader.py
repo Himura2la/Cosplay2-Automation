@@ -101,11 +101,11 @@ class Downloader:
             name = self.to_filename(title if title else 'No title').replace('  ', ' ')
             nom, file_type = self.to_filename(nom), self.to_filename(file_type)
             download_skipped_by_preprocessor, dir_name, file_name = self.preprocess(int(num), name, file_type)
-            display_path = ' | '.join([nom, dir_name, file_name])
+            dir_path = os.path.join(folder, dir_name) if flat else os.path.join(folder, nom, dir_name)
+            display_path = ' | '.join([dir_path, file_name])
             if download_skipped_by_preprocessor:
                 self.log_info('SKIP: ' + display_path)
                 continue
-            dir_path = os.path.join(folder, dir_name) if flat else os.path.join(folder, nom, dir_name)
             try:
                 is_img = False
                 if not file:
@@ -139,7 +139,7 @@ class Downloader:
                             self.log_info("[CLOUD OK] " + display_path)
                         else:
                             self.log_info("[CLOUD FAIL] " + display_path)
-                            self.log_link("%s -> %s" % (file['link'], display_path))
+                            self.log_link("%s ->\n\t%s" % (file['link'], display_path))
                     continue
                 else:
                     src_filename = file['filename']
