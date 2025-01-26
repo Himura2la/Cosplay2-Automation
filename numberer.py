@@ -53,16 +53,16 @@ known_requests = [num for (num, req) in requests.items() if reset_numbers_mode o
 
 if reset_numbers_mode:
     print("resetting voting_number in all requesrs (scene + offline)")
-    for i, num in known_requests:
+    for i, num in enumerate(known_requests):
         print('[', i+1, '/', len(requests), ']', end=" ")
         set_number(r, requests[num], '', True)
-    for i, num in known_requests:
+    for i, num in enumerate(known_requests):
         req = requests[num]
         print('[', i+1, '/', len(requests), ']', end=" ")
         set_number(r, req, str(num), True)
 else:
     print("setting voting_number only in scene requesrs")
-    for i, num in known_requests:
+    for i, num in enumerate(known_requests):
         print('[', i+1, '/', len(requests), ']', end=" ")
         set_number(r, requests[num], '', True)
     for i, (num, v_num) in enumerate(voting_numbers.items()):
