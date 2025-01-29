@@ -2,11 +2,18 @@
 # -*- coding: utf-8 -*-
 
 comment = """
-Вашей заявке присвоен номер {} по программе ({} блок)! Ждём 28.01 с 8 утра на входе участников Тульского Городского Концертного Зала (справа от главного, напротив парковки). Репетиция с 8:30 до 11:30.
-""".strip()  # --------------------------------------------- 1 SMS ->|      --------- 2 SMS with "YnO9, заявка 000: " ->|
+Поздравляем с прохождением отбора в сценическую программу YnO14! ╰(*°▽°*)╯
+Ждём Вас в ВОСКРЕСЕНЬЕ 19.01 с 8 утра на входе участников Тульского Городского Концертного Зала (справа от главного, возле парковки). Репетиция с 8:30 до 11:30. Просьба знать свой номер: {} (он ещё должен в смс прийти, и на бейдже будет)!
+До фестиваля осталось совсем немного, так что, пожалуйста, не пишите больше ничего сюда в комментарии к заявке, организаторы уже их не читают,
+они просто потеряются (。﹏。*)
+Все срочные дела просьба решать с координатором в ЛС.
+Следите за новостями в группе ВК (там, кстати, уже есть полная программа),
+и до встречи на фесте! ヽ(✿ﾟ▽ﾟ)ノ
+""".strip()  # -------------------------------------------- 1 SMS ->|      --------- 2 SMS with "YnO14, заявка 000: " ->|
+
 target = "status = 'approved' and default_duration > 0 and card_code not like 'V%' and card_code not like 'A%'"  # AND requests.id NOT IN ()"
 email = True
-sms = True
+sms = False
 
 
 from lib.authenticator import Authenticator
@@ -54,13 +61,13 @@ try:
         voting_number = details.split('] ', 1)[1].split('. ', 1)[0]
         ready_comment = comment.format(voting_number, voting_number.split(' ', 1)[1][0])
         data = {"request_id": request_id, "comment": ready_comment, "email": email, "sms": sms}
-        sent = False
-        while not sent:
-            sleep(5)
-            print("try")
-            sent = r.request(api.add_comment_POST, data, False)
 
-        print(f'✔️ {details} ({api.request_url(request_id)})')
+        sent = r.request(api.add_comment_POST, data, False)
+        if not sent:
+            print(f'X {details} ({api.request_url(request_id)})')
+            pass
+        else:
+            print(f'✔️ {details} ({api.request_url(request_id)})')
         print(ready_comment)
         done_requests.add(str(request_id))
 except Exception as e:
