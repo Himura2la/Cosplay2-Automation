@@ -61,7 +61,7 @@ try:
         voting_number = details.split('] ', 1)[1].split('. ', 1)[0]
         ready_comment = comment.format(voting_number, voting_number.split(' ', 1)[1][0])
         data = {"request_id": request_id, "comment": ready_comment, "email": email, "sms": sms}
-
+        sleep(2) # rate limit is 30 sms per minute
         sent = r.request(api.add_comment_POST, data, False)
         if not sent:
             print(f'X {details} ({api.request_url(request_id)})')
