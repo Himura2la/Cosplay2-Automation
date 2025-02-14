@@ -9,6 +9,7 @@ import unicodedata
 
 from urllib import request
 from urllib import parse
+from urllib.error import ContentTooShortError
 
 from lib.api import Requester
 from lib.cloud_downloader import CloudDownloader
@@ -182,7 +183,11 @@ class Downloader:
                     if action >= self.DOWNLOAD_UPDATED_REQUESTS:
                         if not os.path.isdir(dir_path):
                             os.makedirs(dir_path)
-                        request.urlretrieve(file_url, path)
+                        try:
+                            request.urlretrieve(file_url, path)
+                        except ContentTooShortError:
+                            os.remove(path)
+                            request.urlretrieve(file_url, path)
                         self.log_info(' [OK]', head=False)
                     else:
                         self.log_info(' [READY]', head=False)
