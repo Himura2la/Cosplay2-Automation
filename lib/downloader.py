@@ -94,7 +94,8 @@ class Downloader:
         if os.path.isfile(request_updates_path):
             existing_update_time = json.load(open(request_updates_path, 'r', encoding='utf-8'), parse_int=True)
             if action >= self.DOWNLOAD_UPDATED_REQUESTS:
-                os.rename(request_updates_path, request_updates_path.replace('.', '-bkp-%s.' % run_time))
+                request_updates_root, ext = os.path.splitext(request_updates_path)
+                os.rename(request_updates_path, request_updates_root + '-bkp-%s%s' % (run_time, ext))
 
         for row in self.data:
             prev_name = name
@@ -115,7 +116,7 @@ class Downloader:
                 file = json.loads(file)
                 new_update_time[request_id] = update_time  # assuming it's the same for all request files
                 if 'link' in file.keys():  # External site
-                    file_exists = file_name in [name.split('.', 1)[0] for name in os.listdir(dir_path)] \
+                    file_exists = file_name in [name.rsplit('.', 1)[0] for name in os.listdir(dir_path)] \
                                     if os.path.exists(dir_path) else False
                     request_up_to_date = existing_update_time \
                                             and str(request_id) in existing_update_time \
