@@ -57,6 +57,7 @@ for record in result:
 print(result_txt)
 
 css = """
+<style>
     body {
         font-family:  Inter, sans-serif;
     }
@@ -73,6 +74,7 @@ css = """
         margin: 0 0 0 0;
         font-size: 12pt;
     }
+</style>
 """
 
 if args.o:
@@ -83,7 +85,7 @@ if args.o:
             pass
         else:
             result_txt = '<!DOCTYPE html><html>' \
-                '<head><meta charset="utf-8"><style>%s</style></head>' \
+                '<head><meta charset="utf-8">%s</head>' \
                 '<body>%s</body></html>' % (css, markdown.markdown(result_txt))
     open(args.o, 'w', encoding='utf-8').write(result_txt)
     print("Saved to %s" % os.path.abspath(args.o))
