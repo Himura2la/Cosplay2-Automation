@@ -1,7 +1,7 @@
 
 SELECT DISTINCT
 --    group_concat(distinct status),
-    group_concat(distinct nick) as 'Ник',
+    nick,
     first_name,
 	group_concat(distinct team) as team,
 	group_concat(distinct card_code||' '||voting_number) as 'Номера',
@@ -42,7 +42,8 @@ LEFT JOIN ( SELECT request_section_id as tg_rsid, value as tg
 WHERE
     list.id = topic_id AND requests.id = request_id
     AND status != 'disapproved'
-    AND [values].title = 'Имя'  -- use sections with name
+    AND [values].title IN ('Имя','Ник')  -- use sections with name
+	AND card_code NOT IN ('FC')
 
-GROUP BY first_name
+GROUP BY first_name, nick
 ORDER BY default_duration > 0 DESC, card_code, team, first_name
