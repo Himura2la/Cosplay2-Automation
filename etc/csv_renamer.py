@@ -6,19 +6,19 @@ import csv
 import shutil
 import unicodedata
 
-csv_path = r"C:\Users\glago\Desktop\ToFu Market 18.02 - Программа.csv"
-id_row = '№'
+csv_path = r"C:\Users\glago\Desktop\с\certs.csv"
+id_row = 'page'
 
-folder_paths = [r"C:\Users\glago\YandexDisk\Fests\ToFu\ToFu Market 5\Tracks"]
-target_dir = r"C:\Events\tf5\Fest"
-id_regex_filename = r"^(?P<id>\d{1,3})"
+folder_paths = [r"C:\Users\glago\Desktop\с\pages"]
+target_dir = r"C:\Users\glago\Desktop\с\certs"
+id_regex_filename = r"_(?P<id>\d{1,3})"
 errors = ""
 
-no_op = bool(1)
+no_op = bool(0)
 
 
 def make_name(d, r_id):
-    return f"{d['# Вид выступления. Название номера']} (№{r_id})"
+    return f"{d['name']}"
 
 
 with open(csv_path, 'r', encoding='utf-8') as f:
@@ -45,32 +45,30 @@ def to_filename(string):
 for folder_path in folder_paths:
     processed_nums = set()
     print("\n" + folder_path + ":")
-    for dir_name in os.listdir(folder_path):
+    for file_name in os.listdir(folder_path):
         try:
-            r_id = str(int(re.search(id_regex_filename, dir_name).group("id")))
+            r_id = str(int(re.search(id_regex_filename, file_name).group("id")))
             name_data = data[r_id]
         except KeyError:
-            errors += f"\n[NOT FOUND IN CSV] {dir_name}"
+            errors += f"\n[NOT FOUND IN CSV] {file_name}"
             continue
         except AttributeError:
-            errors += f"\n[DOES NOT MATCH] {dir_name}"
+            errors += f"\n[DOES NOT MATCH] {file_name}"
             continue
 
         new_name = to_filename(make_name(name_data, r_id))
-
-        for file_name in os.listdir(os.path.join(folder_path, dir_name)):
-            name, ext = file_name.rsplit('.', 1)
-            ext = '.' + ext
-            src = os.path.join(folder_path, dir_name, file_name)
-            dst = os.path.join(target_dir, new_name + ext.lower())
-            if src != dst:
-                print(src + " -> \n" + dst + '\n')
-                processed_nums.add(r_id)
-                if not no_op:
-                    try:
-                        shutil.copy(src, dst)
-                    except Exception as e:
-                        print("FAILED TO RENAME:", e)
+        src_name, ext = file_name.rsplit('.', 1)
+        ext = '.' + ext
+        src = os.path.join(folder_path, file_name)
+        dst = os.path.join(target_dir, new_name + ext.lower())
+        if src != dst:
+            print(src + " -> \n" + dst + '\n')
+            processed_nums.add(r_id)
+            if not no_op:
+                try:
+                    shutil.copy(src, dst)
+                except Exception as e:
+                    print("FAILED TO RENAME:", e)
 
     print(errors)
     lost_files = set(data.keys()) - processed_nums
