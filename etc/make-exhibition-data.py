@@ -11,11 +11,11 @@ from PIL import Image  # pip install Pillow
 import qrcode
 
 
-fest_path = r'C:\Events\yno13\Files'
-target_dirs = [ 'Фотокосплей', 'Арт', 'Анимемы' ]
+fest_path = r'C:\Events\tf14\Files'
+target_dirs = [ 'Photo Cosplay' ]
 
-qr_dir = r'C:\Events\yno13\exhibition\qr'
-out_dir = r'C:\Events\yno13\exhibition'
+qr_dir = r'C:\Events\tf14\exhibition\qr'
+out_dir = r'C:\Events\tf14\exhibition'
 
 
 root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
@@ -50,6 +50,8 @@ def get_field(req_num, titles, sections=None):
 def format_team(team_value):
     return team_value if "://" in team_value else f"команда {team_value}"
 
+if not os.path.isdir(out_dir): os.mkdir(out_dir)
+if not os.path.isdir(qr_dir): os.mkdir(qr_dir)
 with open(os.path.join(out_dir, 'landscape.csv'), 'w', newline='', encoding='utf=8') as vl:
     landscape_writer = csv.writer(vl)
     with open(os.path.join(out_dir, 'portrait.csv'), 'w', newline='', encoding='utf=8') as vp:
@@ -89,7 +91,7 @@ with open(os.path.join(out_dir, 'landscape.csv'), 'w', newline='', encoding='utf
 
                 req_code = f'{card_code} {voting_number}'
                 authors = f'{nicks} ({"косбэнд " if not re.search("косб[эе]нд|cosband", team, re.I) else ""}{team})' if team else nicks
-                authors += f'. {cities}' if team else f' ({cities})'
+                #authors += f'. {cities}' if team else f' ({cities})'
                 if other_authors_nicks or other_authors_teams:
                     authors += f'. Фотограф{"ы" if "," in other_authors_nicks else ""}: '
                     authors += f'{other_authors_nicks} ({format_team(other_authors_teams)})' if other_authors_teams else other_authors_nicks
