@@ -9,6 +9,7 @@ import unicodedata
 
 from urllib import request
 from urllib import parse
+from urllib.error import ContentTooShortError
 
 from lib.api import Requester
 from lib.cloud_downloader import CloudDownloader
@@ -93,7 +94,8 @@ class Downloader:
         if os.path.isfile(request_updates_path):
             existing_update_time = json.load(open(request_updates_path, 'r', encoding='utf-8'), parse_int=True)
             if action >= self.DOWNLOAD_UPDATED_REQUESTS:
-                os.rename(request_updates_path, request_updates_path.replace('.', '-bkp-%s.' % run_time))
+                request_updates_root, ext = os.path.splitext(request_updates_path)
+                os.rename(request_updates_path, request_updates_root + '-bkp-%s%s' % (run_time, ext))
 
         for row in self.data:
             prev_name = name
@@ -101,11 +103,11 @@ class Downloader:
             name = self.to_filename(title if title else 'No title').replace('  ', ' ')
             nom, file_type = self.to_filename(nom), self.to_filename(file_type)
             download_skipped_by_preprocessor, dir_name, file_name = self.preprocess(int(num), name, file_type)
-            display_path = ' | '.join([nom, dir_name, file_name])
+            dir_path = os.path.join(folder, dir_name) if flat else os.path.join(folder, nom, dir_name)
+            display_path = ' | '.join([dir_path, file_name])
             if download_skipped_by_preprocessor:
                 self.log_info('SKIP: ' + display_path)
                 continue
-            dir_path = os.path.join(folder, dir_name) if flat else os.path.join(folder, nom, dir_name)
             try:
                 is_img = False
                 if not file:
@@ -114,7 +116,7 @@ class Downloader:
                 file = json.loads(file)
                 new_update_time[request_id] = update_time  # assuming it's the same for all request files
                 if 'link' in file.keys():  # External site
-                    file_exists = file_name in [name.split('.', 1)[0] for name in os.listdir(dir_path)] \
+                    file_exists = file_name in [name.rsplit('.', 1)[0] for name in os.listdir(dir_path)] \
                                     if os.path.exists(dir_path) else False
                     request_up_to_date = existing_update_time \
                                             and str(request_id) in existing_update_time \
@@ -139,7 +141,7 @@ class Downloader:
                             self.log_info("[CLOUD OK] " + display_path)
                         else:
                             self.log_info("[CLOUD FAIL] " + display_path)
-                            self.log_link("%s -> %s" % (file['link'], display_path))
+                            self.log_link("%s ->\n\t%s" % (file['link'], display_path))
                     continue
                 else:
                     src_filename = file['filename']
@@ -182,7 +184,11 @@ class Downloader:
                     if action >= self.DOWNLOAD_UPDATED_REQUESTS:
                         if not os.path.isdir(dir_path):
                             os.makedirs(dir_path)
-                        request.urlretrieve(file_url, path)
+                        try:
+                            request.urlretrieve(file_url, path)
+                        except ContentTooShortError:
+                            os.remove(path)
+                            request.urlretrieve(file_url, path)
                         self.log_info(' [OK]', head=False)
                     else:
                         self.log_info(' [READY]', head=False)
