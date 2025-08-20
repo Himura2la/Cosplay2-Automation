@@ -35,7 +35,6 @@ if numberer_table_path:
         head = reader.__next__()
         voting_numbers = {int(row[head.index(num_row)]): int(row[head.index(voting_number_row)]) for row in reader if row[head.index(num_row)] and row[head.index(voting_number_row)]}
 
-
 def set_number(r, request, target_voting_number, force=False):
     already_ok = not force and request['voting_number'] == target_voting_number
     action_symbol = '==' if already_ok else '->'
@@ -59,9 +58,10 @@ if reset_numbers_mode:
         print('[', i+1, '/', len(requests), ']', end=" ")
         set_number(r, req, str(num), True)
 else:
-    for i, num in enumerate(requests.keys()):
-        print('[', i+1, '/', len(requests), ']', end=" ")
-        set_number(r, requests[num], '', True)
+    for i, num in enumerate(voting_numbers.keys()):
+        req = requests[num]
+        print('[', i+1, '/', len(voting_numbers), ']', end=" ")
+        set_number(r, req, '', True)
     for i, (num, v_num) in enumerate(voting_numbers.items()):
         req = requests[num]
         print('[', i+1, '/', len(voting_numbers), ']', end=" ")
