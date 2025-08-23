@@ -14,7 +14,7 @@ if __name__ == '__main__':
     print_photo_title = config['print_photo_title'] if 'print_photo_title' in config else None
 
     not_scene_card_codes = ','.join([f"'{nom}'" for nom in not_scene_card_codes])
-    main_foto_join, main_foto_where = [''] * 2
+    main_foto_join, foto_where = [''] * 2
     if print_photo_title:
         main_foto_join = f"""
             LEFT JOIN ( SELECT request_section_id as m_rsid,
@@ -23,7 +23,9 @@ if __name__ == '__main__':
                         WHERE title = '{print_photo_title}' )
             ON m_rsid = request_section_id
         """
-        main_foto_where = "AND (main_foto == 'YES' OR card_code != 'FC')"
+        foto_where = "AND (main_foto == 'YES' OR card_code != 'FC')"
+    else:
+        foto_where = "AND section_title == 'Фотографии'"
     query = f"""
         SELECT request_id,
                update_time,
@@ -39,7 +41,7 @@ if __name__ == '__main__':
             AND status != 'disapproved'
             AND type IN ('file', 'image')
             AND card_code IN ({not_scene_card_codes})
-            {main_foto_where}
+            {foto_where}
         ORDER BY request_id
     """
 
