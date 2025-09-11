@@ -32,17 +32,15 @@ class Cosplay2API(object):
 
 
 class Requester(object):
-    user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:104.0) Gecko/20100101 Firefox/104.0'
-
-    def __init__(self, wid=None):
-        config = read_config()
+    def __init__(self, wid=None, config=None):
+        if config is None:
+            config = read_config()
         self.event_name = config['event_name']
         self.__api_key = config['c2_event_api_key']
         self.__api_secret = config['c2_event_api_secret']
         self.__wid = wid if wid else binascii.b2a_hex(os.urandom(8)).decode()
 
     def raw_request(self, url, data=None, headers={}):
-        headers['User-Agent'] = Requester.user_agent
         headers['X-API-Key'] = self.__api_key
         headers['X-API-Secret'] = self.__api_secret
         headers['Content-Type'] = 'application/json'
