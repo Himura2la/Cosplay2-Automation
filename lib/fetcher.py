@@ -8,16 +8,16 @@ from .api import Cosplay2API, Requester
 
 
 class Fetcher(object):
-    def __init__(self, event_name, cookie):
-        self.__api = Cosplay2API(event_name)
-        self.__cookie = cookie
+    def __init__(self):
+        self.__requester = Requester()
+        self.__api = Cosplay2API(self.__requester.event_name)
         self.wid = binascii.b2a_hex(os.urandom(8))
         self.data = dict()
 
     def fetch_data(self):
         for url in self.__api.data_GET_URLs:
             name = url.split('_')[-1]
-            req = Requester.raw_request(url, headers={'Cookie': self.__cookie})
+            req = self.__requester.raw_request(url)
             try:
                 with urlopen(req) as r:
                     response = json.loads(r.read().decode('utf-8-sig'))
@@ -36,7 +36,7 @@ class Fetcher(object):
     def fetch_details(self):
         self.data['details'] = []
         for request_id in [d['id'] for d in self.data['requests']]:
-            req = Requester.raw_request(self.__api.request_details_POST, json.dumps({'request_id': request_id}).encode('ascii'), {'Cookie': self.__cookie})
+            req = self.__requester.raw_request(self.__api.request_details_POST, json.dumps({'request_id': request_id}).encode('ascii'))
             try:
                 with urlopen(req) as r:
                     response = json.loads(r.read().decode('utf-8-sig'))
@@ -54,7 +54,7 @@ class Fetcher(object):
         return True
 
     def fetch_etickets(self):
-        req = Requester.raw_request(self.__api.etickets_GET, headers={'Cookie': self.__cookie})
+        req = self.__requester.raw_request(self.__api.etickets_GET)
         try:
             with urlopen(req) as r:
                 response = json.loads(r.read().decode('utf-8-sig'))
