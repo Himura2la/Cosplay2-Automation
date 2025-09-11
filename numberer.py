@@ -53,9 +53,9 @@ if reset_numbers_mode:
         set_number(req, str(num), True)
 else:
     print("setting voting_number only in scene requesrs")
-    # for i, num in enumerate(known_requests):
-    #     print('[', i+1, '/', len(known_requests), ']', end=" ")
-    #     set_number(requests[num], '', True)
+    for i, num in enumerate(known_requests):
+        print('[', i+1, '/', len(known_requests), ']', end=" ")
+        set_number(requests[num], '', True)
     for i, (num, v_num) in enumerate(voting_numbers.items()):
         req = requests[num]
         print('[', i+1, '/', len(voting_numbers), ']', end=" ")
