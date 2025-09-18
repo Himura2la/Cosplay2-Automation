@@ -6,7 +6,6 @@ from datetime import datetime
 import os
 
 from lib.config import read_config
-from lib.authenticator import Authenticator
 from lib.fetcher import Fetcher
 from lib.make_db import MakeDB
 from lib.validator import Validator
@@ -14,8 +13,6 @@ from lib.validator import Validator
 if __name__ == '__main__':
     config = read_config()
     event_name = config['event_name']
-    c2_login = config['admin_cs2_name']
-    c2_password = config['admin_cs2_password'] if 'admin_cs2_password' in config else None
     backup_dir = config['backups_path'] \
         if 'backups_path' in config and config['backups_path'] != "." \
         else script_dir
@@ -25,11 +22,8 @@ if __name__ == '__main__':
     if not os.path.isdir(backup_dir):
         os.makedirs(backup_dir)
 
-    a = Authenticator(event_name, c2_login, c2_password, interactive=False)
-    if not a.sign_in():
-        exit()
 
-    f = Fetcher(a.event_name, a.cookie)
+    f = Fetcher(event_name)
     if not f.fetch_data():
         exit()
     f.fetch_etickets()

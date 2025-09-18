@@ -6,7 +6,7 @@ import json
 import binascii
 from urllib.error import HTTPError
 from urllib.request import urlopen, Request
-
+from .config import read_config
 
 class Cosplay2API(object):
     def __init__(self, event_name):
@@ -32,22 +32,25 @@ class Cosplay2API(object):
 
 
 class Requester(object):
-    user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:104.0) Gecko/20100101 Firefox/104.0'
-
-    def __init__(self, cookie, wid=None):
-        self.__cookie = cookie
+    def __init__(self, wid=None, config=None):
+        if config is None:
+            config = read_config()
+        self.event_name = config['event_name']
+        self.__api_key = config['c2_event_api_key']
+        self.__api_secret = config['c2_event_api_secret']
         self.__wid = wid if wid else binascii.b2a_hex(os.urandom(8)).decode()
 
-    @staticmethod
-    def raw_request(url, data=None, headers={}):
-        headers['User-Agent'] = Requester.user_agent
+    def raw_request(self, url, data=None, headers={}):
+        headers['X-API-Key'] = self.__api_key
+        headers['X-API-Secret'] = self.__api_secret
+        headers['Content-Type'] = 'application/json'
         return Request(url, data, headers)
 
     def request(self, url, params=None, json_response=True):
         if params:
             params['wid'] = self.__wid
             params = json.dumps(params).encode('ascii')
-        req = Requester.raw_request(url, params, {'Cookie': self.__cookie})
+        req = self.raw_request(url, params)
         try:
             with urlopen(req) as r:
                 response = r.read().decode('utf-8-sig')

@@ -26,7 +26,6 @@ from lib.config import read_config
 
 config = read_config()
 db_path, event_name = config['db_path'], config['event_name']
-c2_login, c2_password = config['admin_cs2_name'], config['admin_cs2_password'] if 'admin_cs2_password' in config else None
 api = Cosplay2API(event_name)
 
 with sqlite3.connect(db_path, isolation_level=None) as db:
@@ -50,10 +49,7 @@ if not input('\nDo it (yes/no)?: ').lower() in ('y', 'ye', 'yes', 'yep', 'д', '
     exit()
 print("OK, let's go!")
 
-a = Authenticator(event_name, c2_login, c2_password)
-if not a.sign_in():
-    exit()
-r = Requester(a.cookie)
+r = Requester(config=config)
 
 done_requests = set()
 try:

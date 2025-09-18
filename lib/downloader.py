@@ -27,7 +27,6 @@ class Downloader:
             return skip, dir_name, file_name
 
         opener = request.build_opener()
-        opener.addheaders = [('User-Agent', Requester.user_agent)]
         request.install_opener(opener)
 
         self.preprocess = preprocess_func if preprocess_func else preprocess_sample
