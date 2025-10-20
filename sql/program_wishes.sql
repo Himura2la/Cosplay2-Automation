@@ -41,4 +41,4 @@ WHERE	list.id = topic_id
 		AND default_duration > 0
 		AND card_code NOT LIKE 'V%'
 
-ORDER BY card_code, requests.number
+ORDER BY wish, card_code, requests.number

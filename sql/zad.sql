@@ -34,7 +34,7 @@ LEFT JOIN (	SELECT request_id as ct_rid, REPLACE(GROUP_CONCAT(DISTINCT value), '
     ON ct_rid = requests.id
 
 LEFT JOIN (	SELECT request_id as n_rid, value as nom FROM [values]
-            WHERE title = 'Подноминация')
+            WHERE title = 'Уровень сложности')
     ON n_rid = requests.id
 
 LEFT JOIN (	SELECT request_id as f_rid, value as value1 FROM [values]
