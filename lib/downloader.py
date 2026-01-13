@@ -9,7 +9,7 @@ import unicodedata
 
 from urllib import request
 from urllib import parse
-from urllib.error import ContentTooShortError
+from urllib.error import ContentTooShortError, URLError
 
 from lib.api import Requester
 from lib.cloud_downloader import CloudDownloader
@@ -191,7 +191,7 @@ class Downloader:
                         self.log_info(' [OK]', head=False)
                     else:
                         self.log_info(' [READY]', head=False)
-            except (TypeError, AttributeError, request.HTTPError) as e:
+            except (TypeError, AttributeError, URLError) as e:
                 print("[FAIL]", name + ":", e)
 
         if not os.path.isdir(folder):
