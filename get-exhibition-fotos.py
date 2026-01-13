@@ -39,6 +39,7 @@ if __name__ == '__main__':
             AND status != 'disapproved'
             AND type IN ('file', 'image')
             AND card_code IN ({not_scene_card_codes})
+            AND [values].title != 'Изображение персонажа'
             {main_foto_where}
         ORDER BY request_id
     """
