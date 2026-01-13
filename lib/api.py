@@ -4,7 +4,7 @@
 import os
 import json
 import binascii
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 from urllib.request import urlopen, Request
 from .config import read_config
 
@@ -57,7 +57,7 @@ class Requester(object):
                 if json_response:
                     response = json.loads(response)
             return response
-        except HTTPError as e:
+        except URLError as e:
             print("Request failed:", e)
             print("Maybe login required...")
             return False
