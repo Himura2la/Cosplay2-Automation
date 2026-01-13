@@ -23,7 +23,7 @@ if __name__ == '__main__':
         os.makedirs(backup_dir)
 
 
-    f = Fetcher(event_name)
+    f = Fetcher()
     if not f.fetch_data():
         exit()
     f.fetch_etickets()
