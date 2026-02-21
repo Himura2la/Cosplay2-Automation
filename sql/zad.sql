@@ -1,14 +1,25 @@
 SELECT
     number as '№',
-    card_code ||' '|| voting_number as num,
-    ifnull(list.title||' / '||nom, list.title) as nom,
+	
+    CASE contest
+		WHEN "Вне конкурса" THEN "Внеконкурс"
+		ELSE card_code ||' '|| voting_number 
+	END as num,
+	
+	ifnull(list.title||' / '||nom, list.title) as nom,
 
+    voting_title,
+	
+	CASE ifnull(n_participants, '1')
+		WHEN '1' THEN CASE card_code WHEN 'AGR' THEN 'Представитель' ELSE 'Участник' END
+		ELSE 'Участники'
+	END as participants_title,
+	
     CASE ifnull(length(team),0)
         WHEN 0 THEN nicks
         ELSE IIF(card_code LIKE 'D%', 'Косбэнд ', 'Команда ')||team||': '||nicks
     END as 'Участник',
 
-    voting_title,
 
     CASE WHEN value1 IS NULL THEN NULL
          WHEN card_code IN ('K', 'KA', 'T', 'INS', 'AI', 'AK', 'AT') THEN 'Исполнитель оригинала'
@@ -47,6 +58,11 @@ LEFT JOIN (	SELECT request_id as n_rid, value as nom FROM [values]
             WHERE title = 'Подноминация')
     ON n_rid = requests.id
 
+LEFT JOIN (	SELECT request_id as con_rid, value as contest FROM [values]
+            WHERE title = 'Участие в конкурсе')
+    ON con_rid = requests.id
+
+	
 LEFT JOIN (	SELECT request_id as f_rid, value as value1 FROM [values]
             WHERE title LIKE 'Фэндом%'
                OR title LIKE 'Исполнитель%')
@@ -73,11 +89,15 @@ LEFT JOIN (	SELECT request_id as tm_rid, value as team FROM [values]
                     title LIKE '%команд%' )
     ON tm_rid = requests.id
 
+LEFT JOIN (	SELECT request_id as npcp_rid, value as n_participants FROM [values]
+            WHERE	title LIKE 'Количество %' )
+    ON npcp_rid = requests.id
+
 
 WHERE
     list.id = topic_id
     AND status != 'disapproved'
-    AND (default_duration > 0 OR card_code IN ('AGR', 'V', 'VC'))
+    AND (default_duration > 0 OR card_code IN ('AGR'))
 
 GROUP BY voting_number
-ORDER BY voting_number
+ORDER BY default_duration DESC, voting_number

@@ -22,7 +22,7 @@ query = f"""
     WHERE   list.id = topic_id AND
             request_id = requests.id AND
             type IN ('file', 'image') AND
-            (default_duration > 0 OR card_code = 'AGR') AND
+            (default_duration > 0 OR card_code IN ('AGR', 'VC', 'V')) AND
             status != 'disapproved'
     ORDER BY [values].title
 """
