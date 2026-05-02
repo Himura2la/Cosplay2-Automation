@@ -4,9 +4,9 @@ event_name: 'cr2018'
 # Путь к файлу базы SQLite
 db_path: 'cr2018/sqlite3_data.db'
 
-# Логин и пароль админа cosplay2
-admin_cs2_name: 'login'
-admin_cs2_password: 'password'  # Необязательно
+# Токен для доступа к API Cosplay2 (Организация -> Настройки -> API токены)
+c2_event_api_key: 'ak_user_event_'
+c2_event_api_secret: 'as_user_'
 
 # SQL-запрос для выполнения сразу после загрузки базы
 sql_after_get: >

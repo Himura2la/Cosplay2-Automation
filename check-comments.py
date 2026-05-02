@@ -5,9 +5,8 @@ target = "status in ('approved') and default_duration > 0 and card_code not like
 org_user_ids = [
     3209  # Himura
 ]
-show_org_comments = True
+show_org_comments = False
 
-from lib.authenticator import Authenticator
 from lib.api import Cosplay2API, Requester
 import os
 import csv
@@ -17,7 +16,6 @@ from lib.config import read_config
 
 config = read_config()
 db_path, event_name = config['db_path'], config['event_name']
-c2_login, c2_password = config['admin_cs2_name'], config['admin_cs2_password'] if 'admin_cs2_password' in config else None
 api = Cosplay2API(event_name)
 
 with sqlite3.connect(db_path, isolation_level=None) as db:
@@ -33,10 +31,7 @@ with sqlite3.connect(db_path, isolation_level=None) as db:
           AND {target}""")
     target_requests = [(r_id, details) for r_id, details in c.fetchall()]
 
-a = Authenticator(event_name, c2_login, c2_password)
-if not a.sign_in():
-    exit()
-r = Requester(a.cookie)
+r = Requester(config=config)
 
 for request_id, details in target_requests:
     response = r.request(api.get_comments_POST, {"request_id": request_id})
@@ -51,6 +46,8 @@ for request_id, details in target_requests:
             if int(comments[-1]['user_id']) not in org_user_ids:
                 f.write(f'***********************************************\n')
             for comment in comments:
+                if comment['user_id'] in org_user_ids and not show_org_comments:
+                    continue
                 f.write(f'{comment["user_title"]}: {comment["content"]} <{comment["creationtime"]}>\n')
             if int(comments[-1]['user_id']) not in org_user_ids:
                 f.write(f'***********************************************\n\n')

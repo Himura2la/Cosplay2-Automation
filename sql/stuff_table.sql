@@ -2,7 +2,6 @@ SELECT DISTINCT
     card_code,voting_number,list.title,voting_title,
     text,
 	'№ '||requests.number as num
-
 FROM list, requests
 
 LEFT JOIN (

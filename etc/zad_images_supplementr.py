@@ -3,18 +3,17 @@ import csv
 import re
 import shutil
 
-csv_path = r"C:\Users\glago\YandexDisk\Fests\Yuki no Odori 12\zad\z.csv"
+csv_path = r"C:\Users\glago\YandexDisk\Fests\Yuki no Odori 15\zad\zad.csv"
 num_row = '№'
-target_csv_path = r"C:\Users\glago\YandexDisk\Fests\Yuki no Odori 12\zad\zad-imaged.csv"
+target_csv_path = r"C:\Users\glago\YandexDisk\Fests\Yuki no Odori 15\zad\zad-imaged.csv"
 
-img_dir = r"C:\Events\tulafest\Fest"
+img_dir = r"C:\Events\yno15\zad_img"
 id_regex = re.compile(r'№(\d{1,3})')
 
-empty_img_path = r'C:\Users\glago\YandexDisk\Fests\Yuki no Odori 12\zad\yuno_12_Yuno.png'
+empty_img_path = ''
 empty_img_path = os.path.abspath(empty_img_path) if empty_img_path else ''
 
 move_used_to = False
-no_img_warning = 'Юно не является изображением персонажа'
 
 if move_used_to:
     used_dir = os.path.join(img_dir, move_used_to)
@@ -63,7 +62,6 @@ for row in data:
         row += [empty_img_path] * (rows_target - len(row))
     if no_img:
         print("[WARNING] No images for: '%s'" % str(row))
-        row += [no_img_warning]
     else:
         row += [""]
 
@@ -72,5 +70,5 @@ for row in data:
 
 with open(target_csv_path, 'w', encoding='utf-8', newline='') as f:
     w = csv.writer(f, delimiter=',', quotechar='"')
-    w.writerow(head + ["img%d-path" % (i+1) for i in range(rows_added)] + ["no-img-warning"])
+    w.writerow(head + ["img%d-path" % (i+1) for i in range(rows_added)])
     w.writerows(data)

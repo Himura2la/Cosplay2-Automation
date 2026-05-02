@@ -15,17 +15,13 @@ email = True
 sms = False
 
 
-from lib.authenticator import Authenticator
 from lib.api import Cosplay2API, Requester
-import os
-import csv
 import sqlite3
 from time import sleep
 from lib.config import read_config
 
 config = read_config()
 db_path, event_name = config['db_path'], config['event_name']
-c2_login, c2_password = config['admin_cs2_name'], config['admin_cs2_password'] if 'admin_cs2_password' in config else None
 api = Cosplay2API(event_name)
 
 with sqlite3.connect(db_path, isolation_level=None) as db:
@@ -49,10 +45,7 @@ if not input('\nDo it (yes/no)?: ').lower() in ('y', 'ye', 'yes', 'yep', 'д', '
     exit()
 print("OK, let's go!")
 
-a = Authenticator(event_name, c2_login, c2_password)
-if not a.sign_in():
-    exit()
-r = Requester(a.cookie)
+r = Requester(config=config)
 
 done_requests = set()
 try:
@@ -60,13 +53,13 @@ try:
         voting_number = details.split('] ', 1)[1].split('. ', 1)[0]
         ready_comment = comment.format(voting_number, voting_number.split(' ', 1)[1][0])
         data = {"request_id": request_id, "comment": ready_comment, "email": email, "sms": sms}
-        sent = False
-        while not sent:
-            sleep(5)
-            print("try")
-            sent = r.request(api.add_comment_POST, data, False)
-
-        print(f'✔️ {details} ({api.request_url(request_id)})')
+        sleep(2.5) # rate limit is 30 sms per minute
+        sent = r.request(api.add_comment_POST, data, False)
+        if not sent:
+            print(f'X {details} ({api.request_url(request_id)})')
+            pass
+        else:
+            print(f'✔️ {details} ({api.request_url(request_id)})')
         print(ready_comment)
         done_requests.add(str(request_id))
 except Exception as e:

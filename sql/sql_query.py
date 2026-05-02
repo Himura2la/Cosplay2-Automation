@@ -47,9 +47,8 @@ for record in result:
                                             else last_field_format if i >= len(headers) - 2 \
                                             else default_field_format
                 result_txt += fmt % record[i]
-        long_record = 'Нет пожеланий' if record[long_i] is None else record[long_i]
-        long_record = long_record.replace('\n', '  \n')
-        result_txt += f"\n{long_record}"
+        long_record_linebreaked = record[long_i].replace('\n', '  \n') if record[long_i] else 'Нет пожеланий'
+        result_txt += f"\n{long_record_linebreaked}"
     else:
         for i, field in enumerate(headers):
             if record[i]:

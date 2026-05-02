@@ -1,4 +1,5 @@
 SELECT
+	card_code,
 	'https://tulafest.cosplay2.ru/orgs/requests/request/' || request_id as r,
 	COUNT([value]) as n
 
@@ -10,4 +11,4 @@ WHERE list.id = topic_id AND requests.id = request_id
 
 GROUP BY request_id
 HAVING n > 1
-ORDER BY n DESC
+ORDER BY default_duration DESC, n DESC
