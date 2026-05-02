@@ -1,25 +1,22 @@
 SELECT DISTINCT
-    card_code||' '||voting_number||'. '||list.title||': '||voting_title||' (№ '||requests.number||')' as num,
-    text
-
+    card_code,voting_number,list.title,voting_title,
+    text,
+	'№ '||requests.number as num
+	
 FROM list, requests
 
 LEFT JOIN (
     SELECT
         request_id,
-        group_concat(
-            '### ' || replace(title,' (необязательно)','') || x'0a' || value || x'0a',
-            x'0a'
-        ) as text
+        group_concat(value) as text
     FROM (
         SELECT request_id, [values].title, value
         FROM [values]
         WHERE title in (
-            'Описание номера'
-            ,'Начало выступления'
-    --		,'Оборудование и реквизит (необязательно)'
-            ,'Пожелания к организаторам'
-            ,'Пожелания по сценическому свету (необязательно)'
+--            'Описание номера'
+--            ,'Начало выступления'
+    		'Оборудование и реквизит (необязательно)', 'Пожелания к организаторам'
+--            ,'Пожелания по сценическому свету (необязательно)'
         )
         ORDER BY CASE title
             WHEN 'Начало выступления' THEN 10
@@ -37,9 +34,5 @@ WHERE
     list.id = topic_id
     AND	default_duration > 0
     AND	status = 'approved'
-    AND card_code not in ('VC', 'V')
 
 ORDER BY voting_number
-
-
-

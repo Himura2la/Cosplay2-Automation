@@ -5,7 +5,7 @@ target = "status in ('approved') and default_duration > 0 and card_code not like
 org_user_ids = [
     3209  # Himura
 ]
-show_org_comments = True
+show_org_comments = False
 
 from lib.api import Cosplay2API, Requester
 import os
@@ -46,6 +46,8 @@ for request_id, details in target_requests:
             if int(comments[-1]['user_id']) not in org_user_ids:
                 f.write(f'***********************************************\n')
             for comment in comments:
+                if comment['user_id'] in org_user_ids and not show_org_comments:
+                    continue
                 f.write(f'{comment["user_title"]}: {comment["content"]} <{comment["creationtime"]}>\n')
             if int(comments[-1]['user_id']) not in org_user_ids:
                 f.write(f'***********************************************\n\n')
