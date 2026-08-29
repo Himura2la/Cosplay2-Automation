@@ -28,10 +28,12 @@ query = f"""
 """
 
 
-def preprocess(num, name, file_name):
+def preprocess(num, name, file_name, file):
     skip_files_with = config['not_scene_files']
     skip_by_field = any([s in file_name for s in skip_files_with])
     dir_name = f'№{num}. {name}'
+    if not file or ('fileext' in file.keys() and file['fileext'].lower() in ('.mp3', '.mp4', '.wav', '.mov')) or 'link' in file.keys():
+        skip_by_field = True
     return skip_by_field, dir_name, file_name
 
 

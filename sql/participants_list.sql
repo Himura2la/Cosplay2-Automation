@@ -30,19 +30,19 @@ LEFT JOIN ( SELECT request_id as fn_rid, value as fandom
             FROM [values] WHERE title LIKE 'Фэндом%')
     ON fn_rid = request_id
 LEFT JOIN ( SELECT request_id as t_rid, value as team
-            FROM [values] WHERE (title LIKE '%студия%' OR title LIKE '%команд%' OR title LIKE '%косбэнд%' OR title = 'Название') and title NOT LIKE '%ранскрипция%')
+            FROM [values] WHERE (title LIKE '%студия%' OR title LIKE '%команд%' OR title LIKE '%косбэнд%' OR title = 'Название' OR title = 'Никнейм / Название организации') and title NOT LIKE '%ранскрипция%')
     ON t_rid = request_id
 LEFT JOIN ( SELECT request_section_id as r_rsid, value as phone
             FROM [values] WHERE title = 'Мобильный телефон')
     ON r_rsid = request_section_id
 LEFT JOIN ( SELECT request_section_id as tg_rsid, value as tg
-            FROM [values] WHERE title = 'Telegram')
+            FROM [values] WHERE title = 'Telegram' OR title = 'Контакт для связи')
     ON tg_rsid = request_section_id
 	
 WHERE
     list.id = topic_id AND requests.id = request_id
     AND status != 'disapproved'
-    AND [values].title IN ('Имя','Ник','Название')  -- use sections with name
+    AND [values].title IN ('Имя','Ник','Название','Никнейм / Название организации')  -- use sections with name
 	AND card_code NOT IN ('FC')
 
 GROUP BY first_name, nick, team

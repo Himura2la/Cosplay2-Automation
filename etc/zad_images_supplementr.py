@@ -3,11 +3,13 @@ import csv
 import re
 import shutil
 
-csv_path = r"C:\Users\glago\YandexDisk\Fests\Yuki no Odori 15\zad\zad.csv"
+csv_path = r"/home/himura/Events/tf18/zad.csv"
 num_row = '№'
-target_csv_path = r"C:\Users\glago\YandexDisk\Fests\Yuki no Odori 15\zad\zad-imaged.csv"
+target_csv_path = r"/home/himura/Events/tf18/zad-imaged.csv"
 
-img_dir = r"C:\Events\yno15\zad_img"
+img_dir = r"/home/himura/Events/tf18/img-src"
+wine_img_dir = r"X:\Events\tf18\img-src"
+
 id_regex = re.compile(r'№(\d{1,3})')
 
 empty_img_path = ''
@@ -49,6 +51,8 @@ for file_name in os.listdir(img_dir):
     else:
         file_name = os.path.join(img_dir, file_name)
 
+    if wine_img_dir:
+        file_name = file_name.replace(img_dir + "/", wine_img_dir + "\\")
     data[num].append(file_name)
     if len(data[num]) > rows_target:
         rows_target = len(data[num])

@@ -22,7 +22,7 @@ class Downloader:
     FORCE_DOWNLOAD_ALL = 3
 
     def __init__(self, preprocess_func=None):
-        def preprocess_sample(num, dir_name, file_name):
+        def preprocess_sample(num, dir_name, file_name, file):
             skip = False
             return skip, dir_name, file_name
 
@@ -101,7 +101,7 @@ class Downloader:
             request_id, update_time, nom, num, title, file_type, file = row
             name = self.to_filename(title if title else 'No title').replace('  ', ' ')
             nom, file_type = self.to_filename(nom), self.to_filename(file_type)
-            download_skipped_by_preprocessor, dir_name, file_name = self.preprocess(int(num), name, file_type)
+            download_skipped_by_preprocessor, dir_name, file_name = self.preprocess(int(num), name, file_type, json.loads(file) if file else None)
             dir_path = os.path.join(folder, dir_name) if flat else os.path.join(folder, nom, dir_name)
             display_path = ' | '.join([dir_path, file_name])
             if download_skipped_by_preprocessor:

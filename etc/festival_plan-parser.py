@@ -37,10 +37,10 @@ for row in plan[2:]:  # Отрезаем День и Место
     tag, time, val = row
     if tag == 'b':  # Доп. инфа
         pass
-        human_plan += f'\n{time}\t{val}\n'
+        human_plan += f'{val}\n'
         technical_plan.append(('', time, 'I', '', val))
     elif tag is None:  # Номер
-        human_plan += f"{time}\t\t{val.replace(',', '.', 1)}\n"
+        human_plan += f"{val.replace(',', '.', 1)}\n"
         code, title = val.split(', ', 1)
         code, num = code.split(' ', 1)
         technical_plan.append(('', time, code, num, title))

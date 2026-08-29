@@ -5,13 +5,13 @@ import re
 import csv
 
 
-tracks_dir = r'C:\Events\tulafest\Fest'
+tracks_dir = r'/home/himura/Events/tf18/tracks18'
 tracks_filenames_num_regex = r'№(\d+)'
 
-pages_dir = r"C:\Events\tulafest\zad\zads"
+pages_dir = r"/home/himura/Events/tf18/Zad"
 pages_filenames_page_regex = r'(\d{1,3})$'
 
-page_to_num_csv = r"C:\Events\tulafest\zad\zad-imaged.csv"
+page_to_num_csv = r"/home/himura/Events/tf18/zad-imaged.csv"
 page_col, num_col = 'page', '№'
 
 no_op = bool(0)

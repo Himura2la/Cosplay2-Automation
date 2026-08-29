@@ -84,6 +84,10 @@ LEFT JOIN (	SELECT request_id as ds_rid, value as studio FROM [values]
             WHERE	title LIKE 'Танцевальная студия%')
     ON ds_rid = requests.id
 
+LEFT JOIN (	SELECT request_id as np_rid, value as n_participants FROM [values]
+            WHERE	title LIKE 'Количество%')
+    ON np_rid = requests.id
+
 WHERE
     list.id = topic_id
     AND status != 'disapproved'
