@@ -60,7 +60,7 @@ Email и пароль больше не требуются, их можно уб
 ```
 python3 -m venv .venv
 . .venv/bin/activate
-pip install --upgrade PyYAML tabulate youtube-dl vk
+pip install --upgrade -r requirements.txt
 ```
 
 # Как запускать
