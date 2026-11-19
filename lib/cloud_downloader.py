@@ -3,7 +3,7 @@
 # Author: Himura Kazuto <himura@tulafest.ru>
 
 from urllib import request
-import youtube_dl
+import yt_dlp
 import json
 import os
 
@@ -32,8 +32,8 @@ class CloudDownloader(object):
                 request.urlretrieve(url, f'{target}.{ext}')
                 return True
             else:
-                print('Using YoutubeDL...')
-                with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+                print('Using yt-dlp...')
+                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                     ydl.download([url])
                     return True
         except Exception as e:

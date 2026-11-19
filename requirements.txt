@@ -1,6 +1,6 @@
 PyYAML
 tabulate
-youtube-dl
+yt-dlp @ https://github.com/yt-dlp/yt-dlp/archive/refs/heads/master.zip
 Pillow
 vk
 Send2Trash
